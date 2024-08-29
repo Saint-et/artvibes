@@ -36,6 +36,10 @@ const config = {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        activeBlue: {
+          DEFAULT: "hsl(var(--activeBlue))",
+          foreground: "hsl(var(--activeBlue-foreground))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",

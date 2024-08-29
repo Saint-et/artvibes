@@ -2,9 +2,43 @@
   @tailwind components;
   @tailwind utilities;
 
+  @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
   @layer base {
     :root {
-      --background: 0 0% 100%;
+      
+      --background: 122 0% 5%;
+      --foreground: 210 20% 98%;
+
+      --card: 122 0% 1%;
+      --card-foreground: 210 20% 98%;
+
+      --popover: 122 0% 1%;
+      --popover-foreground: 210 20% 98%;
+
+      --primary: 220 0% 10%;
+      --primary-foreground: 210 20% 98%;
+
+      --secondary: 220 0% 10%;
+      --secondary-foreground: 210 20% 98%;
+
+      --muted: 122 0% 5%;
+      --muted-foreground: 217.9 10.6% 64.9%;
+
+      --accent: 122 0% 5%;
+      --accent-foreground: 210 20% 98%;
+
+      --destructive: 0 62.8% 30.6%;
+      --destructive-foreground: 210 20% 98%;
+
+      --activeBlue: 230 80% 60%;
+      --activeBlue-foreground: 210 20% 98%;
+
+      --border: 24, 9%, 10%;
+      --input: 24, 9%, 10%;
+      --ring: 216 0% 83.9%;
+
+      /*--background: 0 0% 100%;
       --foreground: 224 71.4% 4.1%;
 
       --card: 0 0% 100%;
@@ -30,12 +64,12 @@
 
       --border: 220 13% 91%;
       --input: 220 13% 91%;
-      --ring: 224 71.4% 4.1%;
+      --ring: 224 71.4% 4.1%;*/
 
       --radius: 0.5rem;
     }
 
-    .dark {
+    /*.dark {
       --background: 224 71.4% 4.1%;
       --foreground: 210 20% 98%;
 
@@ -63,9 +97,374 @@
       --border: 215 27.9% 16.9%;
       --input: 215 27.9% 16.9%;
       --ring: 216 12.2% 83.9%;
+    }*/
+  }
+  @layer utilities {
+    .gradient1{
+      background: linear-gradient(to right, #2563eb, #7c3aed);
+    }
+    .gradient2{
+      background: linear-gradient(to right, #ec008c, #fc6767);
+    }
+    .gradient3{
+      background: linear-gradient(to right, #ee0979, #ff6a00);
+    }
+    .gradient4{
+      background: linear-gradient(to right, #fc00ff, #00dbde);
+    }
+    .gradient5{
+      background: linear-gradient(to right, #ff00cc, #333399);
+    }
+    .nsfw{
+      background: linear-gradient(to right, #fb7185, #ef4444);
+    }
+    .post-badge{
+      background: linear-gradient(to right, #396afc, #2948ff);
+    }
+    .admin{
+      background: linear-gradient(to right, #005c97, #363795);
+    }
+    .roboto-regular {
+      font-family: "Roboto", sans-serif;
+    }
+    .scrollbar-style {
+      overflow: auto;
+      scrollbar-color: rgb(40, 40, 40) rgba(0, 0, 0, 0);
+    }
+    .gradient-animated5 {
+      background: linear-gradient(-45deg, #ff00cc, #333399, #ff00cc, #333399);
+      background-size: 400% 400%;
+      animation: gradient 15s ease infinite;
+    }
+    .gradient-animated1 {
+      background: linear-gradient(-45deg, #00bbff, #1034ff, #00bbff, #1034ff);
+      background-size: 400% 400%;
+      animation: gradient 15s ease infinite;
+    }
+    
+    @keyframes gradient {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .background-img-animated {
+      animation: background-img-animated 40s ease infinite;
+    }
+    
+    @keyframes background-img-animated {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .drawing-css-bg {
+      background: 
+      linear-gradient(135deg,#0000 20.5%,#171717 0 29.5%,#0000 0) 0 5px,
+      linear-gradient( 45deg,#0000 8%,#171717 0 17%, #0000 0 58%) 10px 0,
+      linear-gradient(135deg,#0000 8%,#171717 0 17%, #0000 0 58%,#171717 0 67%,#0000 0),        
+      linear-gradient( 45deg,#0000 8%,#171717 0 17%, #0000 0 58%,#171717 0 67%,#0000 0 83%,#171717 0 92%,#0000 0),
+      #000000;
+background-size: 20px 20px;
+    }
+    .drawing-css-bg-tranparent {
+      background: 
+      linear-gradient(135deg,#0000 20.5%,#000000 0 29.5%,#0000 0) 0 5px,
+      linear-gradient( 45deg,#0000 8%,#000000 0 17%, #0000 0 58%) 10px 0,
+      linear-gradient(135deg,#0000 8%,#000000 0 17%, #0000 0 58%,#000000 0 67%,#0000 0),        
+      linear-gradient( 45deg,#0000 8%,#000000 0 17%, #0000 0 58%,#000000 0 67%,#0000 0 83%,#000000 0 92%,#0000 0),
+      rgba(0, 0, 0, 0);
+background-size: 20px 20px;
+    }
+
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  color: #e5e7eb; /* Light gray for dark mode text */
+}
+
+.checkbox-input {
+  display: none;
+}
+
+.checkbox-custom {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background-color: #2c2c2c; /* Dark background */
+  border: 2px solid #5e5e5e; /* Border for the checkbox */
+  display: inline-block;
+  position: relative;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.checkbox-input:checked + .checkbox-custom {
+  background-color: #2c2c2c; /* Checked state color */
+  border-color: #2c2c2c; /* Border color when checked */
+}
+
+.checkbox-input:checked + .checkbox-custom::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background-color: #fff; /* Checkmark color */
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+}
+
+.checkbox-container:hover .checkbox-custom {
+  border-color: #2c2c2c; /* Change border color on hover */
+}
+
+.checkbox-input:focus + .checkbox-custom {
+  box-shadow: 0 0 0 2px #2c2c2c; /* Focus ring */
+}
+
+.checkbox-label {
+  margin-left: 8px;
+  font-size: 14px;
+  color: #d1d5db; /* Text color */
+}
+
+.checkbox-input:disabled + .checkbox-custom {
+  background-color: #2c2c2c; /* Disabled background */
+  border-color: #5f5f5f; /* Disabled border color */
+  cursor: not-allowed;
+}
+
+.checkbox-input:disabled + .checkbox-label {
+  color: #7a7a7a; /* Disabled label color */
+}
+.animationFlashing {
+  animation: animationFlashing 2s ease 0s infinite normal forwards;
+}
+@keyframes animationFlashing {
+	0%,
+	50%,
+	100% {
+		opacity: 1;
+	}
+
+	25%,
+	75% {
+		opacity: 0;
+	}
+}
+  }
+  @layer profile {
+    .CoverImage {
+      background-repeat: no-repeat;
+      background-size: cover;
+      margin: 0 auto;
+      width: 100%;
+      display: block;
+      border-radius: 10px;
+    }
+    .FlexEmbed {
+      display: block;
+      overflow: hidden;
+      position: relative;
+    }
+    .FlexEmbed--2by1:before {
+      content: "";
+      display: block;
+      padding-bottom: 50%;
     }
   }
+  @layer animation {
+    .open-element-page-melted {
+      animation: animation-melted 600ms ease-in-out;
+      -moz-animation: animation-melted 600ms ease-in-out;
+     /* Firefox */
+      -webkit-animation: animation-melted 600ms ease-in-out;
+     /* Safari et Chrome */
+      -o-animation: animation-melted 600ms ease-in-out;
+     /* Opera */
+   }
+    @keyframes animation-melted {
+      from {
+        opacity: 0;
+     }
+      to {
+        opacity: 1;
+     }
+   }
+   .close-element-page-scale {
+    animation: animation-scale 300ms ease-in-out;
+    -moz-animation: animation-scale 300ms ease-in-out;
+   /* Firefox */
+    -webkit-animation: animation-scale 300ms ease-in-out;
+   /* Safari et Chrome */
+    -o-animation: animation-scale 300ms ease-in-out;
+   /* Opera */
+ }
+  @keyframes animation-scale {
+    from {
+      transform:scale(1);
+      opacity: 1;
+   }
+    to {
+      transform:scale(1.2);
+      opacity: 0;
+   }
+ }
+  }
 
+  @layer drawing {
+.resizable-box {
+  position: relative;
+  border: 1px solid #006aff;
+  /*border-radius: 5px;*/
+  top: 0;
+}
+.drag-handle-content {
+  cursor: move;
+  position: absolute;
+}
+.drag-handle-content-right {
+  height: 100%;
+  width: 10px;
+  right: -5px;
+  top: 0%;
+}
+
+.drag-handle-content-bottom {
+  width: 100%;
+  height: 10px;
+  bottom: -5px;
+  left: 0%;
+}
+
+.drag-handle-content-left {
+  height: 100%;
+  width: 10px;
+  left: -5px;
+  top: 0%;
+}
+
+.drag-handle-content-top {
+  width: 100%;
+  height: 10px;
+  top: -5px;
+  left: 0%;
+}
+.drag-handle {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  background-color: #006aff;
+  cursor: move;
+  z-index: 9999;
+  border-radius: 100%;
+}
+.drag-handle-top-left {
+  top: -15px;
+  left: -15px;
+  cursor: nw-resize;
+}
+.drag-handle-top-right {
+  top: -15px;
+  right: -15px;
+  cursor: ne-resize;
+}
+.drag-handle-bottom-left {
+  bottom: -15px;
+  left: -15px;
+  cursor: sw-resize;
+}
+.drag-handle-bottom-right {
+  bottom: -15px;
+  right: -15px;
+  cursor: se-resize;
+}
+.drag-handle-side {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  background-color: #006aff;
+  z-index: 9999;
+  border-radius: 100%;
+}
+.drag-handle-side-top {
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: n-resize;
+  width: 20px;
+  height: 10px;
+  border-radius: 50px;
+
+}
+.drag-handle-side-bottom {
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: n-resize;
+  width: 20px;
+  height: 10px;
+  border-radius: 50px;
+}
+.drag-handle-side-right {
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: e-resize;
+  height: 20px;
+  width: 10px;
+  border-radius: 50px;
+}
+.drag-handle-side-left {
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: e-resize;
+  height: 20px;
+  width: 10px;
+  border-radius: 50px;
+}
+.input_textareaCreative {
+  font-family: Arial, sans-serif;
+  color: black;
+  outline: none;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border: none;
+  resize: none;
+  background: none;
+}
+.input_textareaCreative::selection {
+  background: rgba(0, 106, 255, 0.6);
+}
+.input_textareaCreative:focus {
+  border: none;
+}
+.input_textareaCreative::placeholder {
+  color: #fff;
+  font-weight: 900;
+}
+.input_textareaCreative:hover {
+  border: none;
+}
+  }
   @layer base {
     * {
       @apply border-border;

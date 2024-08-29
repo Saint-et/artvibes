@@ -60,10 +60,10 @@ export default function Signup() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="w-2/3 mt-3 hover:scale-110 transition">Sign'up</Button>
+        <Button className="w-2/3 mt-3 hover:scale-95 transition">Sign'up</Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md bg-[#000000] h-screen max-h-[90%] z-[30000]">
+      <DialogContent className="sm:max-w-md backdrop-blur bg-[#00000080] h-screen max-h-[90%] z-[30000]">
         <DialogHeader>
           <DialogTitle>Sign'up to Artvibes.</DialogTitle>
           <DialogDescription>Create a new account.</DialogDescription>
@@ -151,7 +151,7 @@ export default function Signup() {
                 )}
               />
               <Button
-                className="bg-gradient-to-r from-blue-600 to-violet-600 hover:scale-110 transition"
+                className="bg-gradient-to-r from-blue-600 to-violet-600 hover:scale-95 transition"
                 type="submit"
               >
                 Create account
@@ -164,7 +164,7 @@ export default function Signup() {
             <Button
               variant="destructive"
               type="button"
-              className="hover:scale-110 transition"
+              className="hover:scale-95 transition"
             >
               Close
             </Button>

@@ -9,90 +9,148 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
-import Illustration from "../../public/assets/images/2151134332.jpg";
-import Illustration2 from "../../public/assets/images/anime-style-character-space.jpg";
-import Illustration3 from "../../public/assets/images/2151134176.jpg";
-import Illustration4 from "../../public/assets/images/2151134327.jpg";
-import Illustration5 from "../../public/assets/images/2151134257.jpg";
-import Illustration6 from "../../public/assets/images/2151134064.jpg";
-import React, { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
-const images = [
-  Illustration,
-  Illustration2,
-  Illustration3,
-  Illustration4,
-  Illustration5,
-  Illustration6,
-];
+import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
+import { LoginItems, SystemCarouselImg } from "@/public/assets/data/data";
+import { FlipWords } from "@/components/ui/flip-words";
+import { useEffect, useRef, useState } from "react";
+import Autoplay from "embla-carousel-autoplay";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { CalendarIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Log_page() {
-  const plugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: false }));
+  const plugin = useRef(Autoplay({ delay: 2000, stopOnInteraction: false }));
+
+  const words = ["Welcome", "Login", "More", "Go"];
+
+  const [isAlertEventOpen, setAlertEventOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    setAlertEventOpen(true);
+  }, []);
+  const router = useRouter();
+
+  const handleVisite = () => {
+    router.push("/?type=images");
+  };
 
   return (
     <>
-      <div className="flex items-center pt-[10px] flex-col">
+      <AlertDialog open={isAlertEventOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              🌟 Join Alpha Discovery and Earn Credits for Free! 🌟
+            </AlertDialogTitle>
+            <AlertDialogDescription className="grid gap-4">
+              <div className="text-[14px] w-max inline-block rounded-lg gradient5 px-3 py-1 font-medium text-primary-foreground">
+                Special Event
+              </div>
+              <div className="grid gap-2">
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5 text-muted-foreground" />
+                  <p className="text-[16px] text-muted-foreground">
+                    End: 15/07/2024
+                  </p>
+                </div>
+              </div>
+              <p className="text-[16px] text-muted-foreground">
+                We're excited to invite you to participate in our exclusive
+                Alpha Phase! To celebrate this exciting first step, we are
+                offering all new users full access to our image editing app. By
+                creating an account, you will unlock 100 free credits to use on
+                our platform!
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={() => {
+                setAlertEventOpen(false);
+              }}
+            >
+              Ok
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <div className="flex items-center pt-[60px] flex-col">
         <div className="flex justify-center items-center max-w-max h-max flex-col md:flex-row">
-          <div className="flex justify-center items-center flex-col w-[90%] max-w-[500px] p-3">
-            <h1 className="text-8xl font-bold text-center mb-10 bg-gradient-to-r from-fuchsia-500 to-pink-500 bg-clip-text text-transparent">
-              Login to Artvibes
-            </h1>
+          <div className="flex justify-start items-center flex-col w-[90%] max-w-[500px] p-3">
+            <div className="text-4xl md:text-6xl font-bold text-center mb-10 bg-gradient-to-r from-fuchsia-500 to-pink-500 bg-clip-text text-transparent">
+              <FlipWords className="text-white w-max poiretOne" words={words} />
+              <br />
+              to Artvibes
+            </div>
             <InputForm />
             <Signup />
-            <Link href="/" className="w-2/3">
-              <Button
-                className="w-[100%] bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:scale-110 transition mt-3"
-                type="button"
-              >
-                Visite Artvibes
-              </Button>
-            </Link>
+            <Button
+              className="w-2/3 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:scale-95 transition mt-3"
+              type="button"
+              onClick={handleVisite}
+            >
+              Visite Artvibes
+            </Button>
           </div>
           <div className="flex justify-center items-center max-w-max h-max flex-col">
-          <Carousel
-            plugins={[plugin.current]}
-            className="w-[100%] max-w-[800px]"
-          >
-            <CarouselContent>
-              {images?.map((img, index) => (
-                <CarouselItem key={index}>
-                  <div className="p-1">
-                    <Card className="bg-transparent border-none">
-                      <CardContent className="flex aspect-square items-center justify-center p-1 bg-transparent">
-                        <Image
-                          className="w-[100%] rounded-md"
-                          src={img}
-                          alt="logo"
-                          priority
-                          onMouseDown={(e) => e.preventDefault()}
-                          onContextMenu={(e) => e.preventDefault()}
-                        />
-                      </CardContent>
-                    </Card>
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-          <div className="flex justify-center w-[100%] pb-[50px]">
-        <p className="leading-7 [&:not(:first-child)]:mt-6 w-[100%] max-w-[1200px] text-center">
-          Welcome to our platform dedicated to art and manga enthusiasts !
-          Whether you are a talented creator or a lover of works unique, immerse
-          yourself in a universe where each poster tells the story of a history.
-          Explore, share and buy original creations from our inspired artists
-          and individuals. Turn your walls into Living art galleries with
-          captivating posters and manga Enveloping. Join us and let your
-          imagination run wild !
-        </p>
-      </div>
-      </div>
+            <Carousel
+              plugins={[plugin.current]}
+              className="w-[100%] max-w-[800px]"
+              opts={{
+                loop: true,
+              }}
+            >
+              <CarouselContent>
+                {SystemCarouselImg?.map((img, index) => (
+                  <CarouselItem key={index}>
+                    <div className="p-1">
+                      <Card className="bg-transparent border-none">
+                        <CardContent className="flex aspect-square items-center justify-center p-1 bg-transparent">
+                          <Image
+                            className="w-[100%] rounded-md shadow-lg shadow-fuchsia-700"
+                            src={img}
+                            alt="logo"
+                            priority
+                            onMouseDown={(e) => e.preventDefault()}
+                            onContextMenu={(e) => e.preventDefault()}
+                          />
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          </div>
         </div>
-      </div>
 
+        <BentoGrid className="w-[90%] h-max md:auto-rows-max">
+          {LoginItems.map((item, i) => (
+            <BentoGridItem
+              key={i}
+              header={item.header}
+              title={item.title}
+              description={item.description}
+              //icon={item.icon}
+              className={"h-max"}
+            />
+          ))}
+        </BentoGrid>
+      </div>
     </>
   );
 }

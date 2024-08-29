@@ -1,0 +1,29 @@
+.backgroundImg {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  background-color: #000 cc;
+  flex-shrink: 1;
+  margin: 0;
+  padding: 0;
+}
+.open-element-info-left {
+  animation: animation-element-info-left 300ms ease-in-out;
+  -moz-animation: animation-element-info-left 300ms ease-in-out;
+ /* Firefox */
+  -webkit-animation: animation-element-info-left 300ms ease-in-out;
+ /* Safari et Chrome */
+  -o-animation: animation-element-info-left 300ms ease-in-out;
+ /* Opera */
+}
+@keyframes animation-element-info-left {
+  0% {
+    margin-left: 30%;
+ }
+  100% {
+    margin-left: 0%;
+ }
+}

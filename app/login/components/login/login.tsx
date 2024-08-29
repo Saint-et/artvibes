@@ -16,28 +16,23 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { FormSchemaLogin } from "@/models/schema";
 
-const FormSchema = z.object({
-  email: z.string().min(2, {
-    message: "Please enter a valid Email Example: user@gmail.com.",
-  }),
-  password: z.string().min(2, {
-    message: "Password must be at least 5 characters.",
-  }),
-});
+
 
 export default function Login() {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<z.infer<typeof FormSchemaLogin>>({
+    resolver: zodResolver(FormSchemaLogin),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  function onSubmitForm1(data: z.infer<typeof FormSchema>) {
+  function onSubmitForm1(data: z.infer<typeof FormSchemaLogin>) {
     console.log("Form data:", data);
   }
+  
 
   return (
     <>
@@ -85,7 +80,7 @@ export default function Login() {
           />
           <div className="flex flex-col">
             <Button
-              className="bg-gradient-to-r from-blue-600 to-violet-600 hover:scale-110 transition"
+              className="gradient1 hover:scale-95 transition"
               type="submit"
             >
               Login to your account
