@@ -16,4 +16,13 @@ export type ResizeDirection =
   | "right-top-single"
   | "left-bottom-single"
   | "right-bottom-single"
+  | "rotate"
+  | "rotate-blanket"
   | null;
+
+export type DrawTypeNowCanvas =
+  | "pen"
+  | "eraser"
+  | "brush"
+  | "highlight";
+//| null;

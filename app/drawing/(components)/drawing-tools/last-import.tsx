@@ -30,9 +30,11 @@ import {
   FaRegObjectGroup,
   FaRegTrashCan,
 } from "react-icons/fa6";
-import { MutableRefObject, useState } from "react";
+import { MutableRefObject, useRef, useState } from "react";
 import {
   DrawArea,
+  ExpandImg,
+  FileDialogOpen,
   IsNewCropImage,
   IsNewImage,
   IsNewOverlay,
@@ -44,16 +46,29 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import { SystemName } from "@/public/assets/data/data";
+import {
+  LuArrowDownToLine,
+  LuFolder,
+  LuInfo,
+  LuLink,
+  LuLink2,
+  LuLoader,
+  LuLoader2,
+  LuPictureInPicture,
+  LuPlus,
+  LuScaling,
+  LuSparkles,
+} from "react-icons/lu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 
 interface LastImportProps {
   handleDeleteImport: (e: number) => void;
   setNewImage: React.Dispatch<React.SetStateAction<any>>;
-  isFileDialogOpenImport: boolean;
+  isFileDialogOpen: FileDialogOpen;
   isNewImage: IsNewImage;
-  setFileDialogOpenImport: React.Dispatch<React.SetStateAction<any>>;
+  setFileDialogOpen: React.Dispatch<React.SetStateAction<FileDialogOpen>>;
   isNewImageImport: IsNewImage[];
-  imgCrop: IsNewCropImage[];
-  setImgCrop: React.Dispatch<React.SetStateAction<any>>;
   handleLastAdd: (e: IsNewImage) => void;
   handleButtonClickImport: () => void;
   handleCollectionImg: (id: number) => void;
@@ -67,309 +82,466 @@ interface LastImportProps {
   dialogLastImportRef: MutableRefObject<HTMLDivElement | null>;
   isImageSize: NewImageSize;
   handleResetImgOverlay: () => void;
+  setImgBorderOn: React.Dispatch<React.SetStateAction<any>>;
+  handleDragOver: (event: React.DragEvent<HTMLDivElement>) => void;
+  handleDragLeave: (event: React.DragEvent<HTMLDivElement>) => void;
+  handleDrop: (event: React.DragEvent<HTMLDivElement>) => void;
+  isDraggingDrop: boolean;
+  setDrawingExpandImg: React.Dispatch<React.SetStateAction<any>>;
+  drawingExpandImg: ExpandImg;
+  handleSaveImgOverlay: (
+    newImg?: string,
+    form?: string,
+    shadow?: number,
+    miniature?: string
+  ) => void;
 }
 
 const LastImport: React.FC<LastImportProps> = (props) => {
-  const [isFilesOpen, setFilesOpen] = useState<number>(0);
+  const overlayActive = () => {
+    if (props.isMenuOpen === 4 || props.isMenuOpen === 5) {
+      return true;
+    }
+  };
+
+  const [isSystemColor, setSystemColor] = useState<string>("#ffffff");
+  const [isTransparent, setIsTransparent] = useState<boolean>(false);
+  const [isSystemSize, setSystemSize] = useState<{ w: number; h: number }>({
+    w: 1200,
+    h: 800,
+  });
+
+  const colorInputRef = useRef<HTMLInputElement | null>(null);
+  const handleButtonClickColor = () => {
+    if (colorInputRef.current) {
+      colorInputRef.current.click();
+    }
+  };
+
+  function isSignificantImage(canvas: HTMLCanvasElement) {
+    const context = canvas.getContext("2d");
+    if (!context) return false;
+
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    // Parcourir tous les pixels
+    for (let i = 0; i < data.length; i += 4) {
+      const red = data[i];
+      const green = data[i + 1];
+      const blue = data[i + 2];
+      const alpha = data[i + 3];
+
+      // Vérifier si le pixel n'est pas totalement transparent
+      if (alpha !== 0) {
+        // Vérifier si le pixel est différent de la transparence totale (0,0,0,0)
+        // Ici, on vérifie si au moins un canal de couleur est non nul
+        if (red !== 0 || green !== 0 || blue !== 0) {
+          return true;
+        }
+      }
+    }
+
+    return false; // Tous les pixels sont soit totalement transparents, soit noirs avec alpha 0
+  }
+
+  const CreateMainCanvasToast = async () => {
+    return await new Promise(async (resolve, reject) => {
+      // Créer un canvas virtuel
+      const canvas = document.createElement("canvas");
+      const canvasMiniature = document.createElement("canvas");
+      canvas.width = isSystemSize.w;
+      canvas.height = isSystemSize.h;
+      canvasMiniature.width = 100;
+      canvasMiniature.height = 100;
+
+      // Obtenir le contexte 2D
+      const context = canvas.getContext("2d");
+      const contextcanvasMiniature = canvasMiniature.getContext("2d");
+
+      if (context && contextcanvasMiniature) {
+        // Dessiner un fond sur le grand canvas
+        context.fillStyle = isTransparent ? "rgba(0,0,0,0)" : isSystemColor;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Dessiner un fond sur le canvas miniature
+        contextcanvasMiniature.fillStyle = isTransparent
+          ? "rgba(0,0,0,0)"
+          : isSystemColor;
+        contextcanvasMiniature.fillRect(
+          0,
+          0,
+          canvasMiniature.width,
+          canvasMiniature.height
+        );
+
+        // Dessiner l'image redimensionnée du grand canvas sur la miniature
+        contextcanvasMiniature.drawImage(
+          canvas,
+          0,
+          0,
+          canvas.width,
+          canvas.height,
+          0,
+          0,
+          canvasMiniature.width,
+          canvasMiniature.height
+        );
+
+        if (!isSignificantImage(canvas)) {
+          props.setImgBorderOn(true);
+        }
+
+        // Récupérer l'image en tant que Data URL (base64)
+        const dataURL = canvas.toDataURL("image/png");
+        const dataURLMiniature = canvasMiniature.toDataURL("image/png");
+
+        props.setNewImage({
+          id: Date.now(),
+          fileName: `artvibes-${Date.now()}`,
+          img: dataURL,
+          miniature: dataURLMiniature,
+        });
+        resolve(true);
+      } else {
+        reject();
+      }
+    });
+  };
+
+  function CreateMainCanvas() {
+    // Utiliser toast.promise pour gérer la promesse
+    toast.promise(CreateMainCanvasToast(), {
+      loading: "Rendering in progress...",
+      success: (result) => {
+        if (result) {
+          return "Successfully completed rendering.";
+        } else {
+          throw new Error("An error occurred");
+        }
+      },
+      error: "An error occurred",
+    });
+  }
+
+  // Gérer le changement de la case à cocher
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsTransparent(e.target.checked);
+  };
+
+  // Fonction pour gérer le changement de valeur
+  const handleInputChangeWidth = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = parseInt(e.target.value, 10); // Convertir la valeur en nombre
+    setSystemSize({ ...isSystemSize, w: newValue });
+  };
+
+  // Fonction pour gérer le changement de valeur
+  const handleInputChangeHeight = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = parseInt(e.target.value, 10); // Convertir la valeur en nombre
+    setSystemSize({ ...isSystemSize, h: newValue });
+  };
 
   return (
     <>
       <Dialog
-        open={props.isFileDialogOpenImport}
-        onOpenChange={props.setFileDialogOpenImport}
+        open={props.isFileDialogOpen.lastImport}
+        onOpenChange={(e: boolean) => {
+          props.setFileDialogOpen((prevState: FileDialogOpen) => ({
+            ...prevState,
+            lastImport: e,
+          }));
+        }}
       >
         <DialogContent
-          className="h-[95vh] w-[98%] max-w-[1400px] p-2 drawing-css-bg"
+          className="h-[85vh] w-[98%] max-w-[1400px] flex flex-col justify-start p-2 overflow-clip"
           ref={props.dialogLastImportRef}
+          onDragOver={props.handleDragOver}
+          style={{
+            zIndex: 100100,
+            border: props.isDraggingDrop
+              ? "1px solid #006aff"
+              : "1px solid transparent",
+          }}
         >
+          {props.isDraggingDrop && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+              style={{ transition: "500ms" }}
+            >
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center"
+                onDrop={props.handleDrop}
+                onDragOver={props.handleDragOver}
+                onDragLeave={props.handleDragLeave}
+                //onClick={() => {
+                //  UseDrawing.setIsDraggingDrop(false);
+                //}}
+                style={{ zIndex: 20000 }}
+              />
+              <div className="relative w-full max-w-5xl">
+                <div className="h-[80vh] w-full rounded-lg">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="flex h-[90%] w-[90%] max-h-[400px] max-w-[800px] flex-col items-center justify-center rounded-lg text-white">
+                      <LuArrowDownToLine className="h-10 w-10 mb-2" />
+                      <p className="text-2xl font-bold">
+                        Glissez-déposez vos images ici
+                      </p>
+                      <div className="flex text-slate-400 gap-1">
+                        Ceux-ci seront importés dans la collection, vous les
+                        trouverez dans{" "}
+                        <span className="flex items-center gap-1 text-sky-500">
+                          [ fichier
+                          <LuFolder />]
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           <DialogHeader>
-            <DialogTitle>Edit profile</DialogTitle>
+            <DialogTitle>Galerie Multimédia</DialogTitle>
             <DialogDescription>
-              <Card>
-                <CardContent className="grid grid-cols-5 gap-4 p-4 p-4">
-                  <Button
-                    onClick={props.handleButtonClickImport}
-                    className="flex flex-col h-max"
-                    variant="activeBlue"
-                  >
-                    <FaPlus className="h-8 w-8 mb-2" />
-                    Import image ...
-                  </Button>
-                  <Button
-                    className="flex flex-col h-max"
-                    variant="outline"
-                    style={{
-                      boxShadow:
-                        isFilesOpen === 0 ? "#525252 0px 0px 0px 3px" : "",
-                    }}
-                    onClick={() => {
-                      setFilesOpen(0);
-                    }}
-                  >
-                    <FaClock className="h-8 w-8 mb-2" />
-                    Impoted images
-                  </Button>
-                  <Button
-                    className="flex flex-col h-max"
-                    variant="outline"
-                    style={{
-                      boxShadow:
-                        isFilesOpen === 3 ? "#525252 0px 0px 0px 3px" : "",
-                    }}
-                    onClick={() => {
-                      setFilesOpen(3);
-                    }}
-                  >
-                    <FaCropSimple className="h-8 w-8 mb-2" />
-                    Cropped images
-                  </Button>
-                  <Button
-                    className="flex flex-col h-max"
-                    variant="outline"
-                    style={{
-                      boxShadow:
-                        isFilesOpen === 1 ? "#525252 0px 0px 0px 3px" : "",
-                    }}
-                    onClick={() => {
-                      setFilesOpen(1);
-                    }}
-                  >
-                    <FaBoxArchive className="h-8 w-8 mb-2" />
-                    Archived images
-                  </Button>
-                  <Button
-                    className="flex flex-col h-max gradient5"
-                    variant="outline"
-                    style={{
-                      boxShadow:
-                        isFilesOpen === 2 ? "#525252 0px 0px 0px 3px" : "",
-                    }}
-                    onClick={() => {
-                      setFilesOpen(2);
-                    }}
-                  >
-                    <FaBrain className="h-8 w-8 mb-2" />
-                    Ai generator
-                  </Button>
-                </CardContent>
-              </Card>
+              Toutes les images importé, en mémoire sont ici mais toutes fois
+              elle ne sont pas permanente.
             </DialogDescription>
           </DialogHeader>
-          {isFilesOpen === 0 && (
+          <div className="h-full w-full overflow-hidden">
             <ScrollArea className="h-full w-full p-4">
-              <div className="grid grid-cols-5 gap-4">
-                {props.isNewImageImport?.map((blobUrl, index) => (
-                  <div
-                    key={index}
-                    className="relative overflow-hidden rounded-lg group cursor-pointer border"
-                    style={{
-                      borderColor:
-                        props.isNewImage.id === blobUrl.id ? "#006eff" : "",
-                    }}
-                    onClick={() => {
-                      if (props.isNewImage.id !== blobUrl.id) {
+              <Card className="h-full w-full pb-[50px] bg-transparent border-none">
+                <CardContent className="grid grid-cols-5 gap-4">
+                  <Card className="h-80">
+                    <CardHeader>
+                      <CardTitle className="text-2xl">Galerie ...</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 w-full grid grid-cols-1 gap-4">
+                      <Button
+                        className="p-0 w-full"
+                        variant="default"
+                        onClick={props.handleButtonClickImport}
+                      >
+                        Import
+                      </Button>
+                      <div>
+                        Drop image here ...
+                        <div
+                          className="drawing-css-bg h-16 rounded"
+                          //style={{
+                          //  border: props.isDraggingDrop
+                          //    ? "1px solid #006aff"
+                          //    : "1px solid transparent",
+                          //}}
+                          //onDrop={props.handleDrop}
+                          //onDragOver={props.handleDragOver}
+                          //onDragLeave={props.handleDragLeave}
+                        ></div>
+                      </div>
+                      <Button className="p-0 w-full" variant="destructive">
+                        Delete all
+                      </Button>
+                    </CardContent>
+                  </Card>
+                  {props.isNewImageImport?.map((blobUrl: IsNewImage, index) => (
+                    <div
+                      key={index}
+                      className="relative overflow-hidden rounded-lg group cursor-pointer"
+                      onClick={() => {
                         return props.handleLastAdd(blobUrl);
-                      }
-                      toast.error("This image is already in use.");
-                    }}
-                  >
-                    <img
-                      className="object-cover w-full h-80 transition-transform duration-300 ease-in-out group-hover:scale-105"
-                      src={blobUrl.img}
-                      alt="logo"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onContextMenu={(e) => e.preventDefault()}
-                    />
-                    <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/75 to-transparent p-4 text-white">
-                      <div className="flex flex-col items-center gap-2">
-                        <span>id: {blobUrl.id}</span>
-                        <div className="p-1 flex gap-2 m-2">
-                          {props.isMenuOpen === 8 && (
+                      }}
+                    >
+                      <img
+                        className="object-cover w-full h-80 transition-transform duration-300 ease-in-out group-hover:scale-105"
+                        src={blobUrl.miniature}
+                        alt="logo"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onContextMenu={(e) => e.preventDefault()}
+                      />
+                      <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/75 to-transparent p-4 text-white">
+                        <div className="flex flex-col items-center gap-2">
+                          {blobUrl.id === props.isNewImage.id && (
+                            <LuLink2 className="text-2xl" />
+                          )}
+                          <div className="p-1 flex gap-2 m-2 opacity-30 group-hover:opacity-100">
                             <Button
+                              disabled={overlayActive()}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (props.isImgOverlay.form === "") {
-                                  props.setDrawArea({
-                                    width: 300,
-                                    height: 300,
-                                    leftOffset: 0,
-                                    topOffset: 0,
-                                    positionX: props.isImageSize.w / 2 - 150,
-                                    positionY: props.isImageSize.h / 2 - 150,
-                                  });
-                                }
-                                props.setImgOverlay({
-                                  ...props.isImgOverlay,
-                                  img: blobUrl.img,
-                                  form:
-                                    props.isImgOverlay.form === ""
-                                      ? "square"
-                                      : props.isImgOverlay.form,
-                                  filter: {
-                                    brightness: 100,
-                                    contrast: 100,
-                                    saturation: 100,
-                                    hue: 0,
-                                    blur: 0,
-                                    sepia: 0,
-                                    grayscale: 0,
-                                    invert: 0,
-                                  },
-                                });
-                                props.setFileDialogOpenImport(false);
+                                props.handleSaveImgOverlay(
+                                  blobUrl.img,
+                                  undefined,
+                                  undefined,
+                                  blobUrl.miniature
+                                );
+                                props.setFileDialogOpen(
+                                  (prevState: FileDialogOpen) => ({
+                                    ...prevState,
+                                    lastImport: false,
+                                  })
+                                );
                               }}
                               variant="outline"
                               size="icon"
                             >
-                              <FaRegObjectGroup className="h-4 w-4" />
+                              <LuPictureInPicture className="h-4 w-4" />
                             </Button>
-                          )}
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              props.handleDeleteImport(blobUrl.id);
-                            }}
-                            className="ml-auto"
-                            variant="destructive"
-                            size="icon"
-                          >
-                            <FaRegTrashCan className="h-4 w-4" />
-                          </Button>
+                            <Button
+                              className="ml-auto"
+                              variant="outline"
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                props.setDrawingExpandImg(
+                                  (prevState: ExpandImg) => ({
+                                    ...prevState,
+                                    bgExpand: blobUrl.img,
+                                    miniature: blobUrl.miniature,
+                                  })
+                                );
+                              }}
+                            >
+                              <LuScaling className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                props.handleDeleteImport(blobUrl.id);
+                              }}
+                              className="ml-auto"
+                              variant="destructive"
+                              size="icon"
+                            >
+                              <FaRegTrashCan className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </CardContent>
+              </Card>
             </ScrollArea>
-          )}
-          {isFilesOpen === 1 && (
-            <ScrollArea className="h-full w-full p-4">
-              <div className="grid grid-cols-5 gap-4"></div>
-            </ScrollArea>
-          )}
-          {isFilesOpen === 2 && (
-            <ScrollArea className="h-full w-full p-4">
-              <div className="grid grid-cols-5 gap-4"></div>
-            </ScrollArea>
-          )}
-          {isFilesOpen === 3 && (
-            <ScrollArea className="h-full w-full p-4">
-              <div className="grid grid-cols-5 gap-4">
-                {props.imgCrop?.map((blobUrl, index) => (
-                  <Carousel
-                    key={index}
-                    opts={{
-                      loop: true,
-                    }}
-                  >
-                    <CarouselContent>
-                      {blobUrl.array?.map((array, index) => (
-                        <CarouselItem key={index}>
-                          <div
-                            className="relative overflow-hidden rounded-lg group cursor-pointer"
-                            onClick={() => {
-                              if (props.isNewImage.img !== array.img) {
-                                return props.handleLastAdd({
-                                  fileName: `crop-img-${SystemName}-${
-                                    index + 1
-                                  }`,
-                                  img: array.img,
-                                  id: index + 1,
-                                });
-                              }
-                            }}
-                          >
-                            <Image
-                              className="object-cover w-full h-80 transition-transform duration-300 ease-in-out group-hover:scale-105"
-                              src={array.img}
-                              width={0}
-                              height={0}
-                              alt="logo"
-                              onMouseDown={(e) => e.preventDefault()}
-                              onContextMenu={(e) => e.preventDefault()}
-                            />
-                            <div
-                              className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/75 to-transparent p-4 text-white"
-                              title={blobUrl.fileName}
-                            >
-                              <div className="flex flex-col items-center gap-2">
-                                <span className="text-2xl">
-                                  {index === 0 ? "Last crop" : index + 1}
-                                </span>
-                                <div className="flex items-center gap-2 mt-2">
-                                  {props.isMenuOpen === 8 && (
-                                    <Button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        props.handleResetImgOverlay();
-                                        props.handleSettDrawArea(array.area);
-                                        props.setFileDialogOpenImport(false);
-                                      }}
-                                      variant="outline"
-                                      size="icon"
-                                    >
-                                      <FaRegObjectGroup className="h-4 w-4" />
-                                    </Button>
-                                  )}
-                                  <Button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      props.handleSettDrawArea(array.area);
-                                      props.setFileDialogOpenImport(false);
-                                    }}
-                                    variant="outline"
-                                    size="icon"
-                                  >
-                                    <FaCropSimple className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                    }}
-                                    variant="outline"
-                                    size="icon"
-                                  >
-                                    <FaDownload className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                    }}
-                                    onDoubleClick={(e) => {
-                                      props.handleCollectionImg(blobUrl.id);
-                                    }}
-                                    variant="activeBlue"
-                                    size="icon"
-                                  >
-                                    <FaImage className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                    }}
-                                    onDoubleClick={(e) => {
-                                      props.handleDeleteCropColection(
-                                        blobUrl.id
-                                      );
-                                    }}
-                                    variant={"destructive"}
-                                    size="icon"
-                                  >
-                                    <FaRegTrashCan className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                  </Carousel>
-                ))}
-              </div>
-            </ScrollArea>
-          )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={props.isFileDialogOpen.editNewPage}
+        onOpenChange={(e: boolean) => {
+          props.setFileDialogOpen((prevState: FileDialogOpen) => ({
+            ...prevState,
+            editNewPage: e,
+          }));
+        }}
+      >
+        <DialogContent style={{ zIndex: 100100 }}>
+          <DialogHeader>
+            <DialogTitle>Edit new project.</DialogTitle>
+            <DialogDescription></DialogDescription>
+          </DialogHeader>
+          <div className="w-full flex flex-col items-center gap-4">
+            <div
+              style={{
+                background: isTransparent ? "none" : isSystemColor,
+                width: (() => {
+                  if (isSystemSize.w === isSystemSize.h) return 200;
+                  return isSystemSize.w < isSystemSize.h ? 160 : 280;
+                })(),
+                height: 200,
+                border: isTransparent ? "2px solid #006aff" : "none",
+                transition: "250ms",
+              }}
+            />
+            <Card className="bg-inherit border-none">
+              <CardContent className="flex p-1 gap-4">
+                <div className="border rounded flex items-center gap-2 p-1 h-[40px] overflow-hidden">
+                  width:{" "}
+                  <Input
+                    value={isSystemSize.w || 0}
+                    //defaultValue={isSystemSize.w || 0}
+                    className="w-[80px] h-[40px] border-none"
+                    type="number"
+                    placeholder="width"
+                    min={0}
+                    onChange={handleInputChangeWidth}
+                  />
+                </div>
+                <div className="border rounded flex items-center gap-2 p-1 h-[40px] overflow-hidden">
+                  height:{" "}
+                  <Input
+                    value={isSystemSize.h || 0}
+                    //defaultValue={isSystemSize.h || 0}
+                    className="w-[80px] h-[40px] border-none"
+                    type="number"
+                    placeholder="height"
+                    min={0}
+                    onChange={handleInputChangeHeight}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+            <Button
+              className="flex flex-col justify-center items-center"
+              variant={"outline"}
+              onClick={handleButtonClickColor}
+              style={{
+                background: isSystemColor,
+              }}
+            >
+              <input
+                ref={colorInputRef}
+                value={isSystemColor}
+                onChange={(e) => {
+                  setSystemColor(e.target.value);
+                }}
+                className="appearance-none cursor-pointer"
+                style={{
+                  background: "none",
+                  opacity: 0,
+                  zIndex: -1,
+                }}
+                type="color"
+                name=""
+                id=""
+              />
+            </Button>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="transparency"
+                checked={isTransparent}
+                onChange={handleCheckboxChange}
+              />
+              <label htmlFor="transparency">Enable Transparency</label>
+            </div>
+          </div>
+          <Button variant="activeBlue" onClick={CreateMainCanvas}>
+            Create new page
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={props.isFileDialogOpen.models}
+        onOpenChange={(e: boolean) => {
+          props.setFileDialogOpen((prevState: FileDialogOpen) => ({
+            ...prevState,
+            models: e,
+          }));
+        }}
+      >
+        <DialogContent
+          className="h-[85vh] w-[98%] max-w-[1400px] flex flex-col justify-start p-2"
+          ref={props.dialogLastImportRef}
+          style={{ zIndex: 100100 }}
+        >
+          <DialogHeader>
+            <DialogTitle>Models</DialogTitle>
+            <DialogDescription>
+              Trouvez des modèles pour démarrer des projets ou pour vous
+              inspirer.
+            </DialogDescription>
+          </DialogHeader>
         </DialogContent>
       </Dialog>
     </>

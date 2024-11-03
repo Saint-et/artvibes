@@ -33,17 +33,8 @@ import { z } from "zod";
 import Image from "next/image";
 import { SystemSettings } from "@/utils/interface";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
+import { LuDroplets, LuSettings2 } from "react-icons/lu";
 
 interface Props {
   setSystemSetting: (settings: SystemSettings) => void;
@@ -120,7 +111,7 @@ export default function RandomFilters(props: Props) {
     <Card className="border-none rounded-none bg-transparent p-4">
       <CardHeader className="p-0 mb-2">
         <CardTitle className="text-1xl flex justify-between p-0">
-          Random :<FaBluesky className="text-1xl" />
+          Random :<LuDroplets className="h-4 w-4" />
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
@@ -134,19 +125,19 @@ export default function RandomFilters(props: Props) {
               className="gradient-animated1"
               variant="outline"
             >
-              Start random <FaBluesky className="text-1xl ml-2" />
+              Start random
             </Button>
             <Dialog>
-              <DialogTrigger>
-                <Button className="w-full" type="button" variant="outline">
-                  Random
-                  <FiSettings className="ml-2" />
+              <DialogTrigger asChild>
+                <Button className="w-full" type="button" variant="default">
+                  Filters
+                  <LuSettings2 className="ml-2" />
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader className="p-0 w-full max-w-md mx-auto">
                   <DialogTitle className="text-2xl">
-                    Are you absolutely sure?
+                    Setting random filters.
                   </DialogTitle>
                   <DialogDescription></DialogDescription>
                 </DialogHeader>
@@ -174,7 +165,6 @@ export default function RandomFilters(props: Props) {
                     )}
                   />
                   <Separator className="my-4" />
-                  <div className="text-1xl font-bold mb-6">Préférences</div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -315,7 +305,7 @@ export default function RandomFilters(props: Props) {
                   </div>
                 </div>
                 <Separator className="my-4" />
-                <div>Randoms :</div>
+                <div>Randoms filters :</div>
                 <ScrollArea className="max-h-[150px] w-full">
                   <div className="w-full grid grid-cols-4 gap-2">
                     {props.historical?.map((promise, index) => (
@@ -326,10 +316,12 @@ export default function RandomFilters(props: Props) {
                           props.setSystemSetting(promise);
                         }}
                       >
-                        <img
+                        <Image
                           className="object-cover w-full h-25 transition-transform duration-300 ease-in-out group-hover:scale-105"
                           src={props.isNewImage}
                           alt="image"
+                          width={100}
+                          height={100}
                           style={{
                             filter: `
             brightness(${promise.brightness}%)

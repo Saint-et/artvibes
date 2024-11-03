@@ -6,20 +6,37 @@ import DrawingSidebarMenuForms from "./drawing-sidebar-menu/drawing-sidebar-menu
 import DrawingSidebarMenuCrop from "./drawing-sidebar-menu/drawing-sidebar-menu-Crop";
 import DrawingSidebarMenuOverlay from "./drawing-sidebar-menu/drawing-sidebar-menu-overlay";
 import DrawingSidebarMenuClones from "./drawing-sidebar-menu/drawing-sidebar-menu-clones";
-import DrawingSidebarMenuTemplates from "./drawing-sidebar-menu/drawing-sidebar-menu-models";
 import {
+  AiQuality,
+  Blanket,
   DrawArea,
+  DrawDrawing,
+  DrawForm,
+  DrawingSetting,
+  DrawNowInterface,
+  DrawSvg,
+  DrawSvgFull,
+  DrawText,
+  ExpandImg,
+  FileDialogOpen,
   IsNewCropImage,
   IsNewImage,
   IsNewOverlay,
   IsNewOverlaySave,
+  LayerElement,
+  LoadedImage,
+  MenuLayer,
   NewImageSize,
   SystemShadow,
 } from "@/utils/interface";
 import { ResizeDirection } from "@/utils/type";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MutableRefObject } from "react";
+import { MutableRefObject, SetStateAction } from "react";
 import DrawingSidebarMenuAI from "./drawing-sidebar-menu/drawing-sidebar-menu-ai";
+import DrawingSidebarMenuExpand from "./drawing-sidebar-menu/drawing-sidebar-menu-expand";
+import DrawingSidebarMenuBlanket from "./drawing-sidebar-menu/drawing-sidebar-menu-blanket";
+import DrawingSidebarMenuParams from "./drawing-sidebar-menu/drawing-sidebar-menu-params";
+import DrawingSidebarMenuEdit from "./drawing-sidebar-menu/drawing-sidebar-menu-edit";
 
 interface DrawingSidebarProps {
   isMenuOpen: number;
@@ -27,9 +44,9 @@ interface DrawingSidebarProps {
   isNewImage: IsNewImage;
   setNewImage: React.Dispatch<React.SetStateAction<any>>;
   setTextCanvasVisible: React.Dispatch<React.SetStateAction<any>>;
-  imgCrop: IsNewCropImage[];
+  //imgCrop: IsNewCropImage[];
   isNewImageImport: IsNewImage[];
-  setImgCrop: React.Dispatch<React.SetStateAction<any>>;
+  //setImgCrop: React.Dispatch<React.SetStateAction<any>>;
   textCanvasVisible: boolean;
   systemSetting: {
     brightness: number;
@@ -51,8 +68,8 @@ interface DrawingSidebarProps {
 
   handleButtonClickImport: () => void;
   handleDeleteImport: (e: number) => void;
-  isFileDialogOpenImport: boolean;
-  setFileDialogOpenImport: React.Dispatch<React.SetStateAction<any>>;
+  isFileDialogOpen: FileDialogOpen;
+  setFileDialogOpen: React.Dispatch<React.SetStateAction<FileDialogOpen>>;
   handleLastAdd: (e: IsNewImage) => void;
   handleSettDrawArea: (e: DrawArea) => void;
   setDrawArea: React.Dispatch<React.SetStateAction<any>>;
@@ -84,15 +101,66 @@ interface DrawingSidebarProps {
   setImgOverlaySave: React.Dispatch<React.SetStateAction<any>>;
   isImgOverlay: IsNewOverlay;
   setDrawingExpandImg: React.Dispatch<React.SetStateAction<any>>;
-  drawingExpandImg: number;
   dialogLastImportRef: MutableRefObject<HTMLDivElement | null>;
+  isDrawingLoad: LoadedImage | undefined;
+  handleSaveImgOverlay: (newImg?: string, form?: string, shadow?: number) => void;
+  handleResetImgOverlay: () => void;
+  setDrawForm: React.Dispatch<React.SetStateAction<any>>;
+  drawForm: DrawForm;
+  isFormCanvasVisible: string;
+  setFormCanvasVisible: React.Dispatch<React.SetStateAction<any>>;
+  setNewImageImport: React.Dispatch<React.SetStateAction<any>>;
+  insetImgRef: MutableRefObject<HTMLDivElement | null>;
+  insetExpandRef: MutableRefObject<HTMLDivElement | null>;
+  colorOutsideImgRef: MutableRefObject<HTMLDivElement | null>;
+  expandDivRef: MutableRefObject<HTMLDivElement | null>;
+
+  handleSaveForm: (form?: string) => void;
+
+  handleResetForm: () => void;
+  setMenuLayer: React.Dispatch<React.SetStateAction<any>>;
+  isMenuLayer: MenuLayer;
+  setBlanket: React.Dispatch<React.SetStateAction<any>>;
+  isBlanket: Blanket;
+  drawingExpandImg: ExpandImg;
+  blanketRef: MutableRefObject<HTMLDivElement | null>;
+
+  drawDrawing: DrawDrawing;
+  setDrawDrawing: React.Dispatch<React.SetStateAction<any>>;
+  isDrawingNowCanvas: DrawNowInterface;
+  setIsDrawingNowCanvas: React.Dispatch<React.SetStateAction<DrawNowInterface>>;
+  isLayers: LayerElement[];
+  DrawCanvasImg: () => void;
+  canvasDrawRef: MutableRefObject<HTMLCanvasElement | null>;
+  setLayers: React.Dispatch<React.SetStateAction<any>>;
+  HandleCanvas: (id: number, image: string) => void;
+  handleSetBasicOverlay: () => void;
+  setDrawText: React.Dispatch<React.SetStateAction<any>>;
+  drawText: DrawText;
+  handleResetSvg: () => void;
+  setDrawSvg: React.Dispatch<React.SetStateAction<any>>;
+  drawSvg: DrawSvg;
+  handleSaveSvg: (newSvg?: string, img?: string) => void;
+  isDrawingSetting: DrawingSetting;
+  setDrawingSetting: React.Dispatch<React.SetStateAction<any>>;
+
+  handleAiQuality: () => void;
+  isAiQuality: AiQuality;
+  setAiQuality: React.Dispatch<React.SetStateAction<AiQuality>>;
+
+  drawSvgFull: DrawSvgFull;
+  setDrawSvgFull: React.Dispatch<React.SetStateAction<DrawSvgFull>>;
+  handleSaveSvgFull: (newSvg?: string) => void;
+  handleResetSvgFull: () => void;
+
 }
 
 const DrawingSidebar: React.FC<DrawingSidebarProps> = (props) => {
   // <DrawingSidebarMenu {...props} /> bg-[#0a0a0a] bg-[#0a0a0a]
 
   if (!props.isNewImage.img) return null;
-
+  if (props.isMenuOpen === 99) return null;
+  if (props.isMenuOpen === 100) return null;
   if (props.isMenuOpen === 0) return null;
 
   return (
@@ -102,10 +170,16 @@ const DrawingSidebar: React.FC<DrawingSidebarProps> = (props) => {
         className="w-[100%] min-w-[300px] max-w-[300px] block bg-[#0d0d0d]"
       >
         <DrawingSidebarMenuAI {...props} />
+        
+        <DrawingSidebarMenuEdit {...props} />
+
+        <DrawingSidebarMenuParams {...props} />
 
         <DrawingSidebarMenuText {...props} />
 
         <DrawingSidebarMenuFilters {...props} />
+
+        <DrawingSidebarMenuBlanket {...props} />
 
         <DrawingSidebarMenuForms {...props} />
 
@@ -115,7 +189,7 @@ const DrawingSidebar: React.FC<DrawingSidebarProps> = (props) => {
 
         <DrawingSidebarMenuClones {...props} />
 
-        <DrawingSidebarMenuTemplates {...props} />
+        <DrawingSidebarMenuExpand {...props} />
       </ScrollArea>
     </>
   );

@@ -1,50 +1,50 @@
 import React, { useRef, useState, useEffect } from 'react';
 
 const GrabScrollComponent = () => {
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const scrollGrabScrollRef = useRef<HTMLDivElement | null>(null);
+  const [isDraggingGrabScroll, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [startY, setStartY] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [scrollTop, setScrollTop] = useState(0);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!scrollRef.current) return;
+  const handleMouseDownGrabScroll = (e: React.MouseEvent) => {
+    if (!scrollGrabScrollRef.current) return;
 
     setIsDragging(true);
-    setStartX(e.pageX - scrollRef.current.offsetLeft);
-    setStartY(e.pageY - scrollRef.current.offsetTop);
-    setScrollLeft(scrollRef.current.scrollLeft);
-    setScrollTop(scrollRef.current.scrollTop);
+    setStartX(e.pageX - scrollGrabScrollRef.current.offsetLeft);
+    setStartY(e.pageY - scrollGrabScrollRef.current.offsetTop);
+    setScrollLeft(scrollGrabScrollRef.current.scrollLeft);
+    setScrollTop(scrollGrabScrollRef.current.scrollTop);
 
-    scrollRef.current.classList.add('grabbing');
+    scrollGrabScrollRef.current.classList.add('grabbing');
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUpGrabScroll = () => {
     setIsDragging(false);
-    scrollRef.current?.classList.remove('grabbing');
+    scrollGrabScrollRef.current?.classList.remove('grabbing');
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !scrollRef.current) return;
+  const handleMouseMoveGrabScroll = (e: React.MouseEvent) => {
+    if (!isDraggingGrabScroll || !scrollGrabScrollRef.current) return;
 
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const y = e.pageY - scrollRef.current.offsetTop;
+    const x = e.pageX - scrollGrabScrollRef.current.offsetLeft;
+    const y = e.pageY - scrollGrabScrollRef.current.offsetTop;
     const walkX = (x - startX) * 1.5; // Ajustez le multiplicateur pour la vitesse de défilement horizontale
     const walkY = (y - startY) * 1.5; // Ajustez le multiplicateur pour la vitesse de défilement verticale
 
-    scrollRef.current.scrollLeft = scrollLeft - walkX;
-    scrollRef.current.scrollTop = scrollTop - walkY;
+    scrollGrabScrollRef.current.scrollLeft = scrollLeft - walkX;
+    scrollGrabScrollRef.current.scrollTop = scrollTop - walkY;
   };
 
 
 
   return {
-    scrollRef,
-    handleMouseDown,
-    handleMouseUp,
-    handleMouseMove,
-    isDragging
+    scrollGrabScrollRef,
+    handleMouseDownGrabScroll,
+    handleMouseUpGrabScroll,
+    handleMouseMoveGrabScroll,
+    isDraggingGrabScroll
   }
 };
 

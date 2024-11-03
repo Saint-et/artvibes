@@ -1,5 +1,5 @@
 import { DrawText } from "@/utils/interface";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 interface Props {
   drawText: DrawText;
@@ -8,6 +8,19 @@ interface Props {
 }
 
 const Rich_text: React.FC<Props> = (props) => {
+  const handleInputChangeText = (e: any) => {
+    props.setDrawText((prevState: DrawText) => ({
+      ...prevState,
+      value: e,
+    }));
+  };
+
+  useEffect(() => {
+    if (props.textCanvasRef.current) {
+      props.textCanvasRef.current.innerHTML = props.drawText.value;
+    }
+  }, []);
+
   return (
     <>
       <div
@@ -18,18 +31,25 @@ const Rich_text: React.FC<Props> = (props) => {
           fontSize: props.drawText.fontSize,
           color: props.drawText.color,
           textAlign: props.drawText.textAlign,
+          position: "absolute",
+          top: "0px",
+          left: "0px",
+          cursor: "text",
         }}
-        //onInput={handleInputChange}
+        onDoubleClick={() => {
+          if (props.textCanvasRef.current) {
+            props.textCanvasRef.current.innerHTML = props.drawText.value;
+          }
+        }}
+        onInput={(e) => {
+          handleInputChangeText(e.currentTarget.innerHTML);
+        }}
         onMouseDown={(e) => {
           e.stopPropagation();
-          //getColorAtCursor();
         }}
         onDragStart={(e) => {
           e.preventDefault();
         }}
-        {...(props.drawText.value && {
-          dangerouslySetInnerHTML: { __html: props.drawText.value },
-        })}
         contentEditable={true}
       />
     </>

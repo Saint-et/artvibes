@@ -12,7 +12,38 @@ export function CanvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
 }
 
 // Fonction pour télécharger une image à partir d'une dataURL
-export function downloadImage(dataURL: string, fileName: string) {
+export function downloadImage(dataURL: string, fileName: string, format: string) {
+
+  if (format === 'jpg/jpeg') {
+    // Créer une nouvelle image
+    const image = new Image();
+    image.src = dataURL;
+
+    // Convertir l'image en JPEG via le canvas
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    if (!context) return
+
+    const imgElement = image;
+
+    // Dessiner l'image dans le canvas pour la convertir en JPEG
+    canvas.width = imgElement.width;
+    canvas.height = imgElement.height;
+    context.drawImage(imgElement, 0, 0);
+
+    // Convertir le canvas en JPEG
+    const imageURL = canvas.toDataURL('image/jpeg');
+
+    // Créer un lien de téléchargement pour l'image JPEG
+    const link = document.createElement('a');
+    link.href = imageURL;
+    link.download = fileName;
+    link.click();
+
+    return;
+  }
+
   // Créer un lien <a> temporaire
   const link = document.createElement('a');
 

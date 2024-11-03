@@ -1,4 +1,11 @@
-import { SystemName } from "@/public/assets/data/data";
+import {
+  DrawingLoadItems,
+  DrawingName,
+  DrawingVersion,
+  SystemCover,
+  SystemImg,
+  SystemName,
+} from "@/public/assets/data/data";
 import {
   Card,
   CardContent,
@@ -7,238 +14,402 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FiCheck } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Separator } from "@radix-ui/react-dropdown-menu";
 import { FaDrawPolygon } from "react-icons/fa";
+import {
+  LuArrowDownToLine,
+  LuArrowRight,
+  LuBook,
+  LuBrainCircuit,
+  LuFolder,
+  LuGlobe,
+  LuImage,
+  LuImagePlus,
+  LuInfo,
+  LuLayoutDashboard,
+  LuPen,
+  LuPencilRuler,
+  LuSearch,
+  LuTrash,
+} from "react-icons/lu";
+import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
+import { FileDialogOpen, IsNewImage, LoadedImage } from "@/utils/interface";
+import { Separator } from "@/components/ui/separator";
+import { useRouter } from "next/navigation";
+import { useAppContext } from "@/app/provider/useAppContext";
+import Credits from "@/app/(components)/credit/credits";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useRef, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface DrawingDrawingIntroProps {
+  isNewImage: IsNewImage;
+  setDrawingLoad: React.Dispatch<React.SetStateAction<any>>;
+  isDrawingLoad: LoadedImage | undefined;
+  setFileDialogOpen: React.Dispatch<React.SetStateAction<FileDialogOpen>>;
+  isFileDialogOpen: FileDialogOpen;
+  isDraggingDrop: boolean;
+  setIsDraggingDrop: React.Dispatch<React.SetStateAction<any>>;
+  handleDragOver: (event: React.DragEvent<HTMLDivElement>) => void;
+  handleDragLeave: (event: React.DragEvent<HTMLDivElement>) => void;
+  handleDrop: (event: React.DragEvent<HTMLDivElement>) => void;
   handleButtonClickImport: () => void;
-  CreateMainCanvas: () => void;
+  setIsProfilMenuOpen: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const DrawingIntro: React.FC<DrawingDrawingIntroProps> = (props) => {
-  const [isSystemColor, setSystemColor] = useState("#000000");
+  const router = useRouter();
+  const UseAppContext = useAppContext();
 
-  const colorInputRef = useRef<HTMLInputElement | null>(null);
-  const handleButtonClickColor = () => {
-    if (colorInputRef.current) {
-      colorInputRef.current.click();
-    }
-  };
+  if (!UseAppContext.isDrawingLoad?.home) return null;
 
   return (
     <>
-      <div className="w-full h-full overflow-hidden flex items-center justify-center">
-        <div className="bg-black/70 h-[100%] w-[90%] max-w-[1000px]">
-          <ScrollArea className="h-[100%] w-[100%] border-none">
-            <Card className="p-4 w-[100%] h-[100%] bg-inherit border-none">
-              <CardHeader>
-                <CardTitle className="flex">
-                  Drawing <FaDrawPolygon className="text-1xl ml-2" />
-                </CardTitle>
-                <CardDescription>Drawing by {SystemName} :</CardDescription>
-              </CardHeader>
-              <Separator className="my-4" />
-              <CardContent className="grid grid-cols-1 gap-4 border-none">
-                <h1 className="text-blue-500 font-bold">
-                  Pour bien commencer :
-                </h1>
-                <Button className="gradient2" variant={"default"}>
-                  Learn to use drawing
-                </Button>
-                <Separator className="my-4" />
-                <h1 className="text-blue-500 font-bold">Commencer :</h1>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      //onClick={props.CreateMainCanvas}
-                      variant={"default"}
-                    >
-                      Create a blank page
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Are you absolutely sure?</DialogTitle>
-                      <DialogDescription>
-                        This action cannot be undone. This will permanently
-                        delete your account and remove your data from our
-                        servers.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="w-full flex flex-col items-center gap-4">
+      <div
+        className="h-screen w-screen fixed bg-black/50 backdrop-blur-sm"
+        onDragOver={props.handleDragOver}
+        style={{
+          zIndex: 100000,
+        }}
+      >
+        <div className="flex flex-col items-center justify-center h-screen w-screen">
+          <div className="w-full h-full overflow-hidden flex items-center justify-center">
+            <div className="h-[100%] w-[90%] max-w-[1200px]">
+              <ScrollArea className="h-[100%] w-[100%] border-none">
+                <Card className="p-4 w-[100%] h-[100%] bg-inherit border-none open-element-page-melted">
+                  <CardHeader className="bg-black/90 rounded mb-4 border">
+                    <CardTitle className="flex items-center justify-start">
+                      {DrawingName}{" "}
+                      <Avatar className="ml-4">
+                        <AvatarImage src={SystemImg.src} />
+                        <AvatarFallback>KS</AvatarFallback>
+                      </Avatar>
+                    </CardTitle>
+                    <CardDescription>Version: {DrawingVersion}</CardDescription>
+                  </CardHeader>
+
+                  <CardContent className="grid grid-cols-1 gap-4 border-none">
+                    <Separator className="my-4" />
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 xl:gap-8 items-start">
+                      {props.isNewImage.img ? (
+                        <>
+                          <div
+                            className="bg-primary rounded-lg shadow-lg p-6 main-bg-animated group cursor-pointer hover:scale-105 transition-transform"
+                            style={{
+                              backgroundImage: `url(${props.isNewImage.img})`,
+                              backgroundRepeat: "no-repeat",
+                              backgroundSize: "cover",
+                              //backgroundPosition: `${50}% ${50}%`,
+                              transition: "300ms",
+                            }}
+                            onClick={() => {
+                              props.setDrawingLoad({
+                                ...props.isDrawingLoad,
+                                home: false,
+                              });
+                            }}
+                          >
+                            <div className="absolute" />
+                            <div className="drawing-css-bg text-white rounded-full p-4 inline-block mb-4 group-hover:animate-bounce shadow-md">
+                              <LuImage className="w-8 h-8" />
+                            </div>
+                            <h3
+                              className="text-lg font-semibold mb-2 group-hover:underline decoration-solid decoration-2 underline-offset-4 transition-colors duration-300"
+                              style={{ textShadow: "#000000 1px 0 10px" }}
+                            >
+                              <Input
+                                type="text"
+                                onClick={(e: any) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                }}
+                                onBlur={() => {
+                                  if (
+                                    UseAppContext.isNewImage.fileName === ""
+                                  ) {
+                                    UseAppContext.setNewImage({
+                                      ...UseAppContext.isNewImage,
+                                      fileName: `${DrawingName}-${Date.now()}`,
+                                    });
+                                  }
+                                }}
+                                onChange={(e) => {
+                                  UseAppContext.setNewImage({
+                                    ...UseAppContext.isNewImage,
+                                    fileName: e.target.value,
+                                  });
+                                }}
+                                placeholder={UseAppContext.isNewImage.fileName}
+                                value={UseAppContext.isNewImage.fileName}
+                              />
+                            </h3>
+                            <div className="flex gap-2 opacity-30 group-hover:opacity-100">
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  props.setFileDialogOpen(
+                                    (prevState: FileDialogOpen) => ({
+                                      ...prevState,
+                                      lastImport: !prevState.lastImport,
+                                    })
+                                  );
+                                }}
+                                variant="outline"
+                              >
+                                <LuFolder className="w-5 h-5 mr-2" /> Files ...
+                              </Button>
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                onDoubleClick={() => {
+                                  UseAppContext.handleResetWorksDrawing();
+                                }}
+                                variant="outline"
+                              >
+                                <LuTrash className="w-5 h-5 mr-2" />
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div
+                          className="bg-primary overflow-hidden rounded-lg p-6 shadow-lg group cursor-pointer hover:scale-105 transition-transform duration-300"
+                          onClick={() => {
+                            props.setFileDialogOpen(
+                              (prevState: FileDialogOpen) => ({
+                                ...prevState,
+                                editNewPage: !prevState.editNewPage,
+                              })
+                            );
+                          }}
+                          style={{
+                            backgroundImage: `url(${props.isDrawingLoad?.newProject})`,
+                            backgroundRepeat: "no-repeat",
+                            backgroundSize: "cover",
+                            backgroundPosition: `${50}% ${50}%`,
+                          }}
+                        >
+                          <div className="drawing-css-bg text-white rounded-full p-4 inline-block mb-4 group-hover:animate-bounce shadow-md">
+                            <LuPen className="w-8 h-8" />
+                          </div>
+                          <h3
+                            className="text-lg font-semibold mb-2 group-hover:underline decoration-solid decoration-2 underline-offset-4 transition-colors duration-300"
+                            style={{ textShadow: "#000000 1px 0 10px" }}
+                          >
+                            New project
+                          </h3>
+                          <div className="flex gap-2 opacity-30 group-hover:opacity-100">
+                            <Button variant="outline">
+                              <LuPencilRuler className="w-5 h-5 mr-2" />
+                              Edit
+                            </Button>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                props.setFileDialogOpen(
+                                  (prevState: FileDialogOpen) => ({
+                                    ...prevState,
+                                    lastImport: !prevState.lastImport,
+                                  })
+                                );
+                              }}
+                              variant="outline"
+                            >
+                              <LuFolder className="w-5 h-5 mr-2" /> Files ...
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                       <div
+                        className="bg-secondary p-6 overflow-hidden rounded-lg shadow-lg group cursor-pointer hover:scale-105 transition-transform duration-300"
                         style={{
-                          background: isSystemColor,
-                          width: 280,
-                          height: 150,
+                          backgroundImage: `url(${props.isDrawingLoad?.discoverModel})`,
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: "cover",
+                          backgroundPosition: `${50}% ${50}%`,
                         }}
-                      />
-                      <Card className="bg-inherit border-none">
-                        <CardContent className="flex p-1 gap-4">
-                          <div className="border rounded flex items-center gap-2 p-1 h-[40px] overflow-hidden">
-                            width:{" "}
-                            <Input
-                              value={0}
-                              className="w-[80px] h-[40px] border-none"
-                              disabled
-                              type="number"
-                              placeholder="width"
-                            />
-                          </div>
-                          <div className="border rounded flex items-center gap-2 p-1 h-[40px] overflow-hidden">
-                            height:{" "}
-                            <Input
-                              value={0}
-                              className="w-[80px] h-[40px] border-none"
-                              disabled
-                              type="number"
-                              placeholder="height"
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                      <div className="flex flex-row items-start space-x-3 space-y-0 p-4 w-full">
-                        <div>
-                          <Checkbox
-                            className="bg-[#0d0d0d]"
-                            checked={false}
-                            onCheckedChange={() => {}}
-                          />
-                        </div>
-                        <div className="space-y-1 leading-none">
-                          Transparent.
-                        </div>
-                      </div>
-                      <Button
-                        className="flex flex-col justify-center items-center"
-                        variant={"outline"}
-                        onClick={handleButtonClickColor}
-                        style={{
-                          background: isSystemColor,
+                        onClick={() => {
+                          props.setFileDialogOpen(
+                            (prevState: FileDialogOpen) => ({
+                              ...prevState,
+                              models: !prevState.models,
+                            })
+                          );
                         }}
                       >
-                        <input
-                          ref={colorInputRef}
-                          value={isSystemColor}
-                          onChange={(e) => {
-                            setSystemColor(e.target.value);
-                          }}
-                          className="appearance-none cursor-pointer"
-                          style={{
-                            background: "none",
-                            opacity: 0,
-                            zIndex: -1,
-                          }}
-                          type="color"
-                          name=""
-                          id=""
-                        />
-                      </Button>
+                        <div className="drawing-css-bg rounded-full p-4 inline-block mb-4 group-hover:animate-bounce shadow-md">
+                          <LuLayoutDashboard className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-lg font-semibold group-hover:underline decoration-solid decoration-2 underline-offset-4 mb-2 transition-colors duration-300">
+                          Models ...
+                        </h3>
+                        <Button
+                          variant="outline"
+                          className="opacity-30 group-hover:opacity-100"
+                        >
+                          <LuArrowRight className="w-5 h-5 mr-2" /> Know more
+                        </Button>
+                      </div>
+                      <div
+                        className="bg-secondary-foreground rounded-lg shadow-lg p-6 group cursor-pointer hover:scale-105 transition-transform duration-300"
+                        style={{
+                          backgroundImage: `url(${props.isDrawingLoad?.IAImage})`,
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: "cover",
+                          backgroundPosition: `${50}% ${50}%`,
+                        }}
+                      >
+                        <div className="drawing-css-bg text-white rounded-full p-4 inline-block mb-4 group-hover:animate-bounce shadow-md">
+                          <LuBrainCircuit className="w-8 h-8" />
+                        </div>
+                        <h3
+                          className="text-lg font-semibold mb-2 group-hover:underline decoration-solid decoration-2 underline-offset-4 transition-colors duration-300"
+                          style={{ textShadow: "#000000 1px 0 10px" }}
+                        >
+                          IA in {DrawingName}
+                        </h3>
+                        <Button
+                          variant="outline"
+                          className="opacity-30 group-hover:opacity-100"
+                        >
+                          <LuArrowRight className="w-5 h-5 mr-2" /> Know more
+                          ...
+                        </Button>
+                      </div>
+                      <div
+                        className="drawing-css-bg rounded-lg shadow-lg p-6 group cursor-pointer hover:scale-105 transition-transform duration-300"
+                        style={{
+                          backgroundImage: `url(${props.isDrawingLoad?.LearnImage})`,
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: "cover",
+                          backgroundPosition: `${50}% ${50}%`,
+                        }}
+                      >
+                        <div className="drawing-css-bg text-white rounded-full p-4 inline-block mb-4 group-hover:animate-bounce shadow-md">
+                          <LuBook className="w-8 h-8" />
+                        </div>
+                        <h3
+                          className="text-lg font-semibold mb-2 group-hover:underline decoration-solid decoration-2 underline-offset-4 transition-colors duration-300"
+                          style={{ textShadow: "#000000 1px 0 10px" }}
+                        >
+                          Learn to use {DrawingName}
+                        </h3>
+                        <Card className="opacity-30 group-hover:opacity-100">
+                          <CardContent className="flex p-2 gap-2 cursor-text">
+                            <LuSearch className="w-5 h-5" />
+                            <Separator
+                              className="h-[20px]"
+                              orientation="vertical"
+                            />
+                            <div className="text-slate-400">Search ...</div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                      <div
+                        className="bg-secondary p-6 overflow-hidden rounded-lg shadow-lg group cursor-pointer hover:scale-105 transition-transform duration-300"
+                        style={{
+                          backgroundImage: `url(${props.isDrawingLoad?.aboutDrawing})`,
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: "cover",
+                          backgroundPosition: `${50}% ${50}%`,
+                        }}
+                      >
+                        <div className="drawing-css-bg rounded-full p-4 inline-block mb-4 group-hover:animate-bounce shadow-md">
+                          <LuInfo className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-lg font-semibold group-hover:underline decoration-solid decoration-2 underline-offset-4 mb-2 transition-colors duration-300">
+                          About {DrawingName} ...
+                        </h3>
+                        <Button
+                          variant="outline"
+                          className="opacity-30 group-hover:opacity-100"
+                        >
+                          <LuArrowRight className="w-5 h-5 mr-2" /> Know more
+                        </Button>
+                      </div>
+
+                      {/*<div
+                        className="bg-primary overflow-hidden rounded-lg p-6 shadow-lg group cursor-pointer hover:scale-105 transition-transform duration-300"
+                        style={{
+                          backgroundImage: `url(${SystemCover.src})`,
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: "cover",
+                          backgroundPosition: `${50}% ${50}%`,
+                        }}
+                        onClick={() => {
+                          router.push("/");
+                        }}
+                      >
+                        <div className="drawing-css-bg text-white rounded-full p-4 inline-block mb-4 group-hover:animate-bounce shadow-md">
+                          <LuGlobe className="w-8 h-8" />
+                        </div>
+                        <h3
+                          className="text-lg font-semibold mb-2 group-hover:underline decoration-solid decoration-2 underline-offset-4 transition-colors duration-300"
+                          style={{ textShadow: "#000000 1px 0 10px" }}
+                        >
+                          {SystemName}
+                        </h3>
+                      </div>*/}
                     </div>
-                    <Button variant="activeBlue">Create</Button>
-                  </DialogContent>
-                </Dialog>
-                <Button
-                  onClick={() => {
-                    props.handleButtonClickImport();
-                  }}
-                  variant={"activeBlue"}
-                >
-                  Import image ...
-                </Button>
-                <ul className="grid grid-cols-1 gap-4">
-                  <li>
-                    <strong className="text-sky-500">
-                      Créez Votre Compte :
-                    </strong>{" "}
-                    Bien que notre application soit gratuite pour tous, nous
-                    offrons des fonctionnalités supplémentaires et une
-                    suppression des limites de temps pour nos utilisateurs
-                    enregistrés. Créez votre compte aujourd'hui pour découvrir
-                    l'ensemble complet des possibilités qu'offre Drawing et pour
-                    transformer vos photos.
-                  </li>
-                </ul>
-              </CardContent>
-              <Separator className="my-4" />
-              <CardContent className="grid grid-cols-1 gap-4">
-                <CardHeader className="p-0">
-                  <CardTitle className="flex">Drawing presentation</CardTitle>
-                </CardHeader>
-                <ul className="grid grid-cols-1 gap-4">
-                  <li>
-                    Bienvenue sur Drawing, votre outil en ligne simple et
-                    intuitif pour effectuer des modifications d'images de
-                    manière rapide et efficace. Que vous soyez un professionnel
-                    du design ou un utilisateur occasionnel, Drawing vous offre
-                    une plateforme conviviale pour retoucher, recadrer, et
-                    ajuster vos images sans avoir besoin de logiciels complexes.
-                  </li>
-                </ul>
-                <Separator className="my-4" />
-                <h1 className="text-blue-500 font-bold">
-                  Fonctionnalités principales :
-                </h1>
-                <ol className="grid grid-cols-1 gap-4">
-                  <li>
-                    <strong className="text-sky-500">
-                      Recadrage personnalisé :
-                    </strong>{" "}
-                    Découpez vos images selon vos besoins spécifiques en
-                    ajustant les dimensions et la position du cadre de
-                    recadrage.
-                  </li>
-                  <li>
-                    <strong className="text-sky-500">
-                      Ajustement de la luminosité et du contraste :
-                    </strong>{" "}
-                    Apportez des modifications fines pour améliorer la qualité
-                    de vos images et les rendre plus attrayantes.
-                  </li>
-                  <li>
-                    <strong className="text-sky-500">Ajout de texte :</strong>{" "}
-                    Insérez des légendes ou des annotations directement sur vos
-                    images, avec des options de personnalisation du style de
-                    texte (police, taille, couleur, alignement).
-                  </li>
-                  <li>
-                    <strong className="text-sky-500">Zoom et rotation :</strong>{" "}
-                    Manipulez vos images avec précision grâce aux outils de zoom
-                    et de rotation, pour un contrôle total de l'affichage.
-                  </li>
-                  <li>
-                    <strong className="text-sky-500">
-                      Aperçu en temps réel :
-                    </strong>{" "}
-                    Visualisez instantanément les modifications apportées à vos
-                    images avant de les télécharger, pour un rendu parfait à
-                    chaque fois.
-                  </li>
-                </ol>
-                <Separator className="my-4" />
-                <div>
-                  <strong className="text-sky-500">Drawing</strong> est votre
-                  allié idéal pour des modifications d'images rapides, simples
-                  et efficaces. Essayez-le dès aujourd'hui et transformez vos
-                  images en quelques clics !
-                </div>
-              </CardContent>
-            </Card>
-          </ScrollArea>
+                    <Separator className="my-4" />
+                    <Credits />
+                    <Separator className="my-4" />
+                    <BentoGrid className="h-max md:auto-rows-max my-10">
+                      {DrawingLoadItems.map((item, i) => (
+                        <BentoGridItem
+                          key={i}
+                          //header={item.header}
+                          title={item.title}
+                          description={item.description}
+                          //icon={item.icon}
+                          className={"h-max bg-black/90"}
+                        />
+                      ))}
+                    </BentoGrid>
+                  </CardContent>
+                </Card>
+              </ScrollArea>
+            </div>
+          </div>
         </div>
+        {props.isDraggingDrop && !props.isFileDialogOpen.lastImport && (
+          <div
+            className="fixed inset-0 flex items-center justify-center bg-black/90"
+            style={{ transition: "500ms" }}
+          >
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center"
+              onDragOver={props.handleDragOver}
+              onDragLeave={props.handleDragLeave}
+              onDrop={props.handleDrop}
+              onClick={() => {
+                props.setIsDraggingDrop(false);
+              }}
+              style={{ zIndex: 20000 }}
+            />
+            <div className="relative w-full max-w-5xl">
+              <div className="h-[80vh] w-full rounded-lg">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="flex h-[90%] w-[90%] max-h-[400px] max-w-[800px] flex-col items-center justify-center rounded-lg text-white">
+                    <LuArrowDownToLine className="h-10 w-10 mb-2" />
+                    <p className="text-2xl font-bold">
+                      Glissez-déposez vos images ici
+                    </p>
+                    <div className="flex text-slate-400 gap-1">
+                      Ceux-ci seront importés dans la collection, vous les
+                      trouverez dans{" "}
+                      <span className="flex items-center gap-1 text-sky-500">
+                        [ fichier
+                        <LuFolder />]
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/carousel";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
 import { LoginItems, SystemCarouselImg } from "@/public/assets/data/data";
 import { FlipWords } from "@/components/ui/flip-words";
@@ -20,13 +19,11 @@ import Autoplay from "embla-carousel-autoplay";
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { CalendarIcon } from "lucide-react";
 import { useRouter } from "next/navigation";

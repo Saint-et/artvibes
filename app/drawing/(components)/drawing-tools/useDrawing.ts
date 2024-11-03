@@ -1,15 +1,53 @@
-import { ElementRef, MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
-import UseAreaDrawCreative from "./rich_text/useArea-drawing";
+import { useCallback, useEffect, useRef, useState } from "react";
+import UseAreaDrawCreative from "./useArea-drawing";
 import toast from "react-hot-toast";
-import { DrawArea, DrawText, IsNewCropImage, IsNewImage, IsNewOverlay, IsNewOverlaySave, SystemSettings, SystemShadow } from "@/utils/interface";
-import html2canvas from "html2canvas";
-import { Canvg } from 'canvg';
-import { SystemLogo, SystemNoImg } from "@/public/assets/data/data";
+import { AiQuality, DrawArea, DrawForm, DrawingSetting, DrawSvg, DrawSvgFull, DrawText, FileDialogOpen, IsNewImage, IsNewOverlay, IsNewOverlaySave, MenuLayer, RenderingOption } from "@/utils/interface";
+import { DrawingName, SystemLogo } from "@/public/assets/data/data";
 import useSelectDrawing from "./usedrawing-select";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import useDrawingRendering from "./drawing-rendering/drawing-rendering";
+import useUtilsDrawing from "../utils/utilsDrawing";
+import { useAppContext } from "@/app/provider/useAppContext";
+import { DrawingLoadDefault, NewImgDefault } from "@/public/assets/data/defaultValue-drawing";
+import GrabScrollComponent from "../drawing-navbar/(components)/grab-to-scroll";
+import useWaifu2xTfjs from "../utils/waifu2x-tfjs/waifu2x-tfjs";
 
+const FormSchema = z.object({
+    pin: z.string().min(6, {
+        message: "Your one-time password must be 6 characters.",
+    }),
+})
+
+type LoadedImage = {
+    img: HTMLImageElement;
+    el: IsNewOverlaySave;
+};
 
 export default function useDrawing() {
 
+    //const searchParams = useSearchParams();
+    //const imgUrl = searchParams.get("img");
+
+
+
+    const UseAppContext = useAppContext()
+    const {
+        startWaifu,
+        prepareImageWaifu,
+        processWaifu,
+        setWaifuProcess,
+        isWaifuProcess, } = useWaifu2xTfjs()
+    const {
+        scrollGrabScrollRef,
+        handleMouseDownGrabScroll,
+        handleMouseUpGrabScroll,
+        handleMouseMoveGrabScroll,
+        isDraggingGrabScroll
+    } = GrabScrollComponent();
+
+    const { extractBoxShadowColor, rgbToHex, resizeImageBase64, hasTransparency } = useUtilsDrawing();
 
     const {
         handleMouseDown,
@@ -33,6 +71,7 @@ export default function useDrawing() {
 
     const {
         canvasRef,
+        canvasDrawRef,
         overlayAreaRef,
         textCanvasContainerRef,
         handleMouseDownResizing,
@@ -51,62 +90,133 @@ export default function useDrawing() {
         setLeftOffset,
         setTopOffset,
 
-        //handleDefaultDrawText,
         setDrawArea,
         drawArea,
         handleSettDrawArea,
         startPosition,
         isResizing,
-        isImageSize, setImageSize
+        isImageSize, setImageSize,
+        imageRef,
+
+        startDrawingNowCanvas,
+        drawNowCanvas,
+        stopDrawingNowCanvas,
+        setIsDrawingNowCanvas,
+        BreakDrawingNowCanvas,
+        isDrawingNowCanvas,
+        drawDrawing, setDrawDrawing,
+        RestartDrawingNowCanvas,
     } = UseAreaDrawCreative()
 
-    const [isFileDialogOpenNewImgAlert, setFileDialogOpenNewImgAlert] = useState<boolean>(false);
-    const [isFileDialogOpenNewImgAlertElement, setFileDialogOpenNewImgAlertElement] = useState<IsNewImage>({
-        id: 0,
-        fileName: '',
-        img: '',
+
+    const UseDrawingRendering = useDrawingRendering()
+    const UseUtilsDrawing = useUtilsDrawing()
+
+    const setDrawingLoad = UseAppContext.setDrawingLoad;
+    const isDrawingLoad = UseAppContext.isDrawingLoad || DrawingLoadDefault;
+
+
+    const [isDrawingSetting, setDrawingSetting] = useState<DrawingSetting>({
+        separatorBorder: 'none',
+        transparence: false,
+        maxZoom: 4,
+        overflowCanvas: 'clip',
+        overflowExpand: 'clip',
+        deleteOutsideOverlay: 'no',
+        paint: {
+            hideElCanvas: false,
+            showDrawSelected: false,
+            opacity: false,
+        }
     });
 
-    const imageRef = useRef<HTMLImageElement | null>(null);
-    const canvasContainerRef = useRef<HTMLDivElement | null>(null);
+    const [isFileDialogOpenNewImgAlert, setFileDialogOpenNewImgAlert] = useState<boolean>(false);
+    const [isFileDialogOpenNewImgAlertElement, setFileDialogOpenNewImgAlertElement] = useState<IsNewImage>(NewImgDefault);
+
     const captureRef = useRef<HTMLDivElement | null>(null);
+    const canvasContainerRef = useRef<HTMLDivElement | null>(null);
+    const formDrawRef = useRef<HTMLDivElement | null>(null);
+    const drawingSidebarToolsRef = useRef<HTMLDivElement | null>(null);
+    const drawingSidebarToolsSettingRef = useRef<HTMLDivElement | null>(null);
+    const overlayImgRef = useRef<HTMLDivElement | null>(null);
+    const overlayImgBgRef = useRef<HTMLDivElement | null>(null);
+    const expandDivRef = useRef<HTMLDivElement | null>(null);
+    const blanketRef = useRef<HTMLDivElement | null>(null);
+
+    const insetImgRef = useRef<HTMLDivElement | null>(null);
+    const insetExpandRef = useRef<HTMLDivElement | null>(null);
+    const colorOutsideImgRef = useRef<HTMLDivElement | null>(null);
+
+    const strokePathRef = useRef<SVGPathElement | null>(null);
+    const strokeRectRef = useRef<SVGRectElement | null>(null);
+    const strokeRectBgRef = useRef<SVGRectElement | null>(null);
+
+    const drawingSidebarToolsButtonRef = useRef<HTMLDivElement | null>(null);
     const canvasCropRef = useRef<HTMLCanvasElement | null>(null);
     const overlayContextRef = useRef<HTMLDivElement | null>(null);
     const overlayToolsRef = useRef<HTMLDivElement | null>(null);
     const overlayFiltersRef = useRef<HTMLDivElement | null>(null);
     const overlayContextPropoverRef = useRef<HTMLDivElement | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const fileInputRef2 = useRef<HTMLInputElement | null>(null);
     const textCanvasRef = useRef<HTMLDivElement | null>(null);
     const mainSidebarRef = useRef<HTMLDivElement | null>(null);
     const sidebarRef = useRef<HTMLDivElement | null>(null);
     const dialogLastImportRef = useRef<HTMLDivElement | null>(null);
     const [cropVisible, setCropVisible] = useState<boolean>(false);
-    const [imgCrop, setImgCrop] = useState<IsNewCropImage[]>([])
-    const [isFileDialogOpenImport, setFileDialogOpenImport] = useState<boolean>(false);
+    const [isFileDialogOpen, setFileDialogOpen] = useState<FileDialogOpen>(
+        {
+            lastImport: false,
+            models: false,
+            editNewPage: false,
+        }
+    );
     const [isFreeAreaCrop, setFreeAreaCrop] = useState<boolean>(true);
     const [croppedImageUrl, setCroppedImageUrl] = useState<string | null>(null);
     const [resultImageUrl, setResultImageUrl] = useState<string>("");
-    const [isImgSeparator, setImgSeparator] = useState<string>("none");
     const [isImgBorderOn, setImgBorderOn] = useState<boolean>(false);
-    const [drawingExpandImg, setDrawingExpandImg] = useState<number>(0);
+    const [isProfilMenuOpen, setIsProfilMenuOpen] = useState<boolean>(false);
+    const [isRenderingOpen, setIsRenderingOpen] = useState<boolean>(false);
 
     const [isMenuOpen, setMenuOpen] = useState<number | 0>(0);
     const [isWindowOpen, setWindowOpen] = useState<number | 0>(0);
-
-    const [isNewImageImport, setNewImageImport] = useState<IsNewImage[]>([])
-    const [isNewImage, setNewImage] = useState<IsNewImage>({
-        id: 0,
-        fileName: '',
-        img: ''
+    const [isMenuLayer, setMenuLayer] = useState<MenuLayer>({
+        menu: true,
+        auto: true,
+        uniqueOverlaySelect: false,
+        uniqueOverlaySelectPreview: -1,
+        on: 0,
+        blockOverlay: []
     });
+
+    const isLayers = UseAppContext.isLayers;
+    const setLayers = UseAppContext.setLayers;
+    const [isRenderingOption, setIsRenderingOption] = useState<RenderingOption>({
+        reziseImg: true,
+        sharpenImg: false,
+        smoothImg: true,
+        width: 0,
+        height: 0,
+    });
+
+    const drawingExpandImg = UseAppContext.drawingExpandImg;
+    const setDrawingExpandImg = UseAppContext.setDrawingExpandImg;
+    const isBlanket = UseAppContext.isBlanket;
+    const setBlanket = UseAppContext.setBlanket;
+    const isNewImageImport = UseAppContext.isNewImageImport;
+    const setNewImageImport = UseAppContext.setNewImageImport;
+    const isNewImage = UseAppContext.isNewImage;
+    const setNewImage = UseAppContext.setNewImage;
+
     const [isCanvasImage, setCanvasImage] = useState<string | ''>('');
     const [isImgOverlaySave, setImgOverlaySave] = useState<IsNewOverlaySave[]>([]);
     const [isImgOverlay, setImgOverlay] = useState<IsNewOverlay>({
         id: 0,
         form: "",
         img: "",
+        miniature: "",
         cropY: 50,
-        opacity: 1.0,
+        opacity: 1,
         shadow: 0,
         borderColor: "#000000",
         filter: {
@@ -120,11 +230,50 @@ export default function useDrawing() {
             invert: 0
         },
     });
-
     const [textCanvasVisible, setTextCanvasVisible] = useState<boolean>(false);
+    const [isFormCanvasVisible, setFormCanvasVisible] = useState<string>('');
+    const [elementIndex, setElementIndex] = useState<number>(0);
+    const [drawSvg, setDrawSvg] = useState<DrawSvg>({
+        id: 0,
+        img: '',
+        svg: '',
+        thickness: 0,
+        borderColor: "#000000",
+        opacity: 1,
+        crop: {
+            x: 0,
+            y: 0,
+            size: 24,
+        },
+        filter: {
+            brightness: 100,
+            contrast: 100,
+            saturation: 100,
+            hue: 0,
+            blur: 0,
+            sepia: 0,
+            grayscale: 0,
+            invert: 0,
+        }
+    });
 
+    const [drawSvgFull, setDrawSvgFull] = useState<DrawSvgFull>({
+        id: 0,
+        svg: '',
+        thickness: 0,
+        borderColor: "#000000",
+        color: "#000000",
+        opacity: 1,
+    });
 
+    const [drawForm, setDrawForm] = useState<DrawForm>({
+        id: 0,
+        color: "#000000",
+        thickness: 10,
+        opacity: 1,
+    });
     const [drawText, setDrawText] = useState<DrawText>({
+        id: 0,
         value: "",
         color: "#ffffff",
         fontSize: 24,
@@ -132,80 +281,67 @@ export default function useDrawing() {
         fontStyle: "normal",
         fontWeight: "normal",
         textAlign: "center",
+        opacity: 1,
+    });
+    const [isAiQuality, setAiQuality] = useState<AiQuality>({
+        style: "art",
+        noise: -1,
+        scale: 1,
+        tta: 1,
     });
 
-    const handleChange = (newValue: number[]) => {
+    const handleChange = async (newValue: number[]) => {
+        // Update the zoom level
         setZoom(newValue);
     };
 
-    const [systemSetting, setSystemSetting] = useState<SystemSettings>({
-        brightness: 100,
-        contrast: 100,
-        saturation: 100,
-        hue: 0,
-        blur: 0,
-        sepia: 0,
-        grayscale: 0,
-        invert: 0
-    });
-    const [systemShadow, setSystemShadow] = useState<SystemShadow>({
-        opacity: 0,
-        size: 0,
-        x: 0,
-        y: 0,
-        color: '#000000',
-    });
 
-    const CreateMainCanvas = () => {
-        // Créer un canvas virtuel
-        const canvas = document.createElement('canvas');
-        canvas.width = 1200;
-        canvas.height = 800;
+    const systemSetting = UseAppContext.systemSetting;
+    const setSystemSetting = UseAppContext.setSystemSetting;
+    const systemShadow = UseAppContext.systemShadow;
+    const setSystemShadow = UseAppContext.setSystemShadow;
 
-        // Obtenir le contexte 2D
-        const context = canvas.getContext('2d');
+    const formCode = useForm<z.infer<typeof FormSchema>>({
+        resolver: zodResolver(FormSchema),
+        defaultValues: {
+            pin: "",
+        },
+    })
 
-        if (context) {
-            // Dessiner un fond blanc
-            context.fillStyle = 'white';
-            context.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Récupérer l'image en tant que Data URL (base64)
-            const dataURL = canvas.toDataURL('image/png');
-            setNewImage({
-                id: Date.now(),
-                fileName: `artvibes-${Date.now()}`,
-                img: dataURL
-            })
-        } else {
-            console.error('Impossible d\'obtenir le contexte 2D.');
-        }
-    }
+    const sizePositionOverlerlay =
+        isImageSize.w < isImageSize.h
+            ? isImageSize.w
+            : isImageSize.h;
 
-    const handleButtonClickImport = () => {
+
+    const handleButtonClickImport = async () => {
         if (fileInputRef.current) {
             fileInputRef.current.click();
         }
+        if (fileInputRef2.current) {
+            fileInputRef2.current.click();
+        }
     };
 
-    const generateRandomId = () => {
-        return Math.floor(Math.random() * 1000000) + Date.now();
-    };
-
-    const handleFileChangeImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChangeImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files || [];
         if (files) {
-            const updatedImages = Array.from(files).map(file => {
+            const updatedImages = await Array.from(files).map(file => {
 
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
 
                 return new Promise((resolve, reject) => {
                     reader.onloadend = () => {
-                        resolve({
-                            id: generateRandomId(),
-                            fileName: file.name,
-                            img: reader.result as string  // Cast reader.result to string
+                        resizeImageBase64(reader.result as string, 300, function (resizedBlob: any) {
+                            resolve({
+                                id: UseUtilsDrawing.generateRandomId(),
+                                fileName: `${DrawingName}-${Date.now()}`,
+                                img: reader.result as string,
+                                miniature: resizedBlob || ''
+                            });
+
                         });
                     };
                     reader.onerror = reject;  // Handle errors
@@ -213,21 +349,19 @@ export default function useDrawing() {
             });
 
             // Resolve all promises and update the state
-            Promise.all(updatedImages)
+            await Promise.all(updatedImages)
                 .then(images => {
                     const typedImages: IsNewImage[] = images as IsNewImage[];  // Assurez-vous que images est de type IsNewImage[]
+
                     setNewImageImport(prevImages => [...typedImages, ...prevImages]);
+                    if (isFileDialogOpen.lastImport) return;
                     if (!isNewImage.img) {
                         setNewImage(typedImages[0]);
-                    }
-                    if (isNewImage.img && typedImages.length === 1) {
-                        setFileDialogOpenNewImgAlertElement(typedImages[0]);
-                        if (isMenuOpen === 8) return;
-                        setFileDialogOpenNewImgAlert(true);
-                    }
-                    if (typedImages.length > 1) {
-                        if (isMenuOpen === 8) return;
-                        setFileDialogOpenImport(true);
+                        setDrawingExpandImg({
+                            ...drawingExpandImg,
+                            bgExpand: typedImages[0].img,
+                            miniature: typedImages[0].miniature
+                        })
                     }
                 })
                 .catch(error => {
@@ -235,36 +369,27 @@ export default function useDrawing() {
                     // Handle error state if necessary
                 });
         }
-
     };
 
+
     const handleLastAdd = (blobUrl: IsNewImage) => {
-        const itemToMove = imgCrop.find((el) => el.id === blobUrl.id);
-
-        if (itemToMove) {
-            // Filtrer les éléments restants et ajouter l'élément trouvé en tête de liste
-            const updatedImgCrop = [
-                itemToMove,
-                ...imgCrop.filter((el) => el.id !== blobUrl.id),
-            ];
-
-            // Mettre à jour l'état avec la nouvelle liste
-            setImgCrop(updatedImgCrop);
-        }
-
         setFileDialogOpenNewImgAlertElement(blobUrl)
         setFileDialogOpenNewImgAlert(true)
         setCanvasImage("");
         setCropVisible(false);
     };
     const handleNewPictureAdd = () => {
-        setFileDialogOpenImport(false);
+        //setFileDialogOpen((prevState: FileDialogOpen) => ({
+        //    ...prevState,
+        //    lastImport: false
+        //}));
         setNewImage(isFileDialogOpenNewImgAlertElement);
-        setFileDialogOpenNewImgAlertElement({
-            id: 0,
-            fileName: '',
-            img: '',
-        })
+        setDrawingExpandImg((prevState) => ({
+            ...prevState,
+            bgExpand: isFileDialogOpenNewImgAlertElement.img,
+            miniature: isFileDialogOpenNewImgAlertElement.miniature
+        }))
+        setFileDialogOpenNewImgAlertElement(NewImgDefault)
     };
 
 
@@ -302,9 +427,12 @@ export default function useDrawing() {
 
                         return new Promise((resolve, reject) => {
                             reader.onloadend = () => {
-                                resolve({
-                                    img: reader.result as string  // Cast reader.result to string
-                                });
+                                resizeImageBase64(reader.result as string, 300, function (resizedBlob: any) {
+                                    resolve({
+                                        img: reader.result as string,  // Cast reader.result to string
+                                        miniature: resizedBlob,
+                                    });
+                                })
                             };
                             reader.onerror = reject;  // Handle errors
                         });
@@ -313,41 +441,98 @@ export default function useDrawing() {
                     // Resolve all promises and update the state
                     Promise.all(updatedImages)
                         .then(images => {
-                            setTimeout(() => {
-                                const typedImages: IsNewOverlay[] = images as IsNewOverlay[];  // Assurez-vous que images est de type IsNewOverlay[]
+                            if (isFormCanvasVisible !== "" || isMenuOpen === 5 || drawSvgFull.svg !== "") return reject()
+                            setIsDrawingNowCanvas((prevState) => ({ ...prevState, active: false, isMouseDown: false, id: null }))
+                            const typedImages: IsNewOverlay[] = images as IsNewOverlay[];
 
-                                if (!isImgOverlay.img) {
-                                    setImgOverlay({
-                                        ...isImgOverlay,
-                                        img: typedImages[0].img,
-                                        form: "square",
-                                    });
-                                    setDrawArea({
-                                        width: 300,
-                                        height: 300,
-                                        leftOffset: 0,
-                                        topOffset: 0,
-                                        positionX: isImageSize.w / 2 - 150,
-                                        positionY: isImageSize.h / 2 - 100,
-                                    });
-                                } else {
-                                    setImgOverlay({
-                                        ...isImgOverlay,
-                                        img: typedImages[0].img,
-                                    });
-                                }
+                            if (drawSvg.svg !== "") {
+                                setDrawSvg({
+                                    ...drawSvg,
+                                    img: typedImages[0].img
+                                })
                                 return resolve(true)
-                            }, 1000)
+                            }
+                            if (!isImgOverlay.img) {
+                                typedImages?.map((e, index) => {
+                                    const newElement = {
+                                        layerType: 'overlay',
+                                        id: Date.now() + index,
+                                        img: e.img,
+                                        miniature: e.miniature,
+                                        overflowContainer: 'expand',
+                                        form: "square",
+                                        cropY: isImgOverlay.cropY,
+                                        opacity: isImgOverlay.opacity,
+                                        shadow: isImgOverlay.shadow,
+                                        borderColor: extractBoxShadowColor(
+                                            overlayImgRef?.current ? overlayImgRef.current.style.boxShadow : '#000000'
+                                        ),
+                                        h: sizePositionOverlerlay / 2,
+                                        w: sizePositionOverlerlay / 2,
+                                        x: isImageSize.w / 2 - (sizePositionOverlerlay / 4),
+                                        y: isImageSize.h / 2 - (sizePositionOverlerlay / 4),
+                                        rotate: 0,
+                                        filter: {
+                                            brightness: isImgOverlay.filter.brightness,
+                                            contrast: isImgOverlay.filter.contrast,
+                                            saturation: isImgOverlay.filter.saturation,
+                                            hue: isImgOverlay.filter.hue,
+                                            blur: isImgOverlay.filter.blur,
+                                            sepia: isImgOverlay.filter.sepia,
+                                            grayscale: isImgOverlay.filter.grayscale,
+                                            invert: isImgOverlay.filter.invert,
+                                        },
+                                    };
+                                    setLayers((prevLayers: any) => {
+                                        const updatedLayers = prevLayers.map((el: any) => {
+                                            if (el.id === isImgOverlay.id) {
+                                                // Si l'élément existe, mettre à jour l'image
+                                                return { ...newElement, id: el.id };
+                                            }
+                                            return el;
+                                        });
+
+                                        // Vérifier si l'élément avec l'ID donné existe, sinon l'ajouter
+                                        const elementExists = prevLayers.some((el: any) => el.id === isImgOverlay.id);
+                                        if (!elementExists) {
+                                            updatedLayers.push(newElement);
+                                        }
+
+                                        return updatedLayers;
+                                    });
+                                })
+
+                                //setImgOverlay({
+                                //    ...isImgOverlay,
+                                //    img: typedImages[0].img,
+                                //    form: "square",
+                                //});
+                                //setDrawArea({
+                                //    width: size / 2,
+                                //    height: size / 2,
+                                //    leftOffset: 0,
+                                //    topOffset: 0,
+                                //    positionX:
+                                //        isImageSize.w / 2 - (size / 4),
+                                //    positionY:
+                                //        isImageSize.h / 2 - (size / 4),
+                                //    rotate: 0,
+                                //});
+                            } else {
+                                setImgOverlay({
+                                    ...isImgOverlay,
+                                    img: typedImages[0].img,
+                                    miniature: typedImages[0].miniature,
+                                });
+                            }
+                            return resolve(true)
                         })
                         .catch(() => {
                             return reject(new Error("An error occurred"));
                             // Handle error state if necessary
                         });
                 }
-                //if (isMenuOpen === 8) {
-                //    return addNewPicture()
-                //}
-                if (isNewImage.img) {
+                if (isNewImage.img && !isDrawingLoad.home && !isFileDialogOpen.lastImport) {
                     return addNewPicture()
                 }
 
@@ -357,10 +542,14 @@ export default function useDrawing() {
 
                     return new Promise((resolve, reject) => {
                         reader.onloadend = () => {
-                            resolve({
-                                id: generateRandomId(),
-                                fileName: file.name,
-                                img: reader.result as string  // Cast reader.result to string
+                            resizeImageBase64(reader.result as string, 300, function (resizedBlob: any) {
+                                resolve({
+                                    id: UseUtilsDrawing.generateRandomId(),
+                                    fileName: `${DrawingName}-${Date.now()}`,
+                                    img: reader.result as string,
+                                    miniature: resizedBlob || ''
+                                });
+
                             });
                         };
                         reader.onerror = reject;  // Handle errors
@@ -370,26 +559,32 @@ export default function useDrawing() {
                 // Resolve all promises and update the state
                 Promise.all(updatedImages)
                     .then(images => {
-                        setTimeout(() => {
-                            const typedImages: IsNewImage[] = images as IsNewImage[];  // Assurez-vous que images est de type IsNewImage[]
+                        const typedImages: IsNewImage[] = images as IsNewImage[];  // Assurez-vous que images est de type IsNewImage[]
 
-                            setNewImageImport(prevImages => [...typedImages, ...prevImages]);
+                        setNewImageImport(prevImages => [...typedImages, ...prevImages]);
 
-
-                            if (!isNewImage.img) {
-                                setNewImage(typedImages[0]);
-                            }
-                            if (isNewImage.img && typedImages.length === 1) {
-                                setFileDialogOpenNewImgAlertElement(typedImages[0]);
-                                if (isMenuOpen === 8) return;
-                                setFileDialogOpenNewImgAlert(true);
-                            }
-                            if (typedImages.length > 1) {
-                                if (isMenuOpen === 8) return;
-                                setFileDialogOpenImport(true);
-                            }
-                            return resolve(true)
-                        }, 1000)
+                        if (!isNewImage.img || !isDrawingLoad?.home) {
+                            if (isFileDialogOpen.lastImport) return resolve(true);
+                            setNewImage(typedImages[0]);
+                            setDrawingExpandImg({
+                                ...drawingExpandImg,
+                                bgExpand: typedImages[0].img,
+                                miniature: typedImages[0].miniature
+                            })
+                        }
+                        if (isNewImage.img && typedImages.length === 1) {
+                            setFileDialogOpenNewImgAlertElement(typedImages[0]);
+                            if (isMenuOpen === 8) return;
+                            setFileDialogOpenNewImgAlert(true);
+                        }
+                        if (typedImages.length > 1) {
+                            if (isMenuOpen === 8) return;
+                            setFileDialogOpen((prevState: FileDialogOpen) => ({
+                                ...prevState,
+                                lastImport: true
+                            }));
+                        }
+                        return resolve(true)
                     })
                     .catch(() => {
                         return reject(new Error("An error occurred"));
@@ -398,7 +593,7 @@ export default function useDrawing() {
 
             }
         })
-    }, [isNewImage, isMenuOpen, isImgOverlay, isImageSize]);
+    }, [isNewImage, isMenuOpen, isImgOverlay, isImageSize, isDrawingLoad, isFormCanvasVisible, drawSvg, isFileDialogOpen, drawSvgFull]);
 
     function handleDrop(event: React.DragEvent<HTMLDivElement>) {
         // Utiliser toast.promise pour gérer la promesse
@@ -420,18 +615,6 @@ export default function useDrawing() {
         const filtered = isNewImageImport.filter((el) => el.id === id);
         if (filtered.length === 1) {
             setNewImage(filtered[0]);
-            const itemToMove = imgCrop.find((el) => el.id === id);
-
-            if (itemToMove) {
-                // Filtrer les éléments restants et ajouter l'élément trouvé en tête de liste
-                const updatedImgCrop = [
-                    itemToMove,
-                    ...imgCrop.filter((el) => el.id !== id),
-                ];
-
-                // Mettre à jour l'état avec la nouvelle liste
-                setImgCrop(updatedImgCrop);
-            }
         } else {
             toast("⚠️ No pictures were found. ⚠️", {
                 duration: 3000,
@@ -444,8 +627,6 @@ export default function useDrawing() {
     };
 
     const handleDeleteCropColection = (id: number) => {
-        const filtered = imgCrop.filter((el) => el.id !== id);
-        setImgCrop(filtered);
         toast(`The collection has been deleted: id-${isNewImage.id}.`, {
             duration: 3000,
         });
@@ -460,58 +641,134 @@ export default function useDrawing() {
                 topOffset: 0,
                 positionX: isImageSize.w / 2 - 152,
                 positionY: isImageSize.h / 2 - 102,
+                rotate: 0,
             });
         }
     };
 
-    function hexToRgba(hex: string, alpha: number = 1): string {
-        // Supprimer le symbole '#' si présent
-        hex = hex.replace(/^#/, '');
 
-        // Convertir les valeurs hex en décimal
-        const r = parseInt(hex.substring(0, 2), 16);
-        const g = parseInt(hex.substring(2, 4), 16);
-        const b = parseInt(hex.substring(4, 6), 16);
 
-        // Retourner le format RGBA
-        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    }
 
     const captureElementToast = async () => {
-        // Récupérer l'élément à capturer via useRef
-        //const elementToCapture = canvasContainerRef.current;
-
         setResultImageUrl("");
 
         return await new Promise(async (resolve, reject) => {
 
             try {
 
-                if (!imageRef.current) return;
 
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
+                const img = await new window.Image();
+                img.src = isNewImage.img;
+                img.onload = async () => {
 
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-                if (!ctx) {
-                    return reject(new Error("An error occurred"));
-                }
-
-
-                if (!SystemLogo.src) {
-                    return reject(new Error("An error occurred"));
-                }
-
-                const image = imageRef.current;
+                    if (!ctx) {
+                        return reject(new Error("An error occurred"));
+                    }
 
 
-                canvas.width = image.width + drawingExpandImg;
-                canvas.height = image.height + drawingExpandImg;
+                    if (!SystemLogo.src) {
+                        return reject(new Error("An error occurred"));
+                    }
+
+
+                    const image = { width: img.width, height: img.height };
+
+
+                    canvas.width = image.width + drawingExpandImg.expand;
+                    canvas.height = image.height + drawingExpandImg.expand;
+
+
+                    if (drawingExpandImg.bgType === 'bgActiveColor') {
+                        ctx.fillStyle = drawingExpandImg.bgColor;
+                        ctx.fillRect(0, 0, image.width + drawingExpandImg.expand, image.height + drawingExpandImg.expand);
+                    }
 
 
 
-                // Appliquer des transformations
-                ctx.filter = `
+                    //// Taille de l'élément
+                    const shadowX = 0;
+                    const shadowY = 0;
+                    const shadowWidth = image.width + drawingExpandImg.expand;
+                    const shadowHeight = image.height + drawingExpandImg.expand;
+                    const shadowSize = systemShadow.size;
+                    const shadowColorImg = UseUtilsDrawing.hexToRgba(systemShadow.color.colorImg, 1);
+                    const shadowColorExpand = UseUtilsDrawing.hexToRgba(systemShadow.color.colorExpand, 1);
+                    const shadowColorOutsideImg = UseUtilsDrawing.hexToRgba(systemShadow.color.colorOutsideImg, 1);
+
+                    const shadowColorTransparentImg = UseUtilsDrawing.hexToRgba(systemShadow.color.colorImg, 0);
+                    const shadowColorTransparentExpand = UseUtilsDrawing.hexToRgba(systemShadow.color.colorExpand, 0);
+                    //const shadowColorTransparentOutsideImg = UseUtilsDrawing.hexToRgba(systemShadow.color.colorOutsideImg, 0);
+
+
+
+
+                    if (drawingExpandImg.bgType === 'bgActiveImage') {
+
+                        const bgImage = new Image();
+                        bgImage.src = drawingExpandImg.bgExpand;
+
+
+                        const canvasWidthExpanded = image.width + drawingExpandImg.expand;
+                        const canvasHeightExpanded = image.height + drawingExpandImg.expand;
+                        // Dimensions de l'image de fond
+                        const imageWidth = bgImage.width;
+                        const imageHeight = bgImage.height;
+
+                        // Calculer les ratios pour ajuster l'image au canevas
+                        const canvasAspect = canvasWidthExpanded / canvasHeightExpanded;
+                        const imageAspect = imageWidth / imageHeight;
+
+                        let drawWidth, drawHeight, offsetX, offsetY;
+
+                        if (canvasAspect < imageAspect) {
+                            // La largeur du canevas est plus grande proportionnellement que la hauteur
+                            drawHeight = canvasHeightExpanded;
+                            drawWidth = drawHeight * imageAspect;
+                            offsetX = (canvasWidthExpanded - drawWidth) / 2;
+                            offsetY = 0;
+                        } else {
+                            // La hauteur du canevas est plus grande proportionnellement que la largeur
+                            drawWidth = canvasWidthExpanded;
+                            drawHeight = drawWidth / imageAspect;
+                            offsetX = 0;
+                            offsetY = (canvasHeightExpanded - drawHeight) / 2;
+                        }
+
+                        // Application des filtres
+                        ctx.filter = `
+                        brightness(${drawingExpandImg.expandFilter.brightness}%)
+                        contrast(${drawingExpandImg.expandFilter.contrast}%)
+                        saturate(${drawingExpandImg.expandFilter.saturation}%)
+                        sepia(${drawingExpandImg.expandFilter.sepia}%)
+                        hue-rotate(${drawingExpandImg.expandFilter.hue}deg)
+                        blur(${drawingExpandImg.expandFilter.blur}px)
+                        grayscale(${drawingExpandImg.expandFilter.grayscale}%)
+                        invert(${drawingExpandImg.expandFilter.invert}%)
+                    `;
+
+                        // Choix de l'image à dessiner
+                        const imageToDraw = bgImage || image;
+
+                        // Dessiner l'image sur le canevas
+                        ctx.drawImage(imageToDraw, offsetX, offsetY, drawWidth, drawHeight);
+                    }
+
+
+                    if (systemShadow.type.outsideImg) {
+                        ctx.save();
+                        ctx.filter = 'none';
+                        ctx.fillStyle = shadowColorOutsideImg;
+                        ctx.filter = `blur(${systemShadow.blur.OutsideImgBlur ? shadowSize.sizeOutsideImg / 2 : 0}px)`;
+                        ctx.fillRect((drawingExpandImg.expand - shadowSize.sizeOutsideImg * 2) / 2 + systemShadow.width.OutsideImgWidth, (drawingExpandImg.expand - shadowSize.sizeOutsideImg * 2) / 2 + systemShadow.height.OutsideImgHeight, image.width + (shadowSize.sizeOutsideImg * 2), image.height + (shadowSize.sizeOutsideImg * 2));
+                        ctx.restore();
+                    }
+
+
+                    // Appliquer des transformations
+                    ctx.filter = `
                     brightness(${systemSetting.brightness}%)
                     contrast(${systemSetting.contrast}%)
                     saturate(${systemSetting.saturation}%)
@@ -522,245 +779,104 @@ export default function useDrawing() {
                     invert(${systemSetting.invert}%)
                   `;
 
+                    ctx.drawImage(img, drawingExpandImg.expand / 2, drawingExpandImg.expand / 2);
 
-                ctx.drawImage(image, drawingExpandImg / 2, drawingExpandImg / 2);
-
-
-
-                //ctx.save(); // Sauvegarder l'état actuel du contexte
-
-                // Ombre en haut
-                //let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.2);
-                //gradient.addColorStop(0, rgbaColor);
-                //gradient.addColorStop(0.5, rgbaColor);
-                //gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-                //ctx.fillStyle = gradient;
-                //ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                // Ombre à gauche
-                //gradient = ctx.createLinearGradient(0, 0, canvas.width * 0.2, 0);
-                //gradient.addColorStop(0, rgbaColor);
-                //gradient.addColorStop(0.5, rgbaColor);
-                //gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-                //ctx.fillStyle = gradient;
-                //ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                // Ombre en bas
-                //gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height * 0.8);
-                //gradient.addColorStop(0, rgbaColor);
-                //gradient.addColorStop(0.5, rgbaColor);
-                //gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-                //ctx.fillStyle = gradient;
-                //ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                // Ombre à droite
-                //gradient = ctx.createLinearGradient(canvas.width, 0, canvas.width * 0.8, 0);
-                //gradient.addColorStop(0, rgbaColor);
-                //gradient.addColorStop(0.5, rgbaColor);
-                //gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-                //ctx.fillStyle = gradient;
-                //ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-
-                // Appliquer une autre ombre pour le côté gauche et droit (horizontal)
-                //ctx.shadowColor = 'rgba(0, 0, 0, 1)';
-                //ctx.shadowBlur = 100;
-                //ctx.shadowOffsetX = 0;
-                //ctx.shadowOffsetY = 50;
-                //ctx.fillRect(-100, -50, canvas.width + 200, canvas.height + 100);
-
-                //ctx.restore();
-
-                // Réinitialiser le filtre pour ne pas affecter les images overlay
-                ctx.filter = 'none';
-
-                isImgOverlaySave?.forEach((el) => {
-                    const smallImage = new Image();
-                    smallImage.src = el.img;
-                    smallImage.onload = () => {
-                        ctx.save();  // Sauvegarder l'état actuel du contexte
-
-                        const frameWidth = el.w;
-                        const frameHeight = el.h;
-                        const positionX = el.x + drawingExpandImg / 2;
-                        const positionY = el.y + drawingExpandImg / 2;
-                        const opacity = el.opacity;
-                        const filters = el.filter;
-
-                        const shadowWidth = el.shadow || 0; // Largeur du bord
-                        const borderColor = el.borderColor; // Couleur du bord
-
-
-                        const sourceWidth = smallImage.width;
-                        const sourceHeight = smallImage.height;
-
-                        // Calculer l'échelle pour que l'image source soit contenue dans l'encadrement
-                        const scale = Math.max(frameWidth / sourceWidth, frameHeight / sourceHeight);
-
-                        // Calculer les dimensions recadrées
-                        const cropWidth = frameWidth / scale;
-                        const cropHeight = frameHeight / scale;
-
-                        // Calculer la position pour centrer l'image recadrée
-                        const cropX = frameWidth <= frameHeight ? (el.cropY / 100) * (sourceWidth - cropWidth) : (sourceWidth - cropWidth) / 2;
-                        const cropY = frameWidth >= frameHeight ? (el.cropY / 100) * (sourceHeight - cropHeight) : (sourceHeight - cropHeight) / 2;
-                        //const cropY = (sourceHeight - cropHeight) / 2;
-
-                        const handleForm = (form: string, frameWidth: number, frameHeight: number) => {
-                            if (form === "square" || form === "squareShadow") {
-                                return 0;
-                            } else if (form === "squareRounded" || form === "squareRoundedShadow") {
-                                return Math.min(frameWidth, frameHeight) / 6;
-                                //return 20;
-                            } else if (form === "circle" || form === "circleShadow") {
-                                return Math.min(frameWidth, frameHeight) / 2;
-                            }
-                            return 0;
-                        };
-
-                        // Supposons que `el` contient les informations sur la forme et le contexte de canvas `ctx`
-                        const borderRadius = handleForm(el.form, frameWidth, frameHeight);
-
-                        // Dessiner la bordure arrondie
-                        ctx.beginPath();
-                        ctx.moveTo(positionX + borderRadius, positionY);
-                        ctx.lineTo(positionX + frameWidth - borderRadius, positionY);
-                        ctx.quadraticCurveTo(positionX + frameWidth, positionY, positionX + frameWidth, positionY + borderRadius);
-                        ctx.lineTo(positionX + frameWidth, positionY + frameHeight - borderRadius);
-                        ctx.quadraticCurveTo(positionX + frameWidth, positionY + frameHeight, positionX + frameWidth - borderRadius, positionY + frameHeight);
-                        ctx.lineTo(positionX + borderRadius, positionY + frameHeight);
-                        ctx.quadraticCurveTo(positionX, positionY + frameHeight, positionX, positionY + frameHeight - borderRadius);
-                        ctx.lineTo(positionX, positionY + borderRadius);
-                        ctx.quadraticCurveTo(positionX, positionY, positionX + borderRadius, positionY);
-                        ctx.closePath();
-
-                        if (el.form === "squareShadow" || el.form === "squareRoundedShadow" || el.form === "circleShadow") {
-                            // Remplir la bordure
-                            ctx.fillStyle = borderColor;
-                            // Appliquer un effet de flou en utilisant un rectangle plus petit à l'intérieur pour simuler un flou "inset"
-                            ctx.filter = `blur(${shadowWidth}px)`;
-                            ctx.fillStyle = borderColor;
-                            ctx.fill();
-
-                        }
-
-                        //// Clip pour l'intérieur du rectangle arrondi
-                        ctx.save();
-                        ctx.beginPath();
-                        ctx.moveTo(positionX + borderRadius + shadowWidth, positionY + shadowWidth);
-                        ctx.lineTo(positionX + frameWidth - borderRadius - shadowWidth, positionY + shadowWidth);
-                        ctx.quadraticCurveTo(positionX + frameWidth - shadowWidth, positionY + shadowWidth, positionX + frameWidth - shadowWidth, positionY + borderRadius + shadowWidth);
-                        ctx.lineTo(positionX + frameWidth - shadowWidth, positionY + frameHeight - borderRadius - shadowWidth);
-                        ctx.quadraticCurveTo(positionX + frameWidth - shadowWidth, positionY + frameHeight - shadowWidth, positionX + frameWidth - borderRadius - shadowWidth, positionY + frameHeight - shadowWidth);
-                        ctx.lineTo(positionX + borderRadius + shadowWidth, positionY + frameHeight - shadowWidth);
-                        ctx.quadraticCurveTo(positionX + shadowWidth, positionY + frameHeight - shadowWidth, positionX + shadowWidth, positionY + frameHeight - borderRadius - shadowWidth);
-                        ctx.lineTo(positionX + shadowWidth, positionY + borderRadius + shadowWidth);
-                        ctx.quadraticCurveTo(positionX + shadowWidth, positionY + shadowWidth, positionX + borderRadius + shadowWidth, positionY + shadowWidth);
-                        ctx.closePath();
-                        ctx.clip();
-
-                        ctx.globalAlpha = opacity;
-
-
-                        // Appliquer des transformations
-                        ctx.filter = `
-                          brightness(${filters.brightness}%)
-                          contrast(${filters.contrast}%)
-                          saturate(${filters.saturation}%)
-                          sepia(${filters.sepia}%)
-                          hue-rotate(${filters.hue}deg)
-                          blur(${filters.blur}px)
-                          grayscale(${filters.grayscale}%)
-                          invert(${filters.invert}%)
-                        `;
-
-                        // Dessiner l'image recadrée et redimensionnée sur le canvas, en laissant de la place pour la bordure
-                        ctx.drawImage(
-                            smallImage,
-                            cropX,
-                            cropY,
-                            cropWidth,
-                            cropHeight,
-                            positionX,   // Décaler l'image pour laisser la place de la bordure
-                            positionY,   // Décaler l'image pour laisser la place de la bordure
-                            frameWidth,  // Redimensionner l'image pour compenser la taille de la bordure
-                            frameHeight // Redimensionner l'image pour compenser la taille de la bordure
-                        );
-
-
-                        ctx.restore();  // Restaurer l'état précédent du contexte
-
-                    };
-                });
-
-                const filigraneImage = new Image();
-                filigraneImage.src = SystemLogo.src || '';
-                filigraneImage.onload = () => {
-                    ctx.save();
-
-                    // Désactiver les filtres précédemment appliqués
+                    // Réinitialiser le filtre pour ne pas affecter les images overlay
                     ctx.filter = 'none';
 
-                    // Calculer la nouvelle taille du filigrane pour qu'il représente 20 % de la taille de l'image principale
-                    const scaleFactor = 0.2; // 20%
-                    const watermarkWidth = image.width * scaleFactor;
-                    const watermarkHeight = filigraneImage.height * (watermarkWidth / filigraneImage.width);
 
-                    // Calculer la position pour afficher le filigrane en bas à droite
-                    const x = image.width - watermarkWidth - 10 + drawingExpandImg;
-                    const y = image.height - watermarkHeight - 10 + drawingExpandImg;
-
-                    // Dessiner le filigrane redimensionné sur le canvas principal
-                    ctx.drawImage(filigraneImage, x, y, watermarkWidth, watermarkHeight);
-
-                    ctx.restore();
-                }
+                    if (systemShadow.type.insetImg) {
+                        // Main image shadow
+                        UseDrawingRendering.drawInsetShadow(ctx, drawingExpandImg.expand / 2, drawingExpandImg.expand / 2, image.width, image.height, shadowSize.sizeImg, shadowColorImg, shadowColorTransparentImg);
+                    }
 
 
-                // Attendre que canvg termine le rendu avant d'extraire l'image
-                setTimeout(() => {
-                    // Obtenir l'image en base64
-                    const imgData = canvas.toDataURL('image/png');
+                    const loadImage = (el: IsNewOverlaySave): Promise<LoadedImage> => {
+                        return new Promise((resolve) => {
+                            const img = new Image();
+                            img.src = el.img;
+                            img.onload = () => resolve({ img, el });
+                        });
+                    };
 
-                    function isSignificantImage(canvas: HTMLCanvasElement) {
-                        const context = canvas.getContext("2d");
-                        if (!context) return false;
+                    const images = await Promise.all(
+                        isImgOverlaySave.map(el => loadImage(el))
+                    );
+                    if (!images) return;
 
-                        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                        const data = imageData.data;
 
-                        // Parcourir tous les pixels
-                        for (let i = 0; i < data.length; i += 4) {
-                            const red = data[i];
-                            const green = data[i + 1];
-                            const blue = data[i + 2];
-                            const alpha = data[i + 3];
+                    // Overlay images
+                    UseDrawingRendering.drawOverlayImg(ctx, drawingExpandImg.expand, images)
 
-                            // Vérifier si le pixel n'est pas totalement transparent
-                            if (alpha !== 0) {
-                                // Vérifier si le pixel est différent de la transparence totale (0,0,0,0)
-                                // Ici, on vérifie si au moins un canal de couleur est non nul
-                                if (red !== 0 || green !== 0 || blue !== 0) {
-                                    return true;
-                                }
+
+                    if (systemShadow.type.insetExpand) {
+                        // Main image shadow
+                        UseDrawingRendering.drawInsetShadow(ctx, shadowX, shadowY, shadowWidth, shadowHeight, shadowSize.sizeExpand, shadowColorExpand, shadowColorTransparentExpand);
+                    }
+
+                    // Applique le filtre de netteté
+                    if (ctx && isRenderingOption.sharpenImg) {
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const sharpenedData = UseDrawingRendering.applySharpenFilter(imageData);
+                        ctx.putImageData(sharpenedData, 0, 0);
+                    }
+
+
+                    const filigraneImage = new Image();
+                    filigraneImage.src = SystemLogo.src || '';
+                    filigraneImage.onload = () => {
+                        ctx.save();
+                        // Désactiver les filtres précédemment appliqués
+                        ctx.filter = 'none';
+
+                        /*if (false) {
+                            // Calculer la nouvelle taille du filigrane pour qu'il représente 20 % de la taille de l'image principale
+                            const scaleFactor = 0.2; // 20%
+                            const watermarkWidth = image.width * scaleFactor;
+                            const watermarkHeight = filigraneImage.height * (watermarkWidth / filigraneImage.width);
+                            // Calculer la position pour afficher le filigrane en bas à droite
+                            const x = image.width - watermarkWidth + drawingExpandImg.expand;
+                            const y = image.height - watermarkHeight + drawingExpandImg.expand;
+                            // Dessiner le filigrane redimensionné sur le canvas principal
+                            ctx.drawImage(filigraneImage, x, y, watermarkWidth, watermarkHeight);
+                        };*/
+
+                        ctx.restore();
+
+                        // Obtenir l'image en base64 après que le filigrane soit ajouté
+                        const imgData = canvas.toDataURL('image/png');
+
+
+                        // Vérifier si l'image est significative et effectuer un redimensionnement si nécessaire
+                        if (UseDrawingRendering.isSignificantImage(canvas)) {
+
+
+                            if (isRenderingOption.reziseImg) {
+                                const image = new Image();
+                                image.src = imgData;
+                                image.onload = async () => {
+                                    const resizedImage = UseDrawingRendering.resizeImage(image, drawingExpandImg.expand, isRenderingOption);
+                                    setResultImageUrl(resizedImage || "");
+                                    resolve(true);
+                                };
+                            } else {
+                                setResultImageUrl(imgData || "");
+                                return resolve(true);
                             }
+                        } else {
+                            return reject();
                         }
-
-                        return false; // Tous les pixels sont soit totalement transparents, soit noirs avec alpha 0
+                        filigraneImage.onerror = () => {
+                            console.error('Failed to load the watermark image.');
+                            return reject();
+                        };
                     }
-                    if (isSignificantImage(canvas)) {
-                        resolve(true);
-                        setResultImageUrl(imgData);
-                    } else {
-                        reject()
-                    }
-                }, 1000);
+                }
             } catch (error) {
                 reject()
             }
         })
     };
-
 
 
     function captureElement() {
@@ -783,8 +899,9 @@ export default function useDrawing() {
             id: 0,
             form: "",
             img: "",
+            miniature: "",
             cropY: 50,
-            opacity: 1.0,
+            opacity: 1,
             shadow: 0,
             borderColor: "#000000",
             filter: {
@@ -799,39 +916,363 @@ export default function useDrawing() {
             },
         });
     }
+    const handleResetForm = () => {
+        setDrawForm({
+            id: 0,
+            color: "#000000",
+            thickness: 10,
+            opacity: 1,
+        });
+        setFormCanvasVisible("")
+    }
+    const handleResetText = () => {
+        setDrawText({
+            id: 0,
+            value: "",
+            color: "#ffffff",
+            fontSize: 24,
+            underline: "none",
+            fontStyle: "normal",
+            fontWeight: "normal",
+            textAlign: "center",
+            opacity: 1.0,
+        });
+        setTextCanvasVisible(false)
+    }
+    const handleResetSvg = () => {
+        setDrawSvg({
+            id: 0,
+            img: '',
+            svg: '',
+            thickness: 0,
+            borderColor: "#000000",
+            opacity: 1.0,
+            crop: {
+                x: 0,
+                y: 0,
+                size: 24,
+            },
+            filter: {
+                brightness: 100,
+                contrast: 100,
+                saturation: 100,
+                hue: 0,
+                blur: 0,
+                sepia: 0,
+                grayscale: 0,
+                invert: 0,
+            }
+        });
+    }
+    const handleResetSvgFull = () => {
+        setDrawSvgFull({
+            id: 0,
+            svg: '',
+            thickness: 0,
+            borderColor: "#000000",
+            color: "#000000",
+            opacity: 1.0,
+        });
+    }
+
+
+    const handleSaveImgOverlay = async (newImg?: string, form?: string, shadow?: number, miniature?: string) => {
+        const newElement = {
+            layerType: 'overlay',
+            id: Date.now(),
+            form: form ? form : isImgOverlay.form,
+            img: newImg || isImgOverlay.img,
+            miniature: miniature || newImg || isImgOverlay.miniature,
+            overflowContainer: "expand",
+            cropY: isImgOverlay.cropY,
+            opacity: isImgOverlay.opacity,
+            shadow: shadow ? shadow : isImgOverlay.shadow,
+            borderColor: shadow ? '#000000' : extractBoxShadowColor(
+                overlayImgRef?.current ? overlayImgRef.current.style.boxShadow : '#000000'
+            ),
+            h: newImg ? sizePositionOverlerlay / 2 : drawArea.height,
+            w: newImg ? sizePositionOverlerlay / 2 : drawArea.width,
+            x: newImg ? isImageSize.w / 2 - sizePositionOverlerlay / 4 : drawArea.positionX + drawArea.leftOffset,
+            y: newImg ? isImageSize.h / 2 - sizePositionOverlerlay / 4 : drawArea.positionY + drawArea.topOffset,
+            rotate: newImg ? 0 : drawArea.rotate,
+            filter: {
+                brightness: isImgOverlay.filter.brightness,
+                contrast: isImgOverlay.filter.contrast,
+                saturation: isImgOverlay.filter.saturation,
+                hue: isImgOverlay.filter.hue,
+                blur: isImgOverlay.filter.blur,
+                sepia: isImgOverlay.filter.sepia,
+                grayscale: isImgOverlay.filter.grayscale,
+                invert: isImgOverlay.filter.invert,
+            },
+        };
+        setLayers((prevLayers: any) => {
+            const updatedLayers = prevLayers.map((el: any) => {
+                if (el.id === isImgOverlay.id) {
+                    // Si l'élément existe, mettre à jour l'image
+                    return { ...newElement, overflowContainer: el.overflowContainer, id: el.id };
+                }
+                return el;
+            });
+
+            // Vérifier si l'élément avec l'ID donné existe, sinon l'ajouter
+            const elementExists = prevLayers.some((el: any) => el.id === isImgOverlay.id);
+            if (!elementExists) {
+                updatedLayers.push(newElement);
+            }
+
+            return updatedLayers;
+        });
+    };
+
+
+
+    const handleSaveForm = (form?: string) => {
+        const boxShadowColor = formDrawRef?.current?.style.boxShadow
+            ? extractBoxShadowColor(formDrawRef.current.style.boxShadow)
+            : rgbToHex(formDrawRef?.current?.style.background || "rgb(0,0,0)");
+
+        const newElement = {
+            layerType: 'form',
+            id: Date.now(),
+            formType: form ? form : isFormCanvasVisible,
+            overflowContainer: "expand",
+            color: boxShadowColor,
+            thickness: drawForm.thickness,
+            opacity: drawForm.opacity,
+            h: form ? sizePositionOverlerlay / 2 : drawArea.height,
+            w: form ? sizePositionOverlerlay / 2 : drawArea.width,
+            x: form ? isImageSize.w / 2 - sizePositionOverlerlay / 4 : drawArea.positionX + drawArea.leftOffset,
+            y: form ? isImageSize.h / 2 - sizePositionOverlerlay / 4 : drawArea.positionY + drawArea.topOffset,
+            rotate: form ? 0 : drawArea.rotate,
+        }
+
+        setLayers((prevLayers: any) => {
+            const updatedLayers = prevLayers.map((el: any) => {
+                if (el.id === drawForm.id) {
+                    // Si l'élément existe, mettre à jour l'image
+                    return { ...newElement, overflowContainer: el.overflowContainer, id: el.id };
+                }
+                return el;
+            });
+
+            // Vérifier si l'élément avec l'ID donné existe, sinon l'ajouter
+            const elementExists = prevLayers.some((el: any) => el.id === drawForm.id);
+            if (!elementExists) {
+                updatedLayers.push(newElement);
+            }
+
+            return updatedLayers;
+        });
+    }
+
+    const handleSaveText = () => {
+        const newElement = {
+            layerType: 'text',
+            id: Date.now(),
+            text: drawText.value,
+            color: drawText.color,
+            overflowContainer: "expand",
+            fontSize: drawText.fontSize,
+            underline: drawText.underline,
+            fontStyle: drawText.fontStyle,
+            fontWeight: drawText.fontWeight,
+            textAlign: drawText.textAlign,
+            opacity: drawText.opacity,
+            h: drawArea.height,
+            w: drawArea.width,
+            x: drawArea.positionX + drawArea.leftOffset,
+            y: drawArea.positionY + drawArea.topOffset,
+            rotate: drawArea.rotate,
+        };
+        setLayers((prevLayers: any) => {
+            const updatedLayers = prevLayers.map((el: any) => {
+                if (el.id === drawText.id) {
+                    // Si l'élément existe, mettre à jour l'image
+                    return { ...newElement, overflowContainer: el.overflowContainer, id: el.id };
+                }
+                return el;
+            });
+
+            // Vérifier si l'élément avec l'ID donné existe, sinon l'ajouter
+            const elementExists = prevLayers.some((el: any) => el.id === drawText.id);
+            if (!elementExists) {
+                updatedLayers.push(newElement);
+            }
+
+            return updatedLayers;
+        });
+    }
+
+    //console.log(strokePathRef.current?.style.stroke, strokeRectRef.current?.style.stroke);
+
+
+    const handleSaveSvg = (newSvg?: string, img?: string) => {
+
+        let color
+        if (strokePathRef.current) {
+            color = strokePathRef.current.style.stroke
+        } else if (strokeRectRef.current) {
+            color = strokeRectRef.current.style.stroke
+        }
+        if (color) {
+            color = UseUtilsDrawing.rgbToHex(color)
+        }
+
+        const newElement = {
+            layerType: 'overlay-svg',
+            id: Date.now(),
+            svgImg: img ? img : drawSvg.img,
+            thickness: drawSvg.thickness,
+            overflowContainer: "expand",
+            borderColor: color || "#000000",
+            opacity: drawSvg.opacity,
+            svg: newSvg ? newSvg : drawSvg.svg,
+            h: newSvg ? sizePositionOverlerlay / 2 : drawArea.height,
+            w: newSvg ? sizePositionOverlerlay / 2 : drawArea.width,
+            x: newSvg ? isImageSize.w / 2 - sizePositionOverlerlay / 4 : drawArea.positionX + drawArea.leftOffset,
+            y: newSvg ? isImageSize.h / 2 - sizePositionOverlerlay / 4 : drawArea.positionY + drawArea.topOffset,
+            rotate: newSvg ? 0 : drawArea.rotate,
+            filter: {
+                brightness: drawSvg.filter.brightness,
+                contrast: drawSvg.filter.contrast,
+                saturation: drawSvg.filter.saturation,
+                hue: drawSvg.filter.hue,
+                blur: drawSvg.filter.blur,
+                sepia: drawSvg.filter.sepia,
+                grayscale: drawSvg.filter.grayscale,
+                invert: drawSvg.filter.invert,
+            },
+            crop: {
+                x: drawSvg.crop.x,
+                y: drawSvg.crop.y,
+                size: drawSvg.crop.size,
+            },
+        }
+
+        setLayers((prevLayers: any) => {
+            const updatedLayers = prevLayers.map((el: any) => {
+                if (el.id === drawSvg.id) {
+                    // Si l'élément existe, mettre à jour l'image
+                    return { ...newElement, overflowContainer: el.overflowContainer, id: el.id };
+                }
+                return el;
+            });
+
+            // Vérifier si l'élément avec l'ID donné existe, sinon l'ajouter
+            const elementExists = prevLayers.some((el: any) => el.id === drawSvg.id);
+            if (!elementExists) {
+                updatedLayers.push(newElement);
+            }
+
+            return updatedLayers;
+        });
+    }
+
+    const handleSaveSvgFull = (newSvg?: string) => {
+
+        let color
+        if (strokePathRef.current) {
+            color = strokePathRef.current.style.stroke
+        } else if (strokeRectRef.current) {
+            color = strokeRectRef.current.style.stroke
+        }
+        if (color) {
+            color = UseUtilsDrawing.rgbToHex(color)
+        }
+
+        let colorBg
+        if (strokeRectBgRef.current) {
+            colorBg = strokeRectBgRef.current.style.fill
+        }
+        if (colorBg) {
+            colorBg = UseUtilsDrawing.rgbToHex(colorBg)
+        }
+
+        const newElement = {
+            layerType: 'overlay-svg-full',
+            id: Date.now(),
+            thickness: drawSvgFull.thickness,
+            overflowContainer: "expand",
+            borderColor: color || "#000000",
+            color: colorBg || "#000000",
+            opacity: drawSvgFull.opacity,
+            svg: newSvg ? newSvg : drawSvgFull.svg,
+            h: newSvg ? sizePositionOverlerlay / 2 : drawArea.height,
+            w: newSvg ? sizePositionOverlerlay / 2 : drawArea.width,
+            x: newSvg ? isImageSize.w / 2 - sizePositionOverlerlay / 4 : drawArea.positionX + drawArea.leftOffset,
+            y: newSvg ? isImageSize.h / 2 - sizePositionOverlerlay / 4 : drawArea.positionY + drawArea.topOffset,
+            rotate: newSvg ? 0 : drawArea.rotate,
+        }
+
+        setLayers((prevLayers: any) => {
+            const updatedLayers = prevLayers.map((el: any) => {
+                if (el.id === drawSvgFull.id) {
+                    // Si l'élément existe, mettre à jour l'image
+                    return { ...newElement, overflowContainer: el.overflowContainer, id: el.id };
+                }
+                return el;
+            });
+
+            // Vérifier si l'élément avec l'ID donné existe, sinon l'ajouter
+            const elementExists = prevLayers.some((el: any) => el.id === drawSvgFull.id);
+            if (!elementExists) {
+                updatedLayers.push(newElement);
+            }
+
+            return updatedLayers;
+        });
+    }
 
     const [isdisabledScroll, setDisabledScroll] = useState<boolean>(false);
     const handleSetBasicOverlay = () => {
+        if (isDrawingSetting.deleteOutsideOverlay === "yes") {
+            if (
+                drawArea.positionX + drawArea.width < 0 - drawingExpandImg.expand / 2 ||
+                drawArea.positionX > isImageSize.w + drawingExpandImg.expand / 2 ||
+                drawArea.positionY + drawArea.height < 0 - drawingExpandImg.expand / 2 ||
+                drawArea.positionY > isImageSize.h + drawingExpandImg.expand / 2
+            ) {
+                setLayers((prevLayers: any) =>
+                    prevLayers.filter((element: any) =>
+                        element.id !== isImgOverlay.id &&
+                        element.id !== drawForm.id &&
+                        element.id !== drawText.id &&
+                        element.id !== drawSvg.id &&
+                        element.id !== drawSvgFull.id
+                    )
+                );
+
+                handleResetSvgFull();
+                handleResetSvg();
+                handleResetForm();
+                handleResetImgOverlay();
+                handleResetText();
+
+                return;
+            }
+        }
         if (isImgOverlay.img) {
             setDisabledScroll(false)
-            setImgOverlaySave([
-                ...isImgOverlaySave,
-                {
-                    id: Date.now(),
-                    form: isImgOverlay.form,
-                    img: isImgOverlay.img,
-                    cropY: isImgOverlay.cropY,
-                    opacity: isImgOverlay.opacity,
-                    shadow: isImgOverlay.shadow,
-                    borderColor: isImgOverlay.borderColor,
-                    h: drawArea.height,
-                    w: drawArea.width,
-                    x: drawArea.positionX + drawArea.leftOffset,
-                    y: drawArea.positionY + drawArea.topOffset,
-                    filter: {
-                        brightness: isImgOverlay.filter.brightness,
-                        contrast: isImgOverlay.filter.contrast,
-                        saturation: isImgOverlay.filter.saturation,
-                        hue: isImgOverlay.filter.hue,
-                        blur: isImgOverlay.filter.blur,
-                        sepia: isImgOverlay.filter.sepia,
-                        grayscale: isImgOverlay.filter.grayscale,
-                        invert: isImgOverlay.filter.invert,
-                    },
-                },
-            ]);
+            handleSaveImgOverlay()
+            setElementIndex(0)
+        } else if (isFormCanvasVisible) {
+            handleSaveForm()
         }
+        else if (textCanvasVisible && drawText.value) {
+            handleSaveText()
+        }
+        else if (drawSvg.img) {
+            handleSaveSvg()
+        }
+        else if (drawSvgFull.svg) {
+            handleSaveSvgFull()
+        }
+        handleResetSvgFull();
+        handleResetSvg()
+        handleResetForm()
         handleResetImgOverlay()
+        handleResetText()
     }
 
     useEffect(() => {
@@ -839,7 +1280,7 @@ export default function useDrawing() {
          * Alert if clicked on outside of element
          */
         const handleClickOutside = (event: MouseEvent) => {
-            if (!isImgOverlay.img) return;
+            if (!isImgOverlay.img && !isFormCanvasVisible && !textCanvasVisible && !drawSvg.img && !drawSvgFull.svg) return;
 
             if (
                 textCanvasContainerRef.current &&
@@ -856,14 +1297,19 @@ export default function useDrawing() {
                     overlayContextRef.current.contains(event.target as Node) ||
                     overlayContextPropoverRef.current &&
                     overlayContextPropoverRef.current.contains(event.target as Node) ||
+                    drawingSidebarToolsRef.current &&
+                    drawingSidebarToolsRef.current.contains(event.target as Node) ||
+                    drawingSidebarToolsButtonRef.current &&
+                    drawingSidebarToolsButtonRef.current.contains(event.target as Node) ||
                     overlayToolsRef.current &&
                     overlayToolsRef.current.contains(event.target as Node) ||
                     overlayFiltersRef.current &&
-                    overlayFiltersRef.current.contains(event.target as Node)
+                    overlayFiltersRef.current.contains(event.target as Node) ||
+                    drawingSidebarToolsSettingRef.current &&
+                    drawingSidebarToolsSettingRef.current.contains(event.target as Node)
                 ) {
                     return;
                 }
-
                 return handleSetBasicOverlay()
             }
         };
@@ -877,43 +1323,200 @@ export default function useDrawing() {
         textCanvasContainerRef,
         isMenuOpen,
         isImgOverlay,
+        isFormCanvasVisible,
         drawArea,
         sidebarRef,
         dialogLastImportRef,
         overlayContextRef,
+        textCanvasVisible,
+        drawSvg,
+        drawSvgFull,
         handleSetBasicOverlay
     ]);
 
 
     const cropOnWheel = async (event: React.WheelEvent<HTMLDivElement>) => {
-        const min = 0;
-        const max = 100;
-        const y = event.deltaY;
-
-
-        let newSize: number;
-
-        if (y > 0) {
-            newSize = isImgOverlay.cropY + 10;
-        } else {
-            newSize = isImgOverlay.cropY - 10;
-        }
-
-        const value = Math.max(min, Math.min(max, newSize));
 
         if (isImgOverlay.img) {
+            const min = 0;
+            const max = 100;
+            const y = event.deltaY;
+
+
+            let newSize: number;
+
+
+            if (y > 0) {
+                newSize = isImgOverlay.cropY + 10;
+            } else {
+                newSize = isImgOverlay.cropY - 10;
+            }
+
+            const value = Math.max(min, Math.min(max, newSize));
+
             return setImgOverlay({
                 ...isImgOverlay,
                 cropY: value
             })
         }
-        //setResizeOnWheel(value);
     };
 
+    const HandleCanvas = (id: number, image: string) => {
+        setIsDrawingNowCanvas((prevState: any) => ({
+            ...prevState,
+            id: id,
+        }));
 
+        // Charger une image et dessiner sur un canvas temporaire
+        UseUtilsDrawing.loadImageToCanvas(image, (sourceCanvas) => {
+            const targetCanvas = canvasDrawRef.current; // Référence du canvas cible
+            if (!targetCanvas) return;
+
+            const targetContext = targetCanvas.getContext("2d", {
+                willReadFrequently: true,
+            });
+            const sourceContext = sourceCanvas.getContext("2d", {
+                willReadFrequently: true,
+            });
+
+            if (targetContext && sourceContext) {
+                // Définir les dimensions du canvas cible en fonction de l'image
+                targetCanvas.width = sourceCanvas.width;
+                targetCanvas.height = sourceCanvas.height;
+
+                // Dessiner le contenu du premier canvas sur le second via drawImage
+                targetContext.drawImage(sourceCanvas, 0, 0);
+            }
+        });
+    };
+
+    const DrawCanvasImg = () => {
+        try {
+            const canvas = canvasDrawRef.current;
+            if (!canvas) return;
+            const context = canvas.getContext('2d', { willReadFrequently: true });
+            if (!context) return;
+            const imgData = canvas.toDataURL('image/png');
+
+            const time = Date.now();
+            setLayers((prevLayers: any) => {
+                const updatedLayers = prevLayers.map((layer: any) => {
+                    if (layer.id === isDrawingNowCanvas.id) {
+                        // Si l'élément existe, mettre à jour l'image
+                        return { ...layer, img: imgData };
+                    }
+                    return layer;
+                });
+
+                // Vérifier si l'élément avec l'ID donné existe, sinon l'ajouter
+                const elementExists = prevLayers.some((layer: any) => layer.id === isDrawingNowCanvas.id);
+                if (!elementExists) {
+                    // Ajouter un nouvel élément à updatedLayers
+                    updatedLayers.push({
+                        layerType: 'draw',
+                        id: time,
+                        img: imgData,
+                        expand: drawingExpandImg.expand,
+                    });
+                    HandleCanvas(time, imgData);
+                }
+                return updatedLayers;
+            });
+        } catch (error) {
+            console.log('error save draw');
+
+        }
+    };
+
+    const base64ToImage = (base64: string): Promise<HTMLImageElement> => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.src = base64;
+            img.onload = () => resolve(img);
+            img.onerror = (err) => reject(err);
+        });
+    };
+
+    const handleAiQuality = async () => {
+        if (!isNewImage.img) return;
+        try {
+
+            const { style, noise, scale, tta, image } = { ...isAiQuality, image: isNewImage.img }
+
+
+            const img = await base64ToImage(image);
+
+            if (!img) {
+                console.error("La convertion de l'image a échoué !");
+                return;
+            }
+
+            const config: any = {
+                'image': img || null,
+                'style': style || 'art', // Remplacez 'default' par la valeur par défaut souhaitée
+                'scale': scale || 1, // Par exemple, 1 pour pas de mise à l'échelle
+                'noise': noise || 0, // Niveau de bruit par défaut
+                'tta': tta || 1, // Niveau TTA par défaut
+            };
+
+            if (!config['image']) {
+                console.error("L'image n'est pas défini !");
+                return;
+            }
+
+            const newConfig = await startWaifu(config)
+
+            if (!newConfig['model']) {
+                console.error("Le modèle n'est pas défini !");
+                return;
+            }
+
+            const result = await prepareImageWaifu(newConfig)
+
+            if (!result) {
+                console.error("La préparation de l'image a échoué !");
+                return;
+            }
+
+            const { tasks, config: updatedConfigPrepare } = result;
+
+            await processWaifu(tasks, updatedConfigPrepare, 0)
+
+        } catch (error) {
+            console.error('Erreur waifu2x-tfjs:', error); // Journaliser l'erreur
+        }
+    }
+
+    useEffect(() => {
+        if (isMenuOpen !== 4) {
+            setIsDrawingNowCanvas((prevState) => ({ ...prevState, active: false, isMouseDown: false, id: null }))
+        }
+    }, [isMenuOpen])
 
     return {
-        CreateMainCanvas,
+        isDrawingSetting,
+        setDrawingSetting,
+        isDrawingLoad,
+        setDrawingLoad,
+        setResultImageUrl,
+        drawingSidebarToolsRef,
+        drawingSidebarToolsSettingRef,
+        drawingSidebarToolsButtonRef,
+        isRenderingOption, setIsRenderingOption,
+        formDrawRef,
+        overlayImgRef,
+        overlayImgBgRef,
+        insetImgRef,
+        insetExpandRef,
+        colorOutsideImgRef,
+        expandDivRef,
+        blanketRef,
+        canvasDrawRef,
+
+        elementIndex, setElementIndex,
+        isRenderingOpen, setIsRenderingOpen,
+        formCode,
+        isProfilMenuOpen, setIsProfilMenuOpen,
         overlayContextRef,
         overlayContextPropoverRef,
         overlayFiltersRef,
@@ -932,6 +1535,17 @@ export default function useDrawing() {
         cropOnWheel,
         setDisabledScroll,
         isdisabledScroll,
+        handleResetForm,
+        handleResetText,
+        handleSaveText,
+        handleResetSvg,
+        handleSaveSvg,
+        handleResetSvgFull,
+        handleSaveSvgFull,
+        isAiQuality,
+        setAiQuality,
+        setWaifuProcess,
+        isWaifuProcess,
 
         imageRef,
         textCanvasRef,
@@ -939,11 +1553,12 @@ export default function useDrawing() {
         overlayToolsRef,
         textCanvasContainerRef,
         canvasCropRef,
-        isFileDialogOpenImport, setFileDialogOpenImport,
+        isFileDialogOpen, setFileDialogOpen,
         isImgOverlay, setImgOverlay,
         isImgOverlaySave,
         setImgOverlaySave,
         drawingExpandImg, setDrawingExpandImg,
+        drawForm, setDrawForm,
 
         isMenuOpen, setMenuOpen,
         canvasContainerRef,
@@ -954,12 +1569,14 @@ export default function useDrawing() {
         isNewImage, setNewImage,
         isNewImageImport, setNewImageImport,
         cropVisible, setCropVisible,
-        fileInputRef, handleButtonClickImport,
+        fileInputRef,
+        fileInputRef2,
+        handleButtonClickImport,
         handleFileChangeImport,
         handleDeleteImport,
 
         textCanvasVisible, setTextCanvasVisible,
-        imgCrop, setImgCrop,
+        isFormCanvasVisible, setFormCanvasVisible,
         isCanvasImage, setCanvasImage,
         isImageSize, setImageSize,
         handleStartCrop,
@@ -971,6 +1588,8 @@ export default function useDrawing() {
         handleMouseUpResizing,
         handleMouseMoveResizing,
         handleResetImgOverlay,
+        handleSaveImgOverlay,
+        handleSaveForm,
 
         leftOffset,
         width,
@@ -1001,7 +1620,6 @@ export default function useDrawing() {
         handleDeleteCropColection,
         isFreeAreaCrop, setFreeAreaCrop,
         isImgBorderOn, setImgBorderOn,
-        isImgSeparator, setImgSeparator,
         isWindowOpen, setWindowOpen,
         handleMouseDown,
         handleMouseMove,
@@ -1018,6 +1636,36 @@ export default function useDrawing() {
         setEndX,
         setEndY,
         setSelecting,
+        isMenuLayer, setMenuLayer,
+        isLayers, setLayers,
+        drawDrawing, setDrawDrawing,
+        setBlanket,
+        isBlanket,
+
+        startDrawingNowCanvas,
+        drawNowCanvas,
+        stopDrawingNowCanvas,
+        setIsDrawingNowCanvas,
+        BreakDrawingNowCanvas,
+        isDrawingNowCanvas,
+        DrawCanvasImg,
+        RestartDrawingNowCanvas,
+        HandleCanvas,
+
+
+        scrollGrabScrollRef,
+        handleMouseDownGrabScroll,
+        handleMouseUpGrabScroll,
+        handleMouseMoveGrabScroll,
+        isDraggingGrabScroll,
+
+        drawSvg, setDrawSvg,
+        drawSvgFull, setDrawSvgFull,
+        strokePathRef,
+        strokeRectRef,
+        strokeRectBgRef,
+        handleAiQuality,
+        hasTransparency,
 
     }
 }

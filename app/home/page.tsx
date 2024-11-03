@@ -4,53 +4,38 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
-import Image from "next/image";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { imagesIllustration, mascotteArtvibes } from "@/models/schema";
+import { mascotteArtvibes } from "@/models/schema";
 import { Badge } from "@/components/ui/badge";
 import {
   AddsInternals,
-  SystemAddsDrawingMin,
-  SystemAddsMin,
-  SystemAddsPremiumMin,
-  SystemCoverImg,
-  SystemLogo,
+  DrawingLoadItems,
+  DrawingName,
+  DrawingVersion,
+  FontsEditorName,
+  FontsEditorVersion,
+  SystemCover,
+  SystemDrawingDiscoverModel,
+  SystemDrawingVideoToGif,
+  SystemFontImg,
   SystemName,
-  SystemNoImg,
+  SystemNewProjectDrawing,
+  SystemPixelImg,
 } from "@/public/assets/data/data";
 import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
-import { FiLayout, FiSmile } from "react-icons/fi";
 import { useAppContext } from "@/app/provider/useAppContext";
-import Link from "next/link";
 import HomeImages from "./(components)/images/home-images";
-import HomeManga from "./(components)/mangas/home-manga";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { CalendarIcon, MapPinIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from "@/components/ui/command";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -59,9 +44,48 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import HomePost from "./(components)/post/home-post";
+import {
+  LuArrowRight,
+  LuCaseSensitive,
+  LuCrop,
+  LuFlag,
+  LuFolder,
+  LuFolderSearch,
+  LuFrown,
+  LuGalleryHorizontalEnd,
+  LuGem,
+  LuImage,
+  LuInfo,
+  LuLayoutPanelLeft,
+  LuLoader2,
+  LuSmile,
+  LuSquareStack,
+  LuX,
+} from "react-icons/lu";
+import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
+import { FaDrawPolygon } from "react-icons/fa6";
+import HomeModel from "./(components)/mangas/home-model";
+import { RemoveScroll } from "react-remove-scroll";
+import AvatarSVG from "@/public/assets/images/avatar/svgTest";
+import Credits from "../(components)/credit/credits";
+import { Input } from "@/components/ui/input";
+import Bot from "../(components)/bot/bot";
 
 export default function HomeWebsite() {
+  useEffect(() => {
+    // Sauvegarde de l'état original de overflow du body
+    const originalOverflow = document.body.style.overflow;
+    // Cache la barre de défilement
+    document.body.style.overflow = "hidden";
+    // Restaure l'état original de overflow lors du démontage du composant
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
   const UseAppContext = useAppContext();
+
+  const isNewImage = UseAppContext.isNewImage;
 
   //onClick={() => {
   //  if (handleViewImage) {
@@ -77,7 +101,7 @@ export default function HomeWebsite() {
   improve your experience. Thank you for visiting!`;
 
   // Définir l'état pour suivre la valeur sélectionnée
-  const [selectedValue, setSelectedValue] = useState<string>("images");
+  const [selectedValue, setSelectedValue] = useState<string>("artvibe");
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -94,191 +118,330 @@ export default function HomeWebsite() {
     }
   }, [type]);
 
+  const menuItems = [
+    {
+      title: DrawingName,
+      version: DrawingVersion,
+      icon: FaDrawPolygon,
+      img: SystemNewProjectDrawing.src,
+      link: "drawing",
+      info: (
+        <Button
+          variant="outline"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <LuInfo className="w-5 h-5 mr-2" /> info
+        </Button>
+      ),
+      modele: (
+        <Button
+          variant="outline"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <LuInfo className="w-5 h-5 mr-2" /> info
+        </Button>
+      ),
+    },
+  ];
+
+  const toolItems = [
+    {
+      title: FontsEditorName,
+      version: FontsEditorVersion,
+      icon: LuCaseSensitive,
+      img: SystemFontImg.src,
+      link: "#",
+      info: (
+        <Button
+          variant="outline"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <LuInfo className="w-5 h-5 mr-2" /> info
+        </Button>
+      ),
+    },
+    {
+      title: "Gif editor",
+      version: FontsEditorVersion,
+      icon: LuGalleryHorizontalEnd,
+      img: SystemDrawingVideoToGif.src,
+      link: "#",
+      info: (
+        <Button
+          variant="outline"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <LuInfo className="w-5 h-5 mr-2" /> info
+        </Button>
+      ),
+    },
+  ];
+
   return (
     <>
-      <div className="flex items-center pt-[60px] flex-col mb-[100px]">
-        <div className="w-[90%] flex justify-center items-center max-w-max h-max flex-col">
-          <div className="flex justify-center items-center w-[100%] flex-col">
-            <div className="w-max flex items-center mt-5 flex-col p-3">
-              <Avatar className="w-[100px] h-[100px] shadow-lg shadow-pink-700">
-                <AvatarImage
-                  src={mascotteArtvibes.src}
-                  alt="@shadcn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onContextMenu={(e) => e.preventDefault()}
-                />
-              </Avatar>
-              <div className="font-bold z-10">ArtVibes</div>
-              <Badge className="bg-gradient-to-r from-fuchsia-600 to-pink-600">
-                ArtVibes
-              </Badge>
-            </div>
+      <RemoveScroll removeScrollBar={true} className="h-screen w-screen">
+        <video
+          className="w-screen h-screen fixed top-0 object-cover"
+          autoPlay={true}
+          muted
+          loop
+        >
+          <source
+            src="/assets/videos/artvibe-studio/691452_bg.mp4"
+            type="video/mp4"
+          />
+        </video>
+        {/*<div
+          className="w-screen h-screen fixed top-0 main-bg-animated"
+          style={{
+            zIndex: -1,
+            backgroundImage: `url(${SystemCover.src})`,
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat",
+          }}
+        />*/}
+        <div className="w-full h-full overflow-hidden flex items-center justify-center">
+          <div className="h-[100%] w-[90%] max-w-[1200px]">
+            <ScrollArea className="h-[100%] w-[100%] border-none">
+              <Card className="p-4 w-[100%] h-[100%] bg-inherit border-none">
+                <CardHeader className="bg-black/50 rounded backdrop-blur-sm">
+                  <CardTitle className="flex">
+                    {SystemName} <FaDrawPolygon className="text-1xl ml-2" />
+                  </CardTitle>
+                  <CardDescription>
+                    Artvibe Studio a été créé dans le but de mettre en
+                    valeur mes compétences. C'est un projet conçu pour démontrer
+                    mon expertise dans divers domaines créatifs et techniques,
+                    en proposant une plateforme qui reflète mes capacités et mon
+                    engagement envers l'excellence.
+                  </CardDescription>
+                </CardHeader>
+                <Separator className="my-4" />
+                <CardContent>
+                  {isNewImage.img && (
+                    <>
+                      <h1 className="text-2xl font-bold text-start w-full my-10 flex items-center">
+                        in progress...{" "}
+                        <LuLoader2 className="ml-4 animate-spin" />
+                      </h1>
+                      <div className="w-full grid md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 xl:gap-8 items-start">
+                        <div
+                          className="bg-secondary p-6 overflow-hidden rounded-lg shadow-lg group cursor-pointer hover:scale-105 transition-transform main-bg-animated"
+                          style={{
+                            backgroundImage: `url(${isNewImage.img})`,
+                            backgroundRepeat: "no-repeat",
+                            backgroundSize: "cover",
+                            backgroundPosition: `${50}% ${50}%`,
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            UseAppContext.setDrawingLoad((prevState: any) => ({
+                              ...prevState,
+                              home: false,
+                            }));
+                            router.push("/drawing");
+                          }}
+                        >
+                          <div className="drawing-css-bg rounded-full p-4 inline-block mb-4 group-hover:animate-bounce shadow-md">
+                            <FaDrawPolygon className="w-8 h-8" />
+                          </div>
+                          <div
+                            className="text-lg font-semibold group-hover:underline decoration-solid decoration-2 underline-offset-4 mb-2 transition-colors duration-300"
+                            style={{ textShadow: "#000000 1px 0 10px" }}
+                          >
+                            {DrawingName}
+                          </div>
+                          version: {DrawingVersion}
+                          <Input
+                            type="text"
+                            onClick={(e: any) => {
+                              e.stopPropagation();
+                            }}
+                            onBlur={() => {
+                              if (isNewImage.fileName === "") {
+                                UseAppContext.setNewImage({
+                                  ...UseAppContext.isNewImage,
+                                  fileName: `${DrawingName}-${Date.now()}`,
+                                });
+                              }
+                            }}
+                            onChange={(e) => {
+                              UseAppContext.setNewImage({
+                                ...UseAppContext.isNewImage,
+                                fileName: e.target.value,
+                              });
+                            }}
+                            value={isNewImage.fileName}
+                            placeholder={isNewImage.fileName}
+                          />
+                          <div className="flex gap-2 opacity-30 group-hover:opacity-100 mt-4">
+                            <Button
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                            >
+                              <LuInfo className="w-5 h-5 mr-2" /> info
+                            </Button>
+                            <Button
+                              variant="outline"
+                              title="Double click"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                              onDoubleClick={() => {
+                                UseAppContext.handleResetDrawing();
+                              }}
+                            >
+                              <LuX className="w-5 h-5 mr-2" /> Close
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      <Separator className="my-4" />
+                    </>
+                  )}
+                  <h1 className="text-2xl font-bold text-start w-full my-10">
+                    Applications
+                  </h1>
+                  <div className="w-full grid md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 xl:gap-8 items-start">
+                    {menuItems.map((item, index) => (
+                      <div
+                        key={index}
+                        className="bg-secondary p-6 overflow-hidden rounded-lg shadow-lg group cursor-pointer hover:scale-105 transition-transform duration-300"
+                        style={{
+                          backgroundImage: item.img
+                            ? `url(${item.img})`
+                            : "none",
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: "cover",
+                          backgroundPosition: `${50}% ${50}%`,
+                        }}
+                        onClick={() => {
+                          router.push(item.link);
+                          UseAppContext.setDrawingLoad((prevState: any) => ({
+                            ...prevState,
+                            home: true,
+                          }));
+                        }}
+                      >
+                        <div className="drawing-css-bg rounded-full p-4 inline-block mb-4 group-hover:animate-bounce shadow-md">
+                          {UseAppContext.isDrawingLoad?.load ? (
+                            <item.icon className="w-8 h-8" />
+                          ) : (
+                            <LuLoader2 className="w-8 h-8 animate-spin" />
+                          )}
+                        </div>
+                        <h3
+                          className="text-lg font-semibold group-hover:underline decoration-solid decoration-2 underline-offset-4 mb-2 transition-colors duration-300"
+                          style={{ textShadow: "#000000 1px 0 10px" }}
+                        >
+                          {item.title}
+                        </h3>
+                        <div className="text-[12px]">
+                          version: {item.version}
+                        </div>
 
-            <div className="leading-7 [&:not(:first-child)]:mt-6 w-[100%] max-w-[1200px] text-center">
-              <TextGenerateEffect words={words} />
-            </div>
-            <div className="flex justify-center m-1">
-              <Button
-                type="button"
-                variant={"link"}
-                className="text-white mr-1"
-              >
-                I have a suggestion
-                <FiSmile className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
+                        <div className="flex gap-2 opacity-30 group-hover:opacity-100 mt-4">
+                          {item.info}
+                          <Button
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            <LuFolderSearch className="w-5 h-5 mr-2" />{" "}
+                            components
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <Separator className="my-4" />
+                  <h1 className="text-2xl font-bold text-start w-full my-10">
+                    Tools
+                  </h1>
+                  <div className="w-full grid md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 xl:gap-8 items-start">
+                    {toolItems.map((item, index) => (
+                      <div
+                        key={index}
+                        className="bg-secondary p-6 overflow-hidden rounded-lg shadow-lg group cursor-pointer hover:scale-105 transition-transform duration-300"
+                        style={{
+                          backgroundImage: item.img
+                            ? `url(${item.img})`
+                            : "none",
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: "cover",
+                          backgroundPosition: `${50}% ${50}%`,
+                        }}
+                        onClick={() => {
+                          router.push(item.link);
+                          UseAppContext.setDrawingLoad((prevState: any) => ({
+                            ...prevState,
+                            home: true,
+                          }));
+                        }}
+                      >
+                        <div className="drawing-css-bg rounded-full p-4 inline-block mb-4 group-hover:animate-bounce shadow-md">
+                          {UseAppContext.isDrawingLoad?.load ? (
+                            <item.icon className="w-8 h-8" />
+                          ) : (
+                            <LuLoader2 className="w-8 h-8 animate-spin" />
+                          )}
+                        </div>
+                        <h3
+                          className="text-lg font-semibold group-hover:underline decoration-solid decoration-2 underline-offset-4 mb-2 transition-colors duration-300"
+                          style={{ textShadow: "#000000 1px 0 10px" }}
+                        >
+                          {item.title}
+                        </h3>
+                        <div className="text-[12px]">
+                          version: {item.version}
+                        </div>
+
+                        <div className="flex gap-2 opacity-30 group-hover:opacity-100 mt-4">
+                          {item.info}
+                          <Button
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            <LuFolderSearch className="w-5 h-5 mr-2" />{" "}
+                            components
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <Credits />
+                  <Separator className="my-4" />
+                  <BentoGrid className="h-max md:auto-rows-max my-10">
+                    {DrawingLoadItems.map((item, i) => (
+                      <BentoGridItem
+                        key={i}
+                        //header={item.header}
+                        title={item.title}
+                        description={item.description}
+                        //icon={item.icon}
+                        className={"h-max bg-black/90"}
+                      />
+                    ))}
+                  </BentoGrid>
+                </CardContent>
+              </Card>
+            </ScrollArea>
           </div>
         </div>
-      </div>
-      <div className="flex items-start justify-center pt-[10px] 2xl:justify-center">
-        <Card className="w-[90%] max-w-[250px] h-[80vh] sticky top-20 m-4 hidden 2xl:flex">
-          <ScrollArea className=" h-full w-full">
-            <CardHeader>
-              <CardTitle className="text-1xl">Home</CardTitle>
-              <CardDescription>Display preference</CardDescription>
-            </CardHeader>
-            {type && (
-              <CardContent>
-                <RadioGroup defaultValue={type} onValueChange={handleChange}>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="images" id="r21" />
-                    <Label htmlFor="r21">Images</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="manga" id="r22" />
-                    <Label htmlFor="r22">Manga</Label>
-                  </div>
-
-                  <Separator className="my-2" orientation="horizontal" />
-
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="events" id="r23" />
-                    <Label htmlFor="r23">Events</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="posts" id="r24" />
-                    <Label htmlFor="r24">Posts</Label>
-                  </div>
-                </RadioGroup>
-              </CardContent>
-            )}
-
-            <Separator className="my-2" orientation="horizontal" />
-
-            <CardContent>
-              <div className="space-y-2">
-                <div className="text-[14px] inline-block rounded-lg gradient5 px-3 py-1 font-medium text-primary-foreground">
-                  Special Event
-                </div>
-                <h2 className="text-1xl font-bold">
-                  Join Alpha Discovery and Earn Credits for Free! 🌟
-                </h2>
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center gap-2">
-                  <CalendarIcon className="w-5 h-5 text-muted-foreground" />
-                  <p className="text-[14px] text-muted-foreground">
-                    End: 15/07/2024
-                  </p>
-                </div>
-              </div>
-              <p className="text-[14px] text-muted-foreground">
-                We're excited to invite you to participate in our exclusive
-                Alpha Phase! To celebrate this exciting first step, we are
-                offering all new users full access to our image editing app. By
-                creating an account, you will unlock 100 free credits to use on
-                our platform!
-              </p>
-            </CardContent>
-          </ScrollArea>
-        </Card>
-
-        <div className="w-[90%] max-w-[1200px] 2xl:max-w-[950px] flex justify-center items-center h-max flex-col">
-          <Tabs
-            defaultValue={"images"}
-            value={selectedValue}
-            className="w-full"
-          >
-            <TabsContent value="images">
-              <HomeImages />
-            </TabsContent>
-            <TabsContent value="manga">
-              <HomeManga />
-            </TabsContent>
-            <TabsContent value="posts">
-              <HomePost />
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        <Card className="w-[100%] max-w-[250px] min-w-[250px] h-full overflow-hidden sticky top-20 m-4 hidden 2xl:flex flex-col">
-          {AddsInternals?.map((promise, index) => (
-            <div key={index} className="relative w-400 min-h-[240px]">
-              <div className="text-[14px]">{promise.type}</div>
-              <img
-                src={promise.img.src}
-                alt="Annonce"
-                width={400}
-                height={240}
-                className="w-full h-auto object-cover"
-              />
-
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-0 hover:opacity-100 transition">
-                <HoverCard>
-                  <HoverCardTrigger asChild>
-                    <Button className="p-2 h-8">Details ...</Button>
-                  </HoverCardTrigger>
-                  <HoverCardContent className="w-full max-w-md rounded-lg shadow-lg">
-                    <div className="grid grid-cols-3 gap-2">
-                      <img
-                        src={promise.img.src}
-                        width={200}
-                        height={150}
-                        alt="Annonce 1"
-                        className="rounded-l-lg object-cover"
-                      />
-                      <img
-                        src={promise.img.src}
-                        width={200}
-                        height={150}
-                        alt="Annonce 2"
-                        className="object-cover"
-                      />
-                      <img
-                        src={promise.img.src}
-                        width={200}
-                        height={150}
-                        alt="Annonce 3"
-                        className="rounded-r-lg object-cover"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-2 mt-2">
-                      <div>
-                        {promise.titre && (
-                          <h3 className="text-xl font-bold mb-2">
-                            {promise.titre}
-                          </h3>
-                        )}
-                        {promise.description && (
-                          <p className="text-muted-foreground">
-                            {promise.description}
-                          </p>
-                        )}
-                      </div>
-
-                      <Button className="p-2 h-8 mt-2">Open</Button>
-                      <Button className="p-2 h-8">Contact the owner</Button>
-                    </div>
-                  </HoverCardContent>
-                </HoverCard>
-                <Button className="p-2 h-8">Open</Button>
-                <Button className="p-2 h-8">Contact the owner</Button>
-              </div>
-            </div>
-          ))}
-        </Card>
-      </div>
+      </RemoveScroll>
     </>
   );
 }

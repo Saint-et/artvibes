@@ -151,13 +151,13 @@ export default function HomePost() {
                     <span className="sr-only">J'aime</span>
                   </Button>
                   <div className="text-sm text-muted-foreground">10 likes</div>
-                  {/*<Button className="rounded-full" variant="ghost" size="icon">
+                  <Button className="rounded-full" variant="ghost" size="icon">
                     <MessageCircleIcon className="w-4 h-4" />
                     <span className="sr-only">Commenter</span>
                   </Button>
                   <div className="text-sm text-muted-foreground">
                     5 comments
-                  </div>*/}
+                  </div>
                   <Button className="rounded-full" variant="ghost" size="icon">
                     <SendIcon className="w-4 h-4" />
                     <span className="sr-only">Partager</span>

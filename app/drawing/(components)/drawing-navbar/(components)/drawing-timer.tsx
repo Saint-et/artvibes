@@ -18,6 +18,7 @@ import {
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { FaClock } from "react-icons/fa6";
+import { LuTimer } from "react-icons/lu";
 
 interface IsNewImage {
   id: number;
@@ -26,13 +27,13 @@ interface IsNewImage {
 }
 
 interface TimerProps {
-  duration: number; // durée en secondes
+  //duration: number; // durée en secondes
   onComplete?: () => void; // fonction optionnelle appelée à la fin du timer
   isNewImage: IsNewImage;
 }
 
 const DrawingTimer: React.FC<TimerProps> = (props) => {
-  const [timeLeft, setTimeLeft] = useState(props.duration);
+  const [timeLeft, setTimeLeft] = useState(300);
 
   useEffect(() => {
     if (timeLeft === 0) {
@@ -56,7 +57,7 @@ const DrawingTimer: React.FC<TimerProps> = (props) => {
     }
 
     const timerId = setInterval(() => {
-      setTimeLeft((prevTime) => prevTime - 1);
+      setTimeLeft((prevTime: any) => prevTime - 1);
     }, 1000);
 
     return () => clearInterval(timerId);
@@ -66,11 +67,12 @@ const DrawingTimer: React.FC<TimerProps> = (props) => {
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
 
+
   return (
     <>
       <Popover>
         <PopoverTrigger className="gradient-animated1 flex items-center bg-stone-900 text-primary-foreground rounded-md px-1 py-0 text-1xl font-bold">
-          <FaClock className="mr-2" />
+          <LuTimer className="mr-2 h-5 w-5" />
           {minutes}:{seconds < 10 ? `0${seconds}` : seconds}
         </PopoverTrigger>
         <PopoverContent className="grid grid-cols-1 gap-2 gradient1">

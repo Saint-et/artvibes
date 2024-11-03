@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
-import Navbar from "./(components)/navbar";
-import { SparklesCore } from "@/components/ui/sparkles";
 import { ViewerImage } from "./viewer-image";
 import { AppProvider } from "./provider/useAppContext";
+import NavbarSystem from "./(components)/navbar-system/navbar-system";
 //import toast from "react-hot-toast";
 //toast.error("This didn't work.");
 
@@ -22,6 +21,7 @@ export default function RootLayout({
     <html className="scrollbar-style" style={{ colorScheme: "dark" }} lang="fr">
       <body className="bg-black roboto-regular text-white select-none">
         <AppProvider>
+          {/*<NavbarSystem />*/}
           <ViewerImage />
           <Toaster
             position="top-center"
@@ -31,21 +31,11 @@ export default function RootLayout({
                 background: "#000",
                 color: "#fff",
                 border: "1px solid #525252",
+                zIndex: 500000
               },
             }}
           />
-          <Navbar />
-          <div className="relative z-10">{children}</div>
-          <SparklesCore
-            id="tsparticlesfullpage"
-            background="transparent"
-            minSize={0.6}
-            maxSize={1.4}
-            particleDensity={3}
-            speed={2}
-            className="w-full fixed inset-0 h-screen z-0"
-            particleColor="#ffffff"
-          />
+          {children}
         </AppProvider>
       </body>
     </html>

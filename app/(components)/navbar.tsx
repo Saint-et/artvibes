@@ -1,9 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
 import { UserMenu } from "./navbar-menu/user-menu";
 import {
   NavigationMenu,
@@ -20,10 +16,8 @@ import {
   FiDroplet,
   FiShoppingBag,
   FiLayout,
-  FiSearch,
 } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardHeader,
@@ -32,15 +26,21 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { Briefcase, Check } from "lucide-react";
+import { BarChart, Bell, Briefcase, Check, Settings, User } from "lucide-react";
 import NavDashboard from "./navbar-menu/nav-dashboard";
 import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 import Link from "next/link";
-import { FormField, FormItem, FormControl, Form } from "@/components/ui/form";
-import { FormSchemaSearch } from "@/models/schema";
 import { SystemName } from "@/public/assets/data/data";
-import { useSearchParams, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { FaDrawPolygon } from "react-icons/fa6";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const notifications = [
   {
@@ -63,22 +63,77 @@ features that will enrich your experience.`;
 export default function Navbar() {
   const pagePathname = usePathname().split("/");
 
-  const form = useForm<z.infer<typeof FormSchemaSearch>>({
-    resolver: zodResolver(FormSchemaSearch),
-    defaultValues: {
-      search: "",
-    },
-  });
-
-  function onSubmitSearch(data: z.infer<typeof FormSchemaSearch>) {
-    console.log("Form data:", data);
-  }
-
   if (pagePathname[1] === "drawing") return null;
 
   return (
+    <nav className=" fixed top-0 z-[200000] w-full bg-black/20 text-primary-foreground p-4">
+      <div className="container mx-auto flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Mon Application</h1>
+        <div className="flex space-x-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <User className="h-5 w-5" />
+                <span className="sr-only">Profil</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Voir le profil</DropdownMenuItem>
+              <DropdownMenuItem>Déconnexion</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Bell className="h-5 w-5" />
+                <span className="sr-only">Notifications</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Nouveau message</DropdownMenuItem>
+              <DropdownMenuItem>Mise à jour système</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Settings className="h-5 w-5" />
+                <span className="sr-only">Réglages</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Réglages</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Préférences</DropdownMenuItem>
+              <DropdownMenuItem>Sécurité</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <BarChart className="h-5 w-5" />
+                <span className="sr-only">Rapports</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Rapports</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Rapport mensuel</DropdownMenuItem>
+              <DropdownMenuItem>Statistiques</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+    </nav>
+  );
+
+  return (
     <>
-      <div className="flex justify-center fixed w-full h-[50px] border-b-stone-800 border-b-[1px] backdrop-blur top-0 bg-[#000000e6] z-[20000]">
+      <div className="flex justify-center w-full h-[50px] fixed top-0 z-[20000]">
         <div className="flex justify-between items-center w-[90%]">
           <div className="flex items-center">
             <NavDashboard />
@@ -183,33 +238,6 @@ export default function Navbar() {
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmitSearch)}
-                className="flex w-full max-w-sm items-center space-x-2 mr-2"
-              >
-                <FormField
-                  control={form.control}
-                  name="search"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          className="border-none"
-                          id="search"
-                          type="search"
-                          {...field}
-                          placeholder="Search ..."
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit">
-                  <FiSearch />
-                </Button>
-              </form>
-            </Form>
             <UserMenu />
           </div>
         </div>

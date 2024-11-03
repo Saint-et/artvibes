@@ -100,6 +100,43 @@
     }*/
   }
   @layer utilities {
+    .progress-barAnimation {
+      width: 0%;
+      height: 10px;
+      background: #ec008c;
+      border-radius: 50px;
+    }
+    .speech-bubble {
+      font-size: 18px;
+      background: #ffffff;
+      margin: 0 auto;
+      width: 155px;
+      padding: 1px;
+      position: relative;
+      box-shadow: rgba(0, 0, 0, 0.3) 2px 2px 2px ;
+      border-radius: 50px;
+    }
+    
+    .speech-bubble:after {
+      content: "";
+      position: absolute;
+      box-shadow: rgba(0, 0, 0, 0.3) 2px 2px 2px ;
+      transform: rotate(45deg);
+      bottom: -10px;
+      left: 70px;
+      border-width: 10px;
+      border-style: solid;
+      border-color: transparent #ffffff #ffffff transparent;
+    }
+    
+    .speech-bubble-text {
+      color: black;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
     .gradient1{
       background: linear-gradient(to right, #2563eb, #7c3aed);
     }
@@ -132,7 +169,7 @@
       scrollbar-color: rgb(40, 40, 40) rgba(0, 0, 0, 0);
     }
     .gradient-animated5 {
-      background: linear-gradient(-45deg, #ff00cc, #333399, #ff00cc, #333399);
+      background: linear-gradient(-45deg, #00ff9d, #4e8cd3, #ff00cc, #934ed3);
       background-size: 400% 400%;
       animation: gradient 15s ease infinite;
     }
@@ -154,22 +191,6 @@
       }
     }
 
-    .background-img-animated {
-      animation: background-img-animated 40s ease infinite;
-    }
-    
-    @keyframes background-img-animated {
-      0% {
-        background-position: 0% 50%;
-      }
-      50% {
-        background-position: 100% 50%;
-      }
-      100% {
-        background-position: 0% 50%;
-      }
-    }
-
     .drawing-css-bg {
       background: 
       linear-gradient(135deg,#0000 20.5%,#171717 0 29.5%,#0000 0) 0 5px,
@@ -179,16 +200,28 @@
       #000000;
 background-size: 20px 20px;
     }
-    .drawing-css-bg-tranparent {
-      background: 
-      linear-gradient(135deg,#0000 20.5%,#000000 0 29.5%,#0000 0) 0 5px,
-      linear-gradient( 45deg,#0000 8%,#000000 0 17%, #0000 0 58%) 10px 0,
-      linear-gradient(135deg,#0000 8%,#000000 0 17%, #0000 0 58%,#000000 0 67%,#0000 0),        
-      linear-gradient( 45deg,#0000 8%,#000000 0 17%, #0000 0 58%,#000000 0 67%,#0000 0 83%,#000000 0 92%,#0000 0),
-      rgba(0, 0, 0, 0);
-background-size: 20px 20px;
+    .drawing-css-bg-negatif {
+      background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, #7d000085 10px, #7d000085 20px);
+background-color: #ff00008f;
     }
-
+    .drawing-css-bg-main-tranparent {
+      background-color: #c9c9c9;
+      background-image:  repeating-linear-gradient(45deg, #9a9a9a 25%, transparent 25%, transparent 75%, #9a9a9a 75%, #9a9a9a), repeating-linear-gradient(45deg, #9a9a9a 25%, #c9c9c9 25%, #c9c9c9 75%, #9a9a9a 75%, #9a9a9a);
+      background-position: 0 0, 7px 7px;
+      background-size: 14px 14px;
+    }
+    .hue-background {
+      background: conic-gradient(
+        from 0deg,
+        hsl(0, 100%, 50%),
+        hsl(60, 100%, 50%),
+        hsl(120, 100%, 50%),
+        hsl(180, 100%, 50%),
+        hsl(240, 100%, 50%),
+        hsl(300, 100%, 50%),
+        hsl(360, 100%, 50%)
+      );
+    }
 
 .checkbox-container {
   display: flex;
@@ -326,6 +359,57 @@ background-size: 20px 20px;
       opacity: 0;
    }
  }
+ /* Initialement, la page est invisible */
+.open-element-page-top {
+  top: 0px;
+  animation: animation-top 300ms ease-in-out;
+}
+
+@keyframes animation-top {
+  0% {
+    top: -200px;
+ }
+ 80% {
+   top: 20px;
+}
+  100% {
+    top: 0px;
+ }
+}
+
+.main-bg-animated {
+  animation: main-bg-animated 60s ease infinite;
+}
+
+@keyframes main-bg-animated {
+  0% {
+    background-position: 50% 0%;
+  }
+  50% {
+    background-position: 50% 100%;
+  }
+  100% {
+    background-position: 50% 0%;
+  }
+}
+
+.bounce-open {
+  animation: animation-bounce-open 400ms ease-in-out;
+  -moz-animation: animation-bounce-open 400ms ease-in-out;
+ /* Firefox */
+  -webkit-animation: animation-bounce-open 400ms ease-in-out;
+ /* Safari et Chrome */
+  -o-animation: animation-bounce-open 400ms ease-in-out;
+ /* Opera */
+}
+@keyframes animation-bounce-open {
+  0% {
+    transform:scale(0);
+ }
+ 100% {
+  transform:scale(1);
+}
+}
   }
 
   @layer drawing {
@@ -335,110 +419,93 @@ background-size: 20px 20px;
   /*border-radius: 5px;*/
   top: 0;
 }
-.drag-handle-content {
-  cursor: move;
-  position: absolute;
-}
-.drag-handle-content-right {
-  height: 100%;
-  width: 10px;
-  right: -5px;
-  top: 0%;
-}
-
-.drag-handle-content-bottom {
-  width: 100%;
-  height: 10px;
-  bottom: -5px;
-  left: 0%;
-}
-
-.drag-handle-content-left {
-  height: 100%;
-  width: 10px;
-  left: -5px;
-  top: 0%;
-}
-
-.drag-handle-content-top {
-  width: 100%;
-  height: 10px;
-  top: -5px;
-  left: 0%;
-}
 .drag-handle {
   position: absolute;
-  width: 15px;
-  height: 15px;
-  background-color: #006aff;
+  width: 10px;
+  height: 10px;
+  background-color: #ffffff;
+  border: 1px solid #006aff;
   cursor: move;
   z-index: 9999;
-  border-radius: 100%;
-}
-.drag-handle-top-left {
-  top: -15px;
-  left: -15px;
-  cursor: nw-resize;
-}
-.drag-handle-top-right {
-  top: -15px;
-  right: -15px;
-  cursor: ne-resize;
-}
-.drag-handle-bottom-left {
-  bottom: -15px;
-  left: -15px;
-  cursor: sw-resize;
-}
-.drag-handle-bottom-right {
-  bottom: -15px;
-  right: -15px;
-  cursor: se-resize;
 }
 .drag-handle-side {
   position: absolute;
   width: 15px;
   height: 15px;
-  background-color: #006aff;
+  background-color: #ffffff;
+  border: 1px solid #006aff;
   z-index: 9999;
-  border-radius: 100%;
 }
-.drag-handle-side-top {
+.drag-handle-content {
+  cursor: move;
+  position: absolute;
+}
+.drag-handle-top-left {
+  top: 0px;
+  left: 0px;
+  cursor: nw-resize;
+}
+.drag-handle-top-right {
+  top: 0px;
+  right: 0px;
+  cursor: ne-resize;
+}
+.drag-handle-bottom-left {
+  bottom: 0px;
+  left: 0px;
+  cursor: sw-resize;
+}
+.drag-handle-bottom-right {
+  bottom: 0px;
+  right: 0px;
+  cursor: se-resize;
+}
+.drag-handle-side-rotate {
   top: -20px;
   left: 50%;
   transform: translateX(-50%);
-  cursor: n-resize;
+  cursor: default;
   width: 20px;
   height: 10px;
-  border-radius: 50px;
+  border-radius: 0px;
 
 }
-.drag-handle-side-bottom {
-  bottom: -20px;
+.drag-handle-side-top {
+  top: 0px;
   left: 50%;
   transform: translateX(-50%);
   cursor: n-resize;
-  width: 20px;
+  width: 10px;
   height: 10px;
-  border-radius: 50px;
+  border-radius: 0px;
+
+}
+.drag-handle-side-bottom {
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: n-resize;
+  width: 10px;
+  height: 10px;
+  border-radius: 0px;
 }
 .drag-handle-side-right {
-  right: -20px;
+  right: 0px;
   top: 50%;
   transform: translateY(-50%);
   cursor: e-resize;
-  height: 20px;
+  height: 10px;
   width: 10px;
-  border-radius: 50px;
+  border-radius: 0px;
 }
 .drag-handle-side-left {
-  left: -20px;
+  left: 0px;
   top: 50%;
   transform: translateY(-50%);
   cursor: e-resize;
-  height: 20px;
+  height: 10px;
   width: 10px;
-  border-radius: 50px;
+  border-radius: 0px;
 }
 .input_textareaCreative {
   font-family: Arial, sans-serif;
@@ -452,7 +519,7 @@ background-size: 20px 20px;
   background: none;
 }
 .input_textareaCreative::selection {
-  background: rgba(0, 106, 255, 0.6);
+  background: #006aff99;
 }
 .input_textareaCreative:focus {
   border: none;
