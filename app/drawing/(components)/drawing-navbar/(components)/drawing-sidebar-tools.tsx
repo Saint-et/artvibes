@@ -27,6 +27,7 @@ import {
   LuCaseSensitive,
   LuEye,
   LuFolderCog,
+  LuGripHorizontal,
   LuImage,
   LuImageOff,
   LuInfinity,
@@ -67,6 +68,8 @@ import {
 } from "@/components/ui/select";
 import SvgComponents from "../../drawing-tools/area-tools/overlay/svg-file";
 import SvgFullComponents from "../../drawing-tools/area-tools/overlay/svg-file-full";
+import { Editor } from "draft-js";
+import { BoldDraftjsMap, ColorDraftjsMap, ItalicDraftjsMap, UnderlineDraftjsMap } from "@/public/assets/data/data";
 
 interface DrawingSidebarToolsProps {
   isImgOverlay: IsNewOverlay;
@@ -263,8 +266,8 @@ const DrawingSidebarTools: React.FC<DrawingSidebarToolsProps> = (props) => {
                   }}
                 >
                   <CardHeader className="p-1 border-b">
-                    <CardTitle className="text-[14px] flex justify-between items-center">
-                      {el.layerType}
+                    <CardTitle className="text-[18px] flex justify-between items-center">
+                      <LuGripHorizontal className="cursor-grab" />
                       <span className="flex gap-1">
                         <LuEye className="text-[16px] cursor-pointer" />
                         {el.layerType !== "draw" && (
@@ -356,24 +359,25 @@ const DrawingSidebarTools: React.FC<DrawingSidebarToolsProps> = (props) => {
 
                     {el.layerType === "text" && (
                       <div
-                        className="input_textareaCreative"
-                        style={{
-                          userSelect: "none",
-                          fontSize: el.fontSize,
-                          color: el.color,
-                          textAlign: el.textAlign,
-                        }}
-                        onMouseDown={(e) => {
-                          e.stopPropagation();
-                        }}
-                        onDragStart={(e) => {
-                          e.preventDefault();
-                        }}
-                        {...(el.text && {
-                          dangerouslySetInnerHTML: { __html: el.text },
-                        })}
-                        //contentEditable={false}
-                      />
+                        className="text-center"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onContextMenu={(e) => e.preventDefault()}
+                        onDragStart={(e) => e.preventDefault()}
+                      >
+                        <Editor
+                          editorState={el.editorDraftjs}
+                          customStyleMap={{
+                            ...ColorDraftjsMap,
+                            ...ItalicDraftjsMap,
+                            ...UnderlineDraftjsMap,
+                            ...BoldDraftjsMap,
+                          }}
+                          readOnly={true}
+                          onChange={() => {
+                            return;
+                          }}
+                        />
+                      </div>
                     )}
                     {el.layerType === "overlay-svg" && (
                       <div className="hover:scale-95">

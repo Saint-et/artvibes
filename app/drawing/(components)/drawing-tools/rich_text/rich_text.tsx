@@ -1,59 +1,78 @@
-import { DrawText } from "@/utils/interface";
-import { useEffect } from "react";
+import {
+  BoldDraftjsMap,
+  ColorDraftjsMap,
+  FontSizeDraftjsMap,
+  ItalicDraftjsMap,
+  UnderlineDraftjsMap,
+} from "@/public/assets/data/data";
+import { DrawText, LayerElement } from "@/utils/interface";
+import { convertFromRaw, Editor, EditorState } from "draft-js";
+import { useRef } from "react";
+//import "draft-js/dist/Draft.css";
 
-interface Props {
-  drawText: DrawText;
-  setDrawText: React.Dispatch<React.SetStateAction<DrawText>>;
-  textCanvasRef: React.RefObject<HTMLDivElement>;
+interface RichTextItem {
+  text: string;
+  style: Record<string, string>;
 }
 
-const Rich_text: React.FC<Props> = (props) => {
-  const handleInputChangeText = (e: any) => {
-    props.setDrawText((prevState: DrawText) => ({
-      ...prevState,
-      value: e,
-    }));
+interface RichTextProps {
+  //updateContent: (newContent: RichTextItem[]) => void;
+  //textCanvasRef: React.RefObject<Editor | null>;
+  drawText: DrawText;
+  //setDrawText: React.Dispatch<React.SetStateAction<any>>;
+  //contentRichText: RichTextItem[];
+  //setContentRichText: React.Dispatch<React.SetStateAction<any>>;
+  //contentRichTextSave: RichTextItem[];
+  //setContentRichTextSave: React.Dispatch<React.SetStateAction<any>>;
+  editorState: any;
+  setEditorState: React.Dispatch<React.SetStateAction<any>>;
+  editorRef: React.RefObject<Editor>;
+}
+
+const RichTextChild: React.FC<RichTextProps> = (props) => {
+  const handleEditorChange = (newState: EditorState) => {
+    props.setEditorState(newState);
   };
 
-  useEffect(() => {
-    if (props.textCanvasRef.current) {
-      props.textCanvasRef.current.innerHTML = props.drawText.value;
+  const blockStyleFn = (contentBlock: any) => {
+    const textAlign = contentBlock.getData().get("textAlign");
+    if (textAlign) {
+      return "text-center"; // Retourne une classe CSS
     }
-  }, []);
+    return "";
+  };
 
   return (
-    <>
-      <div
-        ref={props.textCanvasRef}
-        className="input_textareaCreative"
-        style={{
-          userSelect: "none",
-          fontSize: props.drawText.fontSize,
-          color: props.drawText.color,
-          textAlign: props.drawText.textAlign,
-          position: "absolute",
-          top: "0px",
-          left: "0px",
-          cursor: "text",
+    <div
+      className="input_textareaCreative"
+      style={{
+        zIndex: 200,
+        userSelect: "none",
+        textAlign: props.drawText.textAlign,
+        //fontSize: props.drawText.fontSize, blockStyleFn={blockStyleFn}
+        position: "absolute",
+        top: "0px",
+        left: "0px",
+        cursor: "text",
+        width: "100%",
+        height: "100%",
+      }}
+    >
+      <Editor
+        ref={props.editorRef}
+        customStyleMap={{
+          ...ColorDraftjsMap,
+          ...FontSizeDraftjsMap,
+          ...ItalicDraftjsMap,
+          ...UnderlineDraftjsMap,
+          ...BoldDraftjsMap,
         }}
-        onDoubleClick={() => {
-          if (props.textCanvasRef.current) {
-            props.textCanvasRef.current.innerHTML = props.drawText.value;
-          }
-        }}
-        onInput={(e) => {
-          handleInputChangeText(e.currentTarget.innerHTML);
-        }}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-        }}
-        onDragStart={(e) => {
-          e.preventDefault();
-        }}
-        contentEditable={true}
+        blockStyleFn={blockStyleFn}
+        editorState={props.editorState}
+        onChange={handleEditorChange}
       />
-    </>
+    </div>
   );
 };
 
-export default Rich_text;
+export default RichTextChild;

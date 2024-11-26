@@ -10,9 +10,17 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import { DataSizeText } from "@/public/assets/data/data";
-import { ColorsDrawing } from "@/public/assets/data/defaultValue-drawing";
+import {
+  arrayFontSizeDraftjsMap,
+  BoldDraftjsMap,
+  ColorDraftjsMap,
+  ColorsDrawing,
+  FontSizeDraftjsMap,
+  ItalicDraftjsMap,
+  UnderlineDraftjsMap,
+} from "@/public/assets/data/data";
 import { DrawText, IsNewOverlay, NewImageSize } from "@/utils/interface";
+import { Editor, EditorState, Modifier, RichUtils } from "draft-js";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import {
   FaAlignLeft,
@@ -23,11 +31,11 @@ import {
   FaUnderline,
   FaItalic,
 } from "react-icons/fa";
-import { FaArrowsUpDown } from "react-icons/fa6";
-import { LuPaintBucket, LuSparkles, LuTextCursorInput } from "react-icons/lu";
+import { LuSparkles, LuTextCursorInput } from "react-icons/lu";
 
 interface DrawingSidebarMenuTextProps {
   canvasRef: React.RefObject<HTMLCanvasElement>;
+  textSizeRef: React.RefObject<HTMLInputElement>;
   isMenuOpen: number;
   textCanvasVisible: boolean;
   setDrawArea: React.Dispatch<React.SetStateAction<any>>;
@@ -41,6 +49,11 @@ interface DrawingSidebarMenuTextProps {
   handleResetImgOverlay: () => void;
   handleSaveImgOverlay: () => void;
   drawText: DrawText;
+  handleSaveText: (newValue?: boolean) => void;
+  contentRichText: any;
+  setContentRichText: React.Dispatch<React.SetStateAction<any>>;
+  editorState: any;
+  setEditorState: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const DrawingSidebarMenuText: React.FC<DrawingSidebarMenuTextProps> = (
@@ -49,16 +62,84 @@ const DrawingSidebarMenuText: React.FC<DrawingSidebarMenuTextProps> = (
   const [isSystemColor, setSystemColor] = useState("#000000");
 
   const colorInputRef = useRef<HTMLInputElement | null>(null);
-  const handleButtonClickColor = () => {
-    if (colorInputRef.current) {
-      colorInputRef.current.click();
+  const handleButtonClickColor = (ref: HTMLInputElement | null) => {
+    if (ref) {
+      ref.click();
     }
   };
 
-  //useEffect(() => {
-  //  if (props.isMenuOpen === 2) return;
-  //  props.setTextCanvasVisible(false);
-  //}, [props.isMenuOpen]);
+  const justifyText = [
+    { justify: "start", icon: FaAlignLeft, click: null },
+    { justify: "center", icon: FaAlignCenter, click: null },
+    { justify: "justify", icon: FaAlignJustify, click: null },
+    { justify: "end", icon: FaAlignRight, click: null },
+  ];
+
+  const policeMap = ["Police", "Police"];
+
+  const toggleStyleDraft = (
+    toggledStyle: string,
+    styleMap?: any,
+    fontSizeMap?: any
+  ) => {
+    const selection = props.editorState.getSelection();
+
+    // Supprimer toutes les couleurs actives
+    const nextContentState = Object.keys(styleMap || fontSizeMap).reduce(
+      (contentState, value) => {
+        return Modifier.removeInlineStyle(contentState, selection, value);
+      },
+      props.editorState.getCurrentContent()
+    );
+
+    // Créer un nouvel état
+    let nextEditorState = EditorState.push(
+      props.editorState,
+      nextContentState,
+      "change-inline-style"
+    );
+
+    const currentStyle = props.editorState.getCurrentInlineStyle();
+
+    // Si la sélection est vide, retirer les styles actuels
+    if (selection.isCollapsed()) {
+      nextEditorState = currentStyle.reduce((state: any, value: any) => {
+        return RichUtils.toggleInlineStyle(state, value);
+      }, nextEditorState);
+    }
+
+    // Ajouter la nouvelle couleur si elle n'est pas déjà active
+    if (!currentStyle.has(toggledStyle)) {
+      nextEditorState = RichUtils.toggleInlineStyle(
+        nextEditorState,
+        toggledStyle
+      );
+    }
+
+    // Mettre à jour l'état de l'éditeur
+    props.setEditorState(nextEditorState);
+  };
+
+  const textParams = [
+    {
+      icon: FaBold,
+      click: () => {
+        toggleStyleDraft(`BOLD_bold`, BoldDraftjsMap);
+      },
+    },
+    {
+      icon: FaUnderline,
+      click: () => {
+        toggleStyleDraft(`UNDERLINE_underline`, UnderlineDraftjsMap);
+      },
+    },
+    {
+      icon: FaItalic,
+      click: () => {
+        toggleStyleDraft(`ITALIC_italic`, ItalicDraftjsMap);
+      },
+    },
+  ];
 
   if (props.isMenuOpen !== 2) return null;
 
@@ -71,82 +152,42 @@ const DrawingSidebarMenuText: React.FC<DrawingSidebarMenuTextProps> = (
           </div>
           <Separator className="my-2" />
           <div className="grid grid-cols-4 gap-2 p-1">
-            <Button
-              className="flex flex-col justify-center items-center h-full"
-              variant={
-                props.drawText.textAlign === "start" ? "activeBlue" : "ghost"
-              }
-              onClick={() => {
-                props.setDrawText((prevState: DrawText) => ({
-                  ...prevState,
-                  textAlign: "start",
-                }));
-              }}
-            >
-              <FaAlignLeft className="text-1xl" />
-            </Button>
-            <Button
-              className="flex flex-col justify-center items-center h-full"
-              variant={
-                props.drawText.textAlign === "center" ? "activeBlue" : "ghost"
-              }
-              onClick={() => {
-                props.setDrawText((prevState: DrawText) => ({
-                  ...prevState,
-                  textAlign: "center",
-                }));
-              }}
-            >
-              <FaAlignCenter className="text-1xl" />
-            </Button>
-            <Button
-              className="flex flex-col justify-center items-center h-full"
-              variant={
-                props.drawText.textAlign === "justify" ? "activeBlue" : "ghost"
-              }
-              onClick={() => {
-                props.setDrawText((prevState: DrawText) => ({
-                  ...prevState,
-                  textAlign: "justify",
-                }));
-              }}
-            >
-              <FaAlignJustify className="text-1xl" />
-            </Button>
-            <Button
-              className="flex flex-col justify-center items-center h-full"
-              variant={
-                props.drawText.textAlign === "end" ? "activeBlue" : "ghost"
-              }
-              onClick={() => {
-                props.setDrawText((prevState: DrawText) => ({
-                  ...prevState,
-                  textAlign: "end",
-                }));
-              }}
-            >
-              <FaAlignRight className="text-1xl" />
-            </Button>
+            {justifyText?.map((el, index) => (
+              <Button
+                key={index}
+                className="flex flex-col justify-center items-center h-full"
+                variant={
+                  props.drawText.textAlign === el.justify
+                    ? "activeBlue"
+                    : "ghost"
+                }
+                onClick={() => {
+                  props.setDrawText((prevState: DrawText) => ({
+                    ...prevState,
+                    textAlign: el.justify,
+                  }));
+                }}
+              >
+                <el.icon className="text-1xl" />
+              </Button>
+            ))}
           </div>
           <div className="grid grid-cols-3 gap-2 p-1">
-            <Button
-              className="flex flex-col justify-center items-center h-full"
-              variant="ghost"
-            >
-              <FaBold className="text-1xl" />
-            </Button>
-            <Button
-              className="flex flex-col justify-center items-center h-full"
-              variant="ghost"
-            >
-              <FaUnderline className="text-1xl" />
-            </Button>
-            <Button
-              className="flex flex-col justify-center items-center h-full"
-              variant="ghost"
-            >
-              <FaItalic className="text-1xl" />
-            </Button>
+            {textParams?.map((el, index) => (
+              <Button
+                key={index}
+                className="flex flex-col justify-center items-center h-full"
+                variant="ghost"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (el.click) {
+                    el.click(); // Appel de la fonction `click` si elle existe
+                  }
+                }}
+              >
+                <el.icon className="text-1xl" />
+              </Button>
+            ))}
           </div>
           <Separator className="my-2" />
           <div className="grid grid-cols-5 gap-4">
@@ -154,13 +195,20 @@ const DrawingSidebarMenuText: React.FC<DrawingSidebarMenuTextProps> = (
               className="rounded-full hue-background"
               variant="ghost"
               size="icon"
-              onClick={handleButtonClickColor}
+              //onMouseDown={(e) => {
+              //  e.preventDefault();
+              //}}
+              onBlur={() => {
+                let color = colorInputRef.current?.value;
+                //toggleStyleDraft(`COLOR_${color.name}`, ColorDraftjsMap);
+              }}
+              onClick={() => handleButtonClickColor(colorInputRef.current)}
             >
               <input
                 ref={colorInputRef}
-                value={isSystemColor}
+                //defaultValue={isSystemColor}
                 onChange={(e) => {
-                  setSystemColor(e.target.value);
+                  e.currentTarget.value = e.target.value;
                 }}
                 className="appearance-none cursor-pointer"
                 style={{
@@ -181,53 +229,96 @@ const DrawingSidebarMenuText: React.FC<DrawingSidebarMenuTextProps> = (
                 className="rounded-full"
                 style={{ backgroundColor: color.value }}
                 size="icon"
+                //onMouseDown={(e) => {
+                //  e.preventDefault();
+                //}}
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggleStyleDraft(`COLOR_${color.name}`, ColorDraftjsMap);
+                }}
               />
             ))}
           </div>
           <Separator className="my-2" />
+          <Select
+            value={`${"0"}`}
+            onValueChange={(e) => {
+              return;
+            }}
+          >
+            <SelectTrigger className="w-full mb-2">
+              <div>police</div>
+            </SelectTrigger>
+            <SelectContent ref={props.textSizeRef}>
+              {policeMap?.map((value, index) => (
+                <SelectItem key={index} value={`${value}`}>
+                  {value}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <div className="grid grid-cols-2 gap-2 p-1">
             <Button
               className="flex flex-col justify-center items-center h-full border"
               onClick={() => {
-                if (props.isImgOverlay.img) {
-                  props.handleResetImgOverlay();
-                  props.handleSaveImgOverlay();
-                }
-                props.setDrawText((prevState: DrawText) => ({
-                  ...prevState,
-                  id: 0,
-                  value: "",
-                  color: "#ffffff",
-                  fontSize: 24,
-                  underline: "none",
-                  fontStyle: "normal",
-                  fontWeight: "normal",
-                  textAlign: "center",
-                }));
-                props.setDrawArea({
-                  width: 300,
-                  height: 300,
-                  leftOffset: 0,
-                  topOffset: 0,
-                  positionX: props.isImageSize.w / 2 - 150,
-                  positionY: props.isImageSize.h / 2 - 150,
-                  rotate: 0,
-                });
-                props.setTextCanvasVisible(!props.textCanvasVisible);
+                //if (props.isImgOverlay.img) {
+                //  props.handleResetImgOverlay();
+                //  props.handleSaveImgOverlay();
+                //}
+                props.handleSaveText(true);
+                //props.setDrawText((prevState: DrawText) => ({
+                //  ...prevState,
+                //  id: 0,
+                //  value: "",
+                //  color: "#ffffff",
+                //  fontSize: 24,
+                //  underline: "none",
+                //  fontStyle: "normal",
+                //  fontWeight: "normal",
+                //  textAlign: "center",
+                //}));
+                //props.setDrawArea({
+                //  width: 300,
+                //  height: 300,
+                //  leftOffset: 0,
+                //  topOffset: 0,
+                //  positionX: props.isImageSize.w / 2 - 150,
+                //  positionY: props.isImageSize.h / 2 - 150,
+                //  rotate: 0,
+                //});
+                //props.setTextCanvasVisible(!props.textCanvasVisible);
               }}
               variant={props.textCanvasVisible ? "activeBlue" : "outline"}
             >
               <LuTextCursorInput className="text-2xl" />
             </Button>
-            <Select>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Size" />
+
+            <Select
+              value={`${"0"}`}
+              onValueChange={(e) => {
+                toggleStyleDraft(e, FontSizeDraftjsMap);
+              }}
+            >
+              <SelectTrigger
+                className="w-full mb-2"
+                //tabIndex={-1}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                }}
+              >
+                <div>{props.drawText.fontSize} px</div>
               </SelectTrigger>
-              <SelectContent>
-                {DataSizeText?.map((el, index) => (
-                  <SelectItem key={index} value={`${el}`}>
-                    {el}
-                  </SelectItem>
+              <SelectContent
+                ref={props.textSizeRef}
+                //tabIndex={-1}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                }}
+              >
+                {arrayFontSizeDraftjsMap?.map((value: number, index) => (
+                    <SelectItem key={index} value={`FONT_SIZE_${value}`}>
+                      {value}
+                    </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -259,13 +350,7 @@ const DrawingSidebarMenuText: React.FC<DrawingSidebarMenuTextProps> = (
               <div className="w-full flex justify-end">
                 <LuSparkles className="text-1xl" />
               </div>
-              <p>
-                Bien que notre application soit gratuite pour tous, nous offrons
-                des fonctionnalités supplémentaires et une suppression des
-                limites de temps pour nos utilisateurs enregistrés. Créez votre
-                compte aujourd'hui pour découvrir l'ensemble complet des
-                possibilités qu'offre Drawing.
-              </p>
+              <p>This feature is not available at this time.</p>
             </CardContent>
           </Card>
         </CardContent>

@@ -32,7 +32,7 @@ export default function useUtilsDrawing() {
         .toUpperCase()
     );
   }
-  
+
 
   function extractBoxShadowColor(boxShadow: any) {
     // Utiliser une expression régulière pour capturer la couleur RGB ou RGBA
@@ -155,38 +155,38 @@ export default function useUtilsDrawing() {
 
   function hasTransparency(image: HTMLImageElement): Promise<boolean> {
     return new Promise((resolve) => {
-        // Crée un canvas temporaire
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-            resolve(false);
-            return;
-        }
-
-        // Ajuste la taille du canvas à celle de l'image
-        canvas.width = image.width;
-        canvas.height = image.height;
-
-        // Dessine l'image sur le canvas
-        ctx.drawImage(image, 0, 0);
-
-        // Récupère les données des pixels
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const pixels = imageData.data;
-
-        // Vérifie les valeurs du canal alpha
-        for (let i = 3; i < pixels.length; i += 4) {
-            if (pixels[i] < 255) {
-                // Si le canal alpha est inférieur à 255, l'image a de la transparence
-                resolve(true);
-                return;
-            }
-        }
-
-        // Si aucune transparence n'est trouvée
+      // Crée un canvas temporaire
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
         resolve(false);
+        return;
+      }
+
+      // Ajuste la taille du canvas à celle de l'image
+      canvas.width = image.width;
+      canvas.height = image.height;
+
+      // Dessine l'image sur le canvas
+      ctx.drawImage(image, 0, 0);
+
+      // Récupère les données des pixels
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const pixels = imageData.data;
+
+      // Vérifie les valeurs du canal alpha
+      for (let i = 3; i < pixels.length; i += 4) {
+        if (pixels[i] < 255) {
+          // Si le canal alpha est inférieur à 255, l'image a de la transparence
+          resolve(true);
+          return;
+        }
+      }
+
+      // Si aucune transparence n'est trouvée
+      resolve(false);
     });
-}
+  }
 
   return {
     hexToRgba,
@@ -198,7 +198,7 @@ export default function useUtilsDrawing() {
     removeElementFromLayerInLayers,
     loadImageToCanvas,
     generateRandomId,
-    hasTransparency
+    hasTransparency,
 
   }
 

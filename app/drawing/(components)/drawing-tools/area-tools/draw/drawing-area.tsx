@@ -19,7 +19,6 @@ interface TextEditDrawingProps {
     e: React.MouseEvent,
     direction: ResizeDirection
   ) => void;
-  croppedImageUrl: string | null;
   zoom: number[];
   isNewImage: IsNewImage;
   isImageSize: NewImageSize;

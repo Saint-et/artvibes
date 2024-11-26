@@ -14,6 +14,7 @@ import {
 import {
   DrawArea,
   DrawNowInterface,
+  FileDialogOpen,
   IsNewImage,
   IsNewOverlay,
   NewImageSize,
@@ -22,6 +23,7 @@ import { MutableRefObject } from "react";
 import {
   LuArrowDownToLine,
   LuCircle,
+  LuCompass,
   LuCrop,
   LuGalleryHorizontalEnd,
   LuMoonStar,
@@ -53,6 +55,11 @@ interface DrawingSidebarMenuProps {
   isImgOverlay: IsNewOverlay;
   DrawCanvasImg: () => void;
   isDrawingNowCanvas: DrawNowInterface;
+
+  defaultSize: number;
+  defaultPositionW: number;
+  defaultPositionH: number;
+  setFileDialogOpen: React.Dispatch<React.SetStateAction<FileDialogOpen>>;
 }
 
 const DrawingSidebarMenu: React.FC<DrawingSidebarMenuProps> = (props) => {
@@ -77,16 +84,6 @@ const DrawingSidebarMenu: React.FC<DrawingSidebarMenuProps> = (props) => {
         <Card className="border-none rounded-none min-w-[110px] mt-5 h-full bg-transparent">
           <CardContent>
             <div className="grid grid-cols-1 gap-2">
-              <Button
-                className="flex flex-col justify-center items-center h-full"
-                onClick={() => {
-                  props.setMenuOpen(props.isMenuOpen === 7 ? 0 : 7);
-                }}
-                variant={props.isMenuOpen === 7 ? "activeBlue" : "ghost"}
-              >
-                <LuSettings2 className="text-2xl mb-2" />
-                <div>Params</div>
-              </Button>
               <Separator className="my-0" />
               <Button
                 className="flex flex-col justify-center items-center h-full gradient-animated5"
@@ -101,31 +98,18 @@ const DrawingSidebarMenu: React.FC<DrawingSidebarMenuProps> = (props) => {
               <Button
                 className="flex flex-col justify-center items-center h-full"
                 onClick={() => {
-                  props.setMenuOpen(props.isMenuOpen === 1 ? 0 : 1);
-                }}
-                variant={props.isMenuOpen === 1 ? "activeBlue" : "ghost"}
-              >
-                <LuPencilRuler className="text-2xl mb-2" />
-                <div>Edit</div>
-              </Button>
-              <Separator className="my-0" />
-              <Button
-                className="flex flex-col justify-center items-center h-full"
-                onClick={() => {
                   props.setMenuOpen(props.isMenuOpen === 5 ? 0 : 5);
                   if (props.isImgOverlay.img) {
                     props.handleSetBasicOverlay();
                   }
                   props.setDrawArea({
                     rotate: 0,
-                    width: sizePositionOverlerlay / 2,
-                    height: sizePositionOverlerlay / 2,
+                    width: props.defaultSize,
+                    height: props.defaultSize,
                     leftOffset: 0,
                     topOffset: 0,
-                    positionX:
-                      props.isImageSize.w / 2 - sizePositionOverlerlay / 4,
-                    positionY:
-                      props.isImageSize.h / 2 - sizePositionOverlerlay / 4,
+                    positionX: props.defaultPositionW,
+                    positionY: props.defaultPositionH,
                   });
                 }}
                 variant={props.isMenuOpen === 5 ? "activeBlue" : "ghost"}
@@ -253,18 +237,6 @@ const DrawingSidebarMenu: React.FC<DrawingSidebarMenuProps> = (props) => {
                   The Frame option is currently unavailable at this time.
                 </PopoverContent>
               </Popover>
-              <Separator className="my-0" />
-              <Button
-                variant="ghost"
-                className="flex flex-col justify-center items-center h-full gradient-animated1 w-full"
-                onClick={() => {
-                  props.setMenuOpen(props.isMenuOpen === 99 ? 0 : 99);
-                  //props.captureElement();
-                }}
-              >
-                <LuArrowDownToLine className="h-5 w-5 mb-2" />
-                <div>Finish</div>
-              </Button>
             </div>
           </CardContent>
         </Card>

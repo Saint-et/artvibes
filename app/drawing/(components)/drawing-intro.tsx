@@ -2,9 +2,7 @@ import {
   DrawingLoadItems,
   DrawingName,
   DrawingVersion,
-  SystemCover,
   SystemImg,
-  SystemName,
 } from "@/public/assets/data/data";
 import {
   Card,
@@ -15,16 +13,13 @@ import {
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { FaDrawPolygon } from "react-icons/fa";
 import {
   LuArrowDownToLine,
   LuArrowRight,
   LuBook,
   LuBrainCircuit,
   LuFolder,
-  LuGlobe,
   LuImage,
-  LuImagePlus,
   LuInfo,
   LuLayoutDashboard,
   LuPen,
@@ -65,7 +60,7 @@ const DrawingIntro: React.FC<DrawingDrawingIntroProps> = (props) => {
   return (
     <>
       <div
-        className="h-screen w-screen fixed bg-black/50 backdrop-blur-sm"
+        className="h-screen w-screen fixed bg-black/40 backdrop-blur-sm"
         onDragOver={props.handleDragOver}
         style={{
           zIndex: 100000,
@@ -222,36 +217,6 @@ const DrawingIntro: React.FC<DrawingDrawingIntroProps> = (props) => {
                         </div>
                       )}
                       <div
-                        className="bg-secondary p-6 overflow-hidden rounded-lg shadow-lg group cursor-pointer hover:scale-105 transition-transform duration-300"
-                        style={{
-                          backgroundImage: `url(${props.isDrawingLoad?.discoverModel})`,
-                          backgroundRepeat: "no-repeat",
-                          backgroundSize: "cover",
-                          backgroundPosition: `${50}% ${50}%`,
-                        }}
-                        onClick={() => {
-                          props.setFileDialogOpen(
-                            (prevState: FileDialogOpen) => ({
-                              ...prevState,
-                              models: !prevState.models,
-                            })
-                          );
-                        }}
-                      >
-                        <div className="drawing-css-bg rounded-full p-4 inline-block mb-4 group-hover:animate-bounce shadow-md">
-                          <LuLayoutDashboard className="w-8 h-8" />
-                        </div>
-                        <h3 className="text-lg font-semibold group-hover:underline decoration-solid decoration-2 underline-offset-4 mb-2 transition-colors duration-300">
-                          Models ...
-                        </h3>
-                        <Button
-                          variant="outline"
-                          className="opacity-30 group-hover:opacity-100"
-                        >
-                          <LuArrowRight className="w-5 h-5 mr-2" /> Know more
-                        </Button>
-                      </div>
-                      <div
                         className="bg-secondary-foreground rounded-lg shadow-lg p-6 group cursor-pointer hover:scale-105 transition-transform duration-300"
                         style={{
                           backgroundImage: `url(${props.isDrawingLoad?.IAImage})`,
@@ -278,35 +243,6 @@ const DrawingIntro: React.FC<DrawingDrawingIntroProps> = (props) => {
                         </Button>
                       </div>
                       <div
-                        className="drawing-css-bg rounded-lg shadow-lg p-6 group cursor-pointer hover:scale-105 transition-transform duration-300"
-                        style={{
-                          backgroundImage: `url(${props.isDrawingLoad?.LearnImage})`,
-                          backgroundRepeat: "no-repeat",
-                          backgroundSize: "cover",
-                          backgroundPosition: `${50}% ${50}%`,
-                        }}
-                      >
-                        <div className="drawing-css-bg text-white rounded-full p-4 inline-block mb-4 group-hover:animate-bounce shadow-md">
-                          <LuBook className="w-8 h-8" />
-                        </div>
-                        <h3
-                          className="text-lg font-semibold mb-2 group-hover:underline decoration-solid decoration-2 underline-offset-4 transition-colors duration-300"
-                          style={{ textShadow: "#000000 1px 0 10px" }}
-                        >
-                          Learn to use {DrawingName}
-                        </h3>
-                        <Card className="opacity-30 group-hover:opacity-100">
-                          <CardContent className="flex p-2 gap-2 cursor-text">
-                            <LuSearch className="w-5 h-5" />
-                            <Separator
-                              className="h-[20px]"
-                              orientation="vertical"
-                            />
-                            <div className="text-slate-400">Search ...</div>
-                          </CardContent>
-                        </Card>
-                      </div>
-                      <div
                         className="bg-secondary p-6 overflow-hidden rounded-lg shadow-lg group cursor-pointer hover:scale-105 transition-transform duration-300"
                         style={{
                           backgroundImage: `url(${props.isDrawingLoad?.aboutDrawing})`,
@@ -318,7 +254,10 @@ const DrawingIntro: React.FC<DrawingDrawingIntroProps> = (props) => {
                         <div className="drawing-css-bg rounded-full p-4 inline-block mb-4 group-hover:animate-bounce shadow-md">
                           <LuInfo className="w-8 h-8" />
                         </div>
-                        <h3 className="text-lg font-semibold group-hover:underline decoration-solid decoration-2 underline-offset-4 mb-2 transition-colors duration-300">
+                        <h3
+                          className="text-lg font-semibold group-hover:underline decoration-solid decoration-2 underline-offset-4 mb-2 transition-colors duration-300"
+                          style={{ textShadow: "#000000 1px 0 10px" }}
+                        >
                           About {DrawingName} ...
                         </h3>
                         <Button

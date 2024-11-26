@@ -14,6 +14,7 @@ import {
   SystemSettings,
 } from "@/utils/interface";
 import { ResizeDirection } from "@/utils/type";
+import { convertFromRaw, EditorState } from "draft-js";
 import React, { MutableRefObject } from "react";
 import { FaTrashCan } from "react-icons/fa6";
 import { LuAlertTriangle } from "react-icons/lu";
@@ -35,7 +36,6 @@ interface TextEditDrawingProps {
     e: React.MouseEvent,
     direction: ResizeDirection
   ) => void;
-  croppedImageUrl: string | null;
   zoom: number[];
   isImgOverlay: IsNewOverlay;
   isImgOverlaySave: IsNewOverlaySave[];
@@ -64,6 +64,7 @@ interface TextEditDrawingProps {
   setDrawingSetting: React.Dispatch<React.SetStateAction<any>>;
   setDrawSvgFull: React.Dispatch<React.SetStateAction<any>>;
   drawSvgFull: DrawSvgFull;
+  setEditorState: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const OverlayAreaSave: React.FC<TextEditDrawingProps> = (props) => {
@@ -104,22 +105,23 @@ const OverlayAreaSave: React.FC<TextEditDrawingProps> = (props) => {
 
   const handleoutside = (el: LayerElement) => {
     //console.log(el.overflowContainer);
-    
+
     if (
-      el.overflowContainer === "canvas" 
-      && el.x + el.w < 0 ||
-      el.x > props.isImageSize.w ||
-      el.y + el.h < 0 ||
-      el.y > props.isImageSize.h
+      el.overflowContainer === "canvas" &&
+      (el.x + el.w < 0 ||
+        el.x > props.isImageSize.w ||
+        el.y + el.h < 0 ||
+        el.y > props.isImageSize.h)
     ) {
       return "cursor-pointer drawing-css-bg-negatif";
     }
+
     if (
       el.overflowContainer === "expand" &&
-      el.x + el.w < 0 - props.drawingExpandImg.expand / 2 ||
-      el.x > props.isImageSize.w + props.drawingExpandImg.expand / 2 ||
-      el.y + el.h < 0 - props.drawingExpandImg.expand / 2 ||
-      el.y > props.isImageSize.h + props.drawingExpandImg.expand / 2
+      (el.x + el.w < 0 - props.drawingExpandImg.expand / 2 ||
+        el.x > props.isImageSize.w + props.drawingExpandImg.expand / 2 ||
+        el.y + el.h < 0 - props.drawingExpandImg.expand / 2 ||
+        el.y > props.isImageSize.h + props.drawingExpandImg.expand / 2)
     ) {
       return "cursor-pointer drawing-css-bg-negatif";
     }
@@ -215,6 +217,7 @@ const OverlayAreaSave: React.FC<TextEditDrawingProps> = (props) => {
                         }
                         if (el.layerType === "text") {
                           props.setTextCanvasVisible(true);
+                          props.setEditorState(el.editorDraftjs);
                           props.setDrawText({
                             id: el.id,
                             color: el.color,

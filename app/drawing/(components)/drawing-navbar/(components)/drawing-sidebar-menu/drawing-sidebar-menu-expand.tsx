@@ -16,6 +16,14 @@ import {
 } from "react-icons/lu";
 import DrawingFilterSlider from "../../../drawing-tools/filters/filter-sliders";
 import DrawingFilterImg from "../../../drawing-tools/filters/filter-img";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ColorsDrawing } from "@/public/assets/data/data";
 
 interface DrawingSidebarMenuExpandProps {
   isMenuOpen: number;
@@ -48,7 +56,6 @@ const DrawingSidebarMenuExpand: React.FC<DrawingSidebarMenuExpandProps> = (
       expand: newExpand,
     }));
   };
-  const overflow = ["expand", "canvas"];
 
   if (props.isMenuOpen !== 10) return null;
 
@@ -76,12 +83,10 @@ const DrawingSidebarMenuExpand: React.FC<DrawingSidebarMenuExpandProps> = (
               className="w-full"
               variant="default"
               onClick={() => {
-                props.setFileDialogOpen(
-                  (prevState: FileDialogOpen) => ({
-                    ...prevState,
-                    lastImport: !prevState.lastImport,
-                  })
-                );
+                props.setFileDialogOpen((prevState: FileDialogOpen) => ({
+                  ...prevState,
+                  lastImport: !prevState.lastImport,
+                }));
               }}
             >
               <LuFolder className="h-5 w-5 mr-2" /> Files ...
@@ -128,18 +133,39 @@ const DrawingSidebarMenuExpand: React.FC<DrawingSidebarMenuExpandProps> = (
             Expand :<LuScaling className="h-4 w-4" />
           </div>
           <Separator className="my-2" />
-          <div>
-            Expand image : {props.drawingExpandImg.expand}
-            px
-          </div>
-          <Slider
+          <div>Expand range :</div>
+          {/*<Slider
             defaultValue={[props.drawingExpandImg.expand]}
             value={[props.drawingExpandImg.expand]}
             onValueChange={handleSliderExpand}
             max={1000}
             min={0}
             step={2}
-          />
+          />*/}
+
+          <Select
+            value={`${props.drawingExpandImg.expand}`}
+            onValueChange={(e: string) => {
+              props.setDrawingExpandImg((prevState: ExpandImg) => ({
+                ...prevState,
+                expand: parseInt(e),
+              }));
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <div>{props.drawingExpandImg.expand} px</div>
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 11 }, (_, index) => {
+                const value = 100 * index; // Commence à 4 et incrémente par 2
+                return (
+                  <SelectItem key={value} value={`${value}`}>
+                    {value} px
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
           <Separator className="my-2" />
           <div>Choose your background:</div>
           <RadioGroup
@@ -165,94 +191,121 @@ const DrawingSidebarMenuExpand: React.FC<DrawingSidebarMenuExpandProps> = (
               <Label htmlFor="r3">Background Color</Label>
             </div>
           </RadioGroup>
-          <div className="grid grid-cols-2 gap-2 mt-4">
-            <Button
-              onClick={() => {
-                setExpandMenu("file");
-              }}
-              className="w-full"
-              variant="outline"
-              disabled={props.drawingExpandImg.bgType !== "bgActiveImage"}
-            >
-              <LuFolder className="h-5 w-5 mr-2" /> Files ...
-            </Button>
-            <Button
-              className={
-                !props.drawingExpandImg.bgColor
-                  ? "flex flex-col justify-center items-center hue-background"
-                  : "flex flex-col justify-center items-center"
-              }
-              variant={"outline"}
-              onClick={handleButtonClickColor}
-              style={{
-                background: props.drawingExpandImg.bgColor,
-              }}
-              disabled={props.drawingExpandImg.bgType !== "bgActiveColor"}
-              onBlur={() => {
-                if (colorInputRef?.current) {
-                  let color = colorInputRef.current.value;
-                  props.setDrawingExpandImg((prevState: any) => ({
-                    ...prevState,
-                    bgColor: color || "#000000",
-                  }));
-                }
-              }}
-            >
-              <input
-                ref={colorInputRef}
-                defaultValue={props.drawingExpandImg.bgColor}
-                className="appearance-none cursor-pointer"
-                style={{
-                  background: "none",
-                  opacity: 0,
-                  zIndex: -1,
-                  width: 0,
-                  height: 0,
-                }}
-                onChange={(e) => {
-                  if (props.expandDivRef?.current) {
-                    props.expandDivRef.current.style.background =
-                      e.target.value;
-                  }
-                }}
-                type="color"
-                name=""
-                id=""
-              />
-            </Button>
-          </div>
           <Separator className="my-2" />
-          <ScrollArea className="h-[200px] w-full p-4">
-            <div className="w-full grid grid-cols-3 gap-2">
-              <DrawingFilterImg
-                setSystemSetting={props.setDrawingExpandImg}
-                defaultImg={
-                  props.drawingExpandImg.miniature
-                    ? props.drawingExpandImg.miniature
-                    : props.isNewImage.miniature
-                }
-                keyName={"expandFilter"}
-                inSide={true}
-              />
-            </div>
-          </ScrollArea>
-          <ScrollArea className="h-[200px] w-full p-4">
-            <DrawingFilterSlider
-              setSystemSetting={props.setDrawingExpandImg}
-              systemSetting={props.drawingExpandImg.expandFilter}
-              keyName={"expandFilter"}
-              inSide={true}
-            />
-          </ScrollArea>
+          {props.drawingExpandImg.bgType === "bgTransparent" && (
+            <>
+              <div className="text-slate-500 text-sm">
+                Info: Select a type of wallpaper you want to display.
+              </div>
+            </>
+          )}
+          {props.drawingExpandImg.bgType === "bgActiveColor" && (
+            <>
+              <div>Background color:</div>
+
+              <div className="grid grid-cols-5 gap-4">
+                <Button
+                  className="rounded-full hue-background"
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleButtonClickColor}
+                  disabled={props.drawingExpandImg.bgType !== "bgActiveColor"}
+                  onBlur={() => {
+                    if (colorInputRef?.current) {
+                      let color = colorInputRef.current.value;
+                      props.setDrawingExpandImg((prevState: any) => ({
+                        ...prevState,
+                        bgColor: color || "#000000",
+                      }));
+                    }
+                  }}
+                >
+                  <input
+                    ref={colorInputRef}
+                    defaultValue={props.drawingExpandImg.bgColor}
+                    className="appearance-none cursor-pointer"
+                    style={{
+                      background: "none",
+                      opacity: 0,
+                      zIndex: -1,
+                      width: 0,
+                      height: 0,
+                    }}
+                    onChange={(e) => {
+                      if (props.expandDivRef?.current) {
+                        props.expandDivRef.current.style.background =
+                          e.target.value;
+                      }
+                    }}
+                    type="color"
+                    name=""
+                    id=""
+                  />
+                </Button>
+                {ColorsDrawing.map((color: any) => (
+                  <Button
+                    key={color.name}
+                    className="rounded-full"
+                    style={{ backgroundColor: color.value }}
+                    size="icon"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                    }}
+                    onClick={() => {
+                      props.setDrawingExpandImg((prevState: any) => ({
+                        ...prevState,
+                        bgColor: color.value,
+                      }));
+                    }}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+          {props.drawingExpandImg.bgType === "bgActiveImage" && (
+            <>
+              <Button
+                onClick={() => {
+                  setExpandMenu("file");
+                }}
+                className="w-full"
+                variant="outline"
+                disabled={props.drawingExpandImg.bgType !== "bgActiveImage"}
+              >
+                <LuFolder className="h-5 w-5 mr-2" /> Files ...
+              </Button>
+              <ScrollArea className="h-[200px] w-full p-4">
+                <div className="w-full grid grid-cols-3 gap-2">
+                  <DrawingFilterImg
+                    setSystemSetting={props.setDrawingExpandImg}
+                    defaultImg={
+                      props.drawingExpandImg.miniature
+                        ? props.drawingExpandImg.miniature
+                        : props.isNewImage.miniature
+                    }
+                    keyName={"expandFilter"}
+                    inSide={true}
+                  />
+                </div>
+              </ScrollArea>
+              <ScrollArea className="h-[200px] w-full p-4">
+                <DrawingFilterSlider
+                  setSystemSetting={props.setDrawingExpandImg}
+                  systemSetting={props.drawingExpandImg.expandFilter}
+                  keyName={"expandFilter"}
+                  inSide={true}
+                />
+              </ScrollArea>
+            </>
+          )}
           <Separator className="my-4" />
           <div className="text-neutral-500 text-sm">
-            Note : L'option "expand" doit impérativement être définie dès le
-            début du projet. Toute modification ultérieure de cette option peut
-            entraîner des conséquences imprévues, telles que le déplacement ou
-            la déformation de certains éléments sur le canevas. Pour garantir
-            une mise en page cohérente et éviter tout désalignement ou
-            altération de proportions, il est fortement recommandé de fixer
-            cette valeur dès les premières étapes.
+            Note: The "expand" option must be set as of the start of the
+            project. Any subsequent changes to this option may unintended
+            consequences, such as displacement or the distortion of certain
+            elements on the canvas. To guarantee a consistent layout and avoid
+            any misalignment or alteration of proportions, it is strongly
+            recommended to fix this value from the earliest stages.
           </div>
         </CardContent>
       </Card>

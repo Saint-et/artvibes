@@ -327,10 +327,10 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
           <Card className="border-none rounded-none bg-transparent">
             <CardContent className="grid grid-cols-1 gap-2 p-4">
               <div className="text-1xl flex justify-between">
-                Form :<LuCircle className="h-4 w-4" />
+                Shape :<LuCircle className="h-4 w-4" />
               </div>
               <Separator className="my-2" />
-              <div className="mt-4">Image form :</div>
+              <div className="mt-4">Image Shape :</div>
               <div className="grid grid-cols-3 gap-2 p-1">
                 {OverlayForm?.map((el, index) => (
                   <Button
@@ -386,10 +386,10 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
             </CardContent>
             <Separator className="my-4" />
             <CardContent className="p-1">
-              <div className="mt-4">Image custom form :</div>
+              <div className="mt-4">Custom image shape :</div>
               <Accordion type="single" collapsible>
                 <AccordionItem value="item-1" className="w-full p-4">
-                  <AccordionTrigger>Image setting</AccordionTrigger>
+                  <AccordionTrigger>Image Adjustment</AccordionTrigger>
                   <AccordionContent>
                     <div className="text-1xl flex justify-between items-center">
                       border: {props.drawSvg.thickness * 100}%
@@ -421,7 +421,7 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
                     />
                     <Separator className="my-4" />
                     <div className="text-1xl flex justify-between items-center">
-                      postion y: {props.drawSvg.crop.y}%
+                      position y: {props.drawSvg.crop.y}%
                       <LuRefreshCw
                         className="h-4 w-4 cursor-pointer hover:animate-spin"
                         onClick={() => {
@@ -453,7 +453,7 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
                     />
                     <Separator className="my-4" />
                     <div className="text-1xl flex justify-between items-center">
-                      postion x: {props.drawSvg.crop.x}%
+                      position x: {props.drawSvg.crop.x}%
                       <LuRefreshCw
                         className="h-4 w-4 cursor-pointer hover:animate-spin"
                         onClick={() => {
@@ -522,16 +522,7 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
                   <Button
                     key={index}
                     className="flex flex-col justify-center items-center h-full"
-                    variant="ghost"
                     onClick={() => {
-                      //if (props.isFormCanvasVisible !== "") {
-                      //  props.handleSaveForm();
-                      //  props.handleResetForm();
-                      //}
-                      //if (props.isImgOverlay.img) {
-                      //  props.handleSaveImgOverlay();
-                      //  props.handleResetImgOverlay();
-                      //}
                       const img = props.drawSvg.img
                         ? props.drawSvg.img
                         : formBtnImg;
@@ -545,6 +536,9 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
                         }));
                       }
                     }}
+                    variant={
+                      props.drawSvg.svg === el.svg ? "secondary" : "ghost"
+                    }
                   >
                     <SvgComponents
                       drawSvg={el}
@@ -557,7 +551,7 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
             </CardContent>
             <Separator className="my-4" />
             <CardContent className="p-1">
-              <div className="mt-4">Basic form :</div>
+              <div className="mt-4">Basic Shape :</div>
               <div className="grid grid-cols-3 gap-2 p-1">
                 {StyleForm?.map((el, index) => (
                   <Button
@@ -598,13 +592,15 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
             </CardContent>
             <Separator className="my-4" />
             <CardContent className="p-1">
-              <div className="mt-4">Custom form :</div>
+              <div className="mt-4">Custom shape :</div>
               <div className="grid grid-cols-3 gap-2 p-1">
                 {svgFullList?.map((el, index) => (
                   <Button
                     key={index}
                     className="flex flex-col justify-center items-center h-full"
-                    variant="ghost"
+                    variant={
+                      props.drawSvgFull.svg === el.svg ? "secondary" : "ghost"
+                    }
                     onClick={() => {
                       //if (props.isFormCanvasVisible !== "") {
                       //  props.handleSaveForm();

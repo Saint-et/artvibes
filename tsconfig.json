@@ -13,6 +13,7 @@
     "jsx": "preserve",
     "incremental": true,
     "suppressImplicitAnyIndexErrors": false,
+    "downlevelIteration": true,
     "plugins": [
       {
         "name": "next"

@@ -21,6 +21,7 @@ import React, { MutableRefObject } from "react";
 import OverlayAreaSaveItemsContent from "./overlay-area-save-items-content";
 import SvgComponents from "./overlay/svg-file";
 import SvgFullComponents from "./overlay/svg-file-full";
+import Rich_text from "../rich_text/rich_text";
 
 // Interface des propriétés du composant
 interface TextEditDrawingImgProps {
@@ -32,7 +33,6 @@ interface TextEditDrawingImgProps {
     e: React.MouseEvent,
     direction: ResizeDirection
   ) => void;
-  croppedImageUrl: string | null;
   zoom: number[];
   isImgOverlay: IsNewOverlay;
   isImgOverlaySave: IsNewOverlaySave[];
@@ -68,8 +68,12 @@ interface TextEditDrawingImgProps {
   strokeRectBgRef: MutableRefObject<SVGRectElement | null>;
   isDrawingSetting: DrawingSetting;
   setDrawingSetting: React.Dispatch<React.SetStateAction<any>>;
+  setDrawText: React.Dispatch<React.SetStateAction<any>>;
   isDrawingLoad: LoadedImage;
   drawSvgFull: DrawSvgFull;
+  textCanvasVisible: boolean;
+  editorState: any;
+  setEditorState: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const OverlayAreaSaveItems: React.FC<TextEditDrawingImgProps> = (props) => {
@@ -387,6 +391,27 @@ const OverlayAreaSaveItems: React.FC<TextEditDrawingImgProps> = (props) => {
                   </div>
                 </div>
               )}
+              {/*props.textCanvasVisible && (
+                <div
+                  style={{
+                    zIndex: 100,
+                    position: "absolute",
+                    left: props.drawArea.positionX,
+                    top: props.drawArea.positionY,
+                    width: props.drawArea.width,
+                    height: props.drawArea.height,
+                    transition: !props.isResizing ? "100ms" : "0ms",
+                    transform: `rotate(${props.drawArea.rotate}deg)`,
+                    //background: "#ff0000",
+                  }}
+                >
+                  <Rich_text
+                    textCanvasRef={props.textCanvasRef}
+                    drawText={props.drawText}
+                    setDrawText={props.setDrawText}
+                  />
+                </div>
+              )*/}
               <OverlayAreaSaveItemsContent {...props} el={el} expandDiv2={0} />
             </div>
           ) : (
@@ -585,6 +610,27 @@ const OverlayAreaSaveItems: React.FC<TextEditDrawingImgProps> = (props) => {
                   </div>
                 </div>
               )}
+              {/*props.textCanvasVisible && (
+                <div
+                  style={{
+                    zIndex: 100,
+                    position: "absolute",
+                    left: props.drawArea.positionX,
+                    top: props.drawArea.positionY,
+                    width: props.drawArea.width,
+                    height: props.drawArea.height,
+                    transition: !props.isResizing ? "100ms" : "0ms",
+                    transform: `rotate(${props.drawArea.rotate}deg)`,
+                    //background: "#ff0000",
+                  }}
+                >
+                  <Rich_text
+                    textCanvasRef={props.textCanvasRef}
+                    drawText={props.drawText}
+                    setDrawText={props.setDrawText}
+                  />
+                </div>
+              )*/}
               <OverlayAreaSaveItemsContent
                 {...props}
                 el={el}

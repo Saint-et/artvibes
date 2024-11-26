@@ -1,3 +1,4 @@
+import { RawDraftContentState } from "draft-js";
 import { DrawTypeNowCanvas } from "./type";
 
 export interface LoadedImage {
@@ -240,18 +241,32 @@ type DrawingSeparatorBorderType =
   | '3x3'
   | '2x2'
   | 'none';
+type DrawingSettingYNType =
+  | 'no'
+  | 'yes';
+type DrawingSettingLanguageType =
+  | 'French'
+  | 'English';
+type DrawingSettingOptimizationType =
+  | 'resolution'
+  | 'performance';
 export interface DrawingSetting {
   separatorBorder: DrawingSeparatorBorderType;
   transparence: boolean;
   maxZoom: number;
   overflowCanvas: string;
   overflowExpand: string;
-  deleteOutsideOverlay: string;
+  deleteOutsideOverlay: DrawingSettingYNType;
+  language: DrawingSettingLanguageType;
+  optimization: DrawingSettingOptimizationType;
+  storage: DrawingSettingYNType;
   paint: {
     hideElCanvas: boolean;
     showDrawSelected: boolean;
     opacity: boolean;
-  }
+  },
+  imgRendering: boolean,
+  background: DrawingSettingYNType,
 }
 export interface LayerDrawForm {
   layerType: 'form';
@@ -290,6 +305,7 @@ export interface LayerElement {
   img: string;
   miniature: string;
   overflowContainer: IsNewOverlayLayerElementType;
+  editorDraftjs: any;
   text: string;
   svgImg: string;
   svg: string;
@@ -361,6 +377,6 @@ export interface WaifuProcess {
 }
 export interface FileDialogOpen {
   lastImport: boolean;
-  models: boolean;
   editNewPage: boolean;
+  help: boolean;
 }

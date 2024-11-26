@@ -103,19 +103,6 @@ export const SystemShadowDefault = {
     }
 }
 
-export const ColorsDrawing = [
-    { name: "Black", value: "#000000" },
-    { name: "White", value: "#FFFFFF" },
-    { name: "Red", value: "#EF4444" },
-    { name: "Blue", value: "#3B82F6" },
-    { name: "Blue dark", value: "#3F48CC" },
-    { name: "Green", value: "#10B981" },
-    { name: "Yellow", value: "#F59E0B" },
-    { name: "Purple", value: "#8B5CF6" },
-    { name: "Pink", value: "#EC4899" },
-];
-
-
 export const WaifuProcessDefault = {
     startProcess: false,
     bar: 0,

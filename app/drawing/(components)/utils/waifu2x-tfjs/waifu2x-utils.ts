@@ -37,7 +37,6 @@ export default function useWaifu2xTfjsUtils() {
             tf.concat([t, x, b], 0),
             tf.concat([tr, r, br], 0)
         ], 1);
-
     }
 
     const showMessage = (show: boolean, msg: string, bar: number | null, button: boolean) => {

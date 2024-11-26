@@ -4,7 +4,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ColorsDrawing } from "@/public/assets/data/defaultValue-drawing";
 import {
   DrawArea,
   DrawDrawing,
@@ -46,6 +45,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { ColorsDrawing } from "@/public/assets/data/data";
 
 interface DrawingSidebarMenuFormsProps {
   isMenuOpen: number;
@@ -243,7 +243,7 @@ const DrawingSidebarMenuForms: React.FC<DrawingSidebarMenuFormsProps> = (
           />
           <Separator className="my-4" />
           <div>Color :</div>
-          <div className="grid grid-cols-6 gap-2">
+          <div className="grid grid-cols-5 gap-4">
             <Button
               className="rounded-full hue-background"
               variant={"outline"}
@@ -344,8 +344,7 @@ const DrawingSidebarMenuForms: React.FC<DrawingSidebarMenuFormsProps> = (
                 <DialogHeader>
                   <DialogTitle>Setting draw</DialogTitle>
                   <DialogDescription>
-                    Ajuster l'affichage du contenu à l'écran de façon plus
-                    adaptée.
+                    Adjust the display of content on the screen more Adapted.
                   </DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="h-full">
@@ -389,11 +388,11 @@ const DrawingSidebarMenuForms: React.FC<DrawingSidebarMenuFormsProps> = (
                               htmlFor="hideAllElement1"
                               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
-                              Masquer tous les autre element du canvas ?
+                              Hide all other elements of the canvas?
                             </label>
                             <p className="text-sm text-muted-foreground">
-                              Masque tous les autre élément qui ne concerne pas
-                              le dessin.
+                              Hides all other items that are not relevant
+                              drawing.
                             </p>
                           </div>
                         </div>
@@ -421,11 +420,11 @@ const DrawingSidebarMenuForms: React.FC<DrawingSidebarMenuFormsProps> = (
                               htmlFor="hideCanvas1"
                               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
-                              Affiché uniquement le dessin selectionné ?
+                              Displayed only the selected drawing?
                             </label>
                             <p className="text-sm text-muted-foreground">
-                              Masque les autre dessin pour Affiché uniquement le
-                              dessin selectionner.
+                              Hide the other drawing for Displayed only on
+                              drawing select.
                             </p>
                           </div>
                         </div>
@@ -462,10 +461,10 @@ const DrawingSidebarMenuForms: React.FC<DrawingSidebarMenuFormsProps> = (
                               htmlFor="opacityAllCanvas1"
                               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
-                              Diminué l'opacité des autre dessin ?
+                              Decreased the opacity of the other drawings?
                             </label>
                             <p className="text-sm text-muted-foreground">
-                              Diminu uniquement l'opacité des autre dessin.
+                              Only decreases the opacity of other drawings.
                             </p>
                           </div>
                         </div>
@@ -484,16 +483,18 @@ const DrawingSidebarMenuForms: React.FC<DrawingSidebarMenuFormsProps> = (
                               htmlFor="HideAllElement2"
                               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
-                              Masquer tous les autre element du canvas ?
+                              Hide all other elements of the canvas?
                             </label>
                             <p className="text-sm text-muted-foreground">
-                              Masque tous les autre élément qui ne concerne pas
-                              le dessin.
+                              Hides all other items that are not relevant
+                              drawing.
                             </p>
                           </div>
                         </div>
                         <Separator className="my-4" />
-                        <div className="text-sm">Nombre de frame affiché.</div>
+                        <div className="text-sm">
+                          Number of frames displayed.
+                        </div>
 
                         <RadioGroup
                           defaultValue="1"
@@ -533,7 +534,7 @@ const DrawingSidebarMenuForms: React.FC<DrawingSidebarMenuFormsProps> = (
                           </div>
                         </RadioGroup>
                         <Separator className="my-4" />
-                        <div className="text-sm">Frames setting.</div>
+                        <div className="text-sm">Adjusting the frames.</div>
                         <div className="items-top flex space-x-2 my-4">
                           <Checkbox id="B&W2" />
                           <div className="grid gap-1.5 leading-none">
@@ -541,11 +542,11 @@ const DrawingSidebarMenuForms: React.FC<DrawingSidebarMenuFormsProps> = (
                               htmlFor="B&W2"
                               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
-                              Afficher les autre dessin en noir et blanc ?
+                              Show other drawings in black and white?
                             </label>
                             <p className="text-sm text-muted-foreground">
-                              Affiche les autre dessin en noir et blanc pour
-                              avoir un meilleur visibiliter.
+                              Displays the other black and white drawings for
+                              Have better visibility.
                             </p>
                           </div>
                         </div>
@@ -559,7 +560,7 @@ const DrawingSidebarMenuForms: React.FC<DrawingSidebarMenuFormsProps> = (
                             />
                           ))}
                         </div>
-                        <div className="text-sm">Opacité des frames.</div>
+                        <div className="text-sm">Frame opacity.</div>
                         <Slider defaultValue={[33]} max={100} step={1} />
                       </>
                     </TabsContent>

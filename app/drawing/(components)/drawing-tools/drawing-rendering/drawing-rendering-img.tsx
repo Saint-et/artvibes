@@ -9,7 +9,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { IsNewImage, LoadedImage, RenderingOption } from "@/utils/interface";
+import {
+  DrawingSetting,
+  IsNewImage,
+  LoadedImage,
+  RenderingOption,
+} from "@/utils/interface";
 import { downloadImage } from "@/utils/utils";
 import toast from "react-hot-toast";
 import { FaDownload } from "react-icons/fa";
@@ -41,6 +46,8 @@ interface DrawingRenderingImgProps {
   setNewImage: React.Dispatch<React.SetStateAction<any>>;
   isDrawingLoad: LoadedImage | undefined;
   setNewImageImport: React.Dispatch<React.SetStateAction<any>>;
+  setDrawingSetting: React.Dispatch<React.SetStateAction<DrawingSetting>>;
+  isDrawingSetting: DrawingSetting;
 }
 
 const DrawingRenderingImg: React.FC<DrawingRenderingImgProps> = (props) => {
@@ -82,93 +89,15 @@ const DrawingRenderingImg: React.FC<DrawingRenderingImgProps> = (props) => {
     }
   };
 
-  const toolItems = [
-    {
-      title: "Picture",
-      icon: LuImage,
-      img: props.isDrawingLoad?.newProject,
-      click: () => {
-        props.setMenuOpen(props.isMenuOpen === 100 ? 0 : 100);
-        props.captureElement();
-      },
-    },
-    {
-      title: "Gif",
-      icon: LuGalleryHorizontalEnd,
-      img: props.isDrawingLoad?.videoToGif,
-      click: () => {
-        toast.error("Unavailable at the moment.");
-      },
-    },
-    {
-      title: "Video",
-      icon: LuVideo,
-      img: props.isDrawingLoad?.discoverModel,
-      click: () => {
-        toast.error("Unavailable at the moment.");
-      },
-    },
-  ];
-
-  if (props.isMenuOpen === 99)
-    return (
-      <>
-        <Dialog
-          open={props.isMenuOpen === 99}
-          onOpenChange={(isOpen) => {
-            if (!isOpen) {
-              props.setMenuOpen(0);
-              props.setResultImageUrl("");
-            }
-          }}
-        >
-          <DialogContent className="h-max w-[98%] max-w-[1000px] flex flex-col justify-start p-4">
-            <DialogHeader>
-              <DialogTitle>Select the type of rendering you want.</DialogTitle>
-              <DialogDescription>
-                Warning: Some rendering types require specific settings set when
-                the project is created.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="w-full grid md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 xl:gap-8 items-start">
-              {toolItems.map((item, index) => (
-                <div
-                  key={index}
-                  className="bg-secondary p-6 overflow-hidden rounded-lg shadow-lg group cursor-pointer hover:scale-105 transition-transform duration-300"
-                  style={{
-                    backgroundImage: item.img ? `url(${item.img})` : "none",
-                    backgroundRepeat: "no-repeat",
-                    backgroundSize: "cover",
-                    backgroundPosition: `${50}% ${50}%`,
-                  }}
-                  onClick={item.click}
-                >
-                  <div className="drawing-css-bg rounded-full p-4 inline-block mb-4 group-hover:animate-bounce shadow-md">
-                    <item.icon className="w-8 h-8" />
-                  </div>
-                  <h3
-                    className="text-lg font-semibold group-hover:underline decoration-solid decoration-2 underline-offset-4 mb-2 transition-colors duration-300"
-                    style={{ textShadow: "#000000 1px 0 10px" }}
-                  >
-                    {item.title}
-                  </h3>
-                </div>
-              ))}
-            </div>
-          </DialogContent>
-        </Dialog>
-      </>
-    );
-
   return (
     <>
       <Dialog
-        open={props.isMenuOpen === 100}
+        open={props.isDrawingSetting.imgRendering}
         onOpenChange={(isOpen) => {
-          if (!isOpen) {
-            props.setMenuOpen(0);
-            props.setResultImageUrl("");
-          }
+          props.setDrawingSetting((prevState: DrawingSetting) => ({
+            ...prevState,
+            imgRendering: isOpen,
+          }));
         }}
       >
         <DialogHeader className="hidden">

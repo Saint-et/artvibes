@@ -19,7 +19,6 @@ interface TextEditDrawingProps {
     e: React.MouseEvent,
     direction: ResizeDirection
   ) => void;
-  croppedImageUrl: string | null;
   zoom: number[];
   isNewImage: IsNewImage;
   isImageSize: NewImageSize;
@@ -42,6 +41,19 @@ const CropArea: React.FC<TextEditDrawingProps> = (props) => {
     min: 5,
   };
 
+  const paddingRotate = {
+    value: -30,
+    max: -300,
+  };
+  const lengthRotate = {
+    value: 15,
+    min: 10,
+  };
+  const heightRotate = {
+    value: 15,
+    min: 10,
+  };
+
   if (props.isMenuOpen !== 5) return null;
 
   return (
@@ -56,7 +68,7 @@ const CropArea: React.FC<TextEditDrawingProps> = (props) => {
           top: props.drawArea.positionY,
           width: `${props.drawArea.width}px`,
           height: `${props.drawArea.height}px`,
-          transition: props.isResizing ? "0ms" : "300ms"
+          transition: props.isResizing ? "0ms" : "300ms",
         }}
         onDoubleClick={(e) => {
           e.stopPropagation();

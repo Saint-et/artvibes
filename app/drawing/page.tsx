@@ -12,13 +12,16 @@ import {
 } from "react-icons/fa6";
 import useDrawing from "./(components)/drawing-tools/useDrawing";
 import { Input } from "@/components/ui/input";
-import TextEditDrawing from "./(components)/drawing-tools/rich_text/text-edit";
 import CropArea from "./(components)/drawing-tools/area-tools/crop/crop-area";
 import DrawingSidebar from "./(components)/drawing-navbar/(components)/drawing-sidebar";
 import LastImport from "./(components)/drawing-tools/last-import";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
-import { DrawingName, DrawingVersion } from "@/public/assets/data/data";
+import {
+  DrawingName,
+  DrawingVersion,
+  SystemImg,
+} from "@/public/assets/data/data";
 import {
   Dialog,
   DialogClose,
@@ -42,10 +45,12 @@ import PagePopover from "./(components)/drawing-tools/page-popover";
 import DrawingIntro from "./(components)/drawing-intro";
 import {
   LuArrowDownToLine,
+  LuArrowUpRightSquare,
   LuBoxSelect,
   LuExpand,
   LuFolder,
   LuFrame,
+  LuGauge,
   LuGem,
   LuHome,
   LuImage,
@@ -54,6 +59,7 @@ import {
   LuPackage,
   LuPackageOpen,
   LuSearch,
+  LuSearchCode,
   LuSettings2,
   LuSun,
   LuTimer,
@@ -88,6 +94,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 //import { loadModels } from "./(components)/utils/getModels";
 
 export default function Drawing() {
@@ -213,16 +225,6 @@ export default function Drawing() {
       const maxWidth = vhW * 0.7;
       const maxHeight = vhH * 0.7;
 
-      let defaultArea = {
-        rotate: 0,
-        width: img.width / 2,
-        height: img.height / 2,
-        leftOffset: 0,
-        topOffset: 0,
-        positionX: img.width / 4,
-        positionY: img.height / 4,
-      };
-
       let initialZoom;
       // Calcul du facteur de redimensionnement initial
       const widthScaleFactor =
@@ -253,7 +255,7 @@ export default function Drawing() {
     img.onerror = () => {
       console.error("Failed to load the image.");
     };
-  }, [UseDrawing.isNewImage]);
+  }, [UseDrawing.isNewImage.img]);
 
   //const handleSliderLuminosity = (newValue: number[]) => {
   //  const newLuminosity = newValue[0];
@@ -320,6 +322,7 @@ export default function Drawing() {
       icon: LuTimer,
     },
   ];
+
 
   if (!UseDrawing.isDrawingLoad?.load)
     return (
@@ -554,10 +557,8 @@ export default function Drawing() {
         <div className="fixed top-0 flex justify-center bg-[#0d0d0d] h-[60px] w-full z-[3000]">
           <div className="flex justify-between items-center w-[98%]">
             <div className="flex">
-              <Button
-                className="rounded-full gradient-animated1"
-                variant="outline"
-                size="icon"
+              <Avatar
+                className="ml-4 cursor-pointer"
                 onClick={() => {
                   UseDrawing.setDrawingLoad((prevState: LoadedImage) => ({
                     ...prevState,
@@ -565,8 +566,9 @@ export default function Drawing() {
                   }));
                 }}
               >
-                <LuHome className="h-4 w-4" />
-              </Button>
+                <AvatarImage src={SystemImg.src} />
+                <AvatarFallback>KS</AvatarFallback>
+              </Avatar>
               <DrawingNavbar {...UseDrawing} />
             </div>
 
@@ -711,11 +713,26 @@ export default function Drawing() {
 
         {UseDrawing?.isNewImage?.img ? (
           <>
+            {UseDrawing.isDrawingSetting.background === "no" && (
+              <video
+                className="w-screen h-screen fixed top-0 object-cover z-[-1] pt-[60px] pb-[60px]"
+                autoPlay={true}
+                muted
+                loop
+              >
+                <source
+                  src="/assets/videos/artvibe-studio/691452_bg.mp4"
+                  type="video/mp4"
+                />
+              </video>
+            )}
             <div
               className="flex flex-col h-screen w-screen overflow-hidden pt-[60px] pb-[60px]"
               style={{
-                //backgroundColor: `rgb(${UseDrawing.isDrawingSetting.luminosity},${UseDrawing.isDrawingSetting.luminosity},${UseDrawing.isDrawingSetting.luminosity})`,
-                background: `linear-gradient(#191919, #0d0d0d)`,
+                background:
+                  UseDrawing.isDrawingSetting.background === "yes"
+                    ? `linear-gradient(#191919, #0d0d0d)`
+                    : "#00000099",
               }}
               onDragOver={UseDrawing.handleDragOver}
             >
@@ -928,7 +945,7 @@ export default function Drawing() {
                         )}
                         <CropArea {...UseDrawing} />
                         <CropPreArea {...UseDrawing} />
-                        <TextEditDrawing {...UseDrawing} />
+                        {/*<TextEditDrawing {...UseDrawing} />*/}
                         {/*<Benchmark {...UseDrawing} />*/}
                         <OverlayArea {...UseDrawing} />
                         {UseDrawing?.isDrawingSetting.separatorBorder ===
@@ -1249,15 +1266,44 @@ export default function Drawing() {
             <Card className="bg-inherit border-none">
               <CardContent className="flex p-1 gap-4">
                 <div className="flex items-center gap-1 p-1 h-[40px] overflow-hidden">
-                  <LuGem className="text-emerald-500" />{" "}
-                  <div className="w-[40px] h-[40px] flex items-center justify-center text-gray-500 text-[12px] font-bold">
-                    {0}
-                  </div>
+                  <HoverCard>
+                    <HoverCardTrigger className="flex items-center justify-center">
+                      <LuGauge className="text-green-500" />
+                    </HoverCardTrigger>
+                    <HoverCardContent>
+                      <div className="text-[13px]">Optimization: ...</div>
+                      <div
+                        className="flex items-center text-[12px] text-blue-500 hover:underline"
+                        onClick={() => {
+                          UseDrawing.setMenuOpen(7);
+                        }}
+                      >
+                        Change the app optimization as needed in params{" "}
+                        <LuArrowUpRightSquare className="ml-2" />
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
                   <Separator className="mx-4" orientation="vertical" />
-                  <LuPackageOpen className="text-blue-500" />{" "}
-                  <div className="w-[40px] h-[40px] flex items-center justify-center text-gray-500 text-[12px] font-bold ">
-                    {UseDrawing?.isLayers.length}
-                  </div>
+                  <HoverCard>
+                    <HoverCardTrigger className="flex items-center justify-center">
+                      <LuSearchCode className="text-blue-500" />
+                      <div className="w-[40px] h-[40px] flex items-center justify-center text-gray-500 text-[12px] font-bold">
+                        {UseDrawing.isDrawingSetting.maxZoom}x
+                      </div>
+                    </HoverCardTrigger>
+                    <HoverCardContent>
+                      <div className="text-[13px]">Maximum: ...</div>
+                      <div
+                        className="flex items-center text-[12px] text-blue-500 hover:underline"
+                        onClick={() => {
+                          UseDrawing.setMenuOpen(7);
+                        }}
+                      >
+                        Change the maximum zoom in params{" "}
+                        <LuArrowUpRightSquare className="ml-2" />
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
                   <Separator className="mx-4" orientation="vertical" />
                   <LuFrame className="text-amber-400" />{" "}
                   <div className="w-[40px] h-[40px] flex items-center justify-center text-gray-500 text-[12px] font-bold">

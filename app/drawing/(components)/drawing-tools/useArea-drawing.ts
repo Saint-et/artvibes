@@ -1,5 +1,6 @@
 import { useAppContext } from "@/app/provider/useAppContext";
-import { ColorsDrawing, DrawAreaDefault } from "@/public/assets/data/defaultValue-drawing";
+import { ColorsDrawing } from "@/public/assets/data/data";
+import { DrawAreaDefault } from "@/public/assets/data/defaultValue-drawing";
 import { Blanket, DrawArea, DrawDrawing, DrawNowInterface, NewImageSize } from "@/utils/interface";
 import { ResizeDirection } from "@/utils/type";
 import { useRef, useState } from "react";
@@ -371,10 +372,11 @@ export default function UseAreaDrawCreative() {
         break;
       }
       case "top-move": {
+        const expand = UseAppContext.drawingExpandImg.expand / 2;
         setDrawArea({
           ...drawArea,
-          positionX: drawArea.positionX + deltaX,
-          positionY: drawArea.positionY + deltaY,
+          positionX: Math.min(Math.max(drawArea.positionX + deltaX, -(drawArea.width + expand + 50)), (isImageSize.w + expand + 50)),
+          positionY: Math.min(Math.max(drawArea.positionY + deltaY, -(drawArea.height + expand + 50)), (isImageSize.h + expand + 50)),
         });
         break;
       }

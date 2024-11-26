@@ -2,6 +2,7 @@ import {
   DrawArea,
   DrawSvg,
   DrawSvgFull,
+  DrawText,
   IsNewOverlay,
   LoadedImage,
   SystemSettings,
@@ -10,6 +11,8 @@ import { ResizeDirection } from "@/utils/type";
 import React, { MutableRefObject, useEffect, useRef, useState } from "react";
 import { RemoveScroll } from "react-remove-scroll";
 import useUtilsDrawing from "../../../utils/utilsDrawing";
+import Rich_text from "../../rich_text/rich_text";
+import { Editor } from "draft-js";
 
 // Interface des propriétés du composant
 interface TextEditDrawingProps {
@@ -21,7 +24,6 @@ interface TextEditDrawingProps {
     e: React.MouseEvent,
     direction: ResizeDirection
   ) => void;
-  croppedImageUrl: string | null;
   zoom: number[];
   isImgOverlay: IsNewOverlay;
   setImgOverlay: React.Dispatch<React.SetStateAction<any>>;
@@ -37,6 +39,16 @@ interface TextEditDrawingProps {
   isFormCanvasVisible: string;
   drawSvg: DrawSvg;
   drawSvgFull: DrawSvgFull;
+  textCanvasVisible: boolean;
+  drawText: DrawText;
+  setDrawText: React.Dispatch<React.SetStateAction<any>>;
+  contentRichText: any;
+  setContentRichText: React.Dispatch<React.SetStateAction<any>>;
+  contentRichTextSave: any;
+  setContentRichTextSave: React.Dispatch<React.SetStateAction<any>>;
+  editorRef: React.RefObject<Editor>;
+  editorState: any;
+  setEditorState: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const OverlayArea: React.FC<TextEditDrawingProps> = (props) => {
@@ -145,7 +157,8 @@ const OverlayArea: React.FC<TextEditDrawingProps> = (props) => {
     !props.isImgOverlay.img &&
     !props.isFormCanvasVisible &&
     !props.drawSvg.svg &&
-    !props.drawSvgFull.svg
+    !props.drawSvgFull.svg &&
+    !props.textCanvasVisible
   )
     return null;
 
@@ -191,6 +204,7 @@ const OverlayArea: React.FC<TextEditDrawingProps> = (props) => {
             cursor: props.isResizing === "top-move" ? "move" : "default",
           }}
           onMouseDown={(e) => {
+            if (props.textCanvasVisible) return;
             props.handleMouseDownResizing(e, "top-move");
           }}
           onWheel={(e) => {
@@ -240,6 +254,10 @@ const OverlayArea: React.FC<TextEditDrawingProps> = (props) => {
               />
             </rect>
           </svg>
+          {/* Si vous avez un composant Rich_text, vous pouvez l'ajouter ici */}
+          {props.textCanvasVisible && (
+            <Rich_text {...props} />
+          )}
         </div>
       </RemoveScroll>
       {/* Handles for resizing */}
@@ -349,6 +367,18 @@ const OverlayArea: React.FC<TextEditDrawingProps> = (props) => {
           />
         </>
       )}
+      {props.textCanvasVisible && (
+        <div
+          className="drag-handle-content"
+          onMouseDown={(e) => props.handleMouseDownResizing(e, "top-move")}
+          style={{
+            width: `${props.drawArea.width + 30}px`,
+            height: `${props.drawArea.height + 30}px`,
+            marginLeft: -15,
+            marginTop: -15,
+          }}
+        />
+      )}
       <div
         className="input_textareaCreative"
         style={{
@@ -404,28 +434,6 @@ const OverlayArea: React.FC<TextEditDrawingProps> = (props) => {
           >
             {props.drawArea.rotate}°
           </div>
-          {/*props.isImgOverlay.id === 0 && (
-            <img
-              className="object-cover h-full w-full bounce-open"
-              src={props.isImgOverlay.img ?? props.isDrawingLoad.defaultImage}
-              style={{
-                opacity: props.isImgOverlay.opacity,
-                objectPosition: `${props.isImgOverlay.cropY}% ${props.isImgOverlay.cropY}%`,
-                filter: `
-                   brightness(${props.isImgOverlay.filter.brightness}%)
-                   contrast(${props.isImgOverlay.filter.contrast}%)
-                   saturate(${props.isImgOverlay.filter.saturation}%)
-                   sepia(${props.isImgOverlay.filter.sepia}%)
-                   hue-rotate(${props.isImgOverlay.filter.hue}deg)
-                   blur(${props.isImgOverlay.filter.blur}px)
-                   grayscale(${props.isImgOverlay.filter.grayscale}%)
-                   invert(${props.isImgOverlay.filter.invert}%)
-                 `,
-                transition: "300ms",
-              }}
-              alt=""
-            />
-          )*/}
         </div>
       </div>
     </div>

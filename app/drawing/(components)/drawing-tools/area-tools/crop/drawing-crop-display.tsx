@@ -1,6 +1,10 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { DrawArea, IsNewImage, NewImageSize } from "@/utils/interface";
+import {
+  DrawArea,
+  IsNewImage,
+  NewImageSize,
+} from "@/utils/interface";
 import { ResizeDirection } from "@/utils/type";
 import { useEffect, useState } from "react";
 import { FaCompress } from "react-icons/fa6";
@@ -146,8 +150,11 @@ const DrawingCropDisplay: React.FC<DrawingCropDisplayProps> = (props) => {
           0
         );
 
-        // Effacer le canvas avant de dessiner la nouvelle image recadrée
+        //// Effacer le canvas avant de dessiner la nouvelle image recadrée
         context.clearRect(0, 0, canvas.width, canvas.height);
+
+        context.fillStyle = '#000000';
+        context.fillRect(0, 0, canvas.width, image.height + canvas.height);
 
         // Dessiner l'image recadrée sur le canvas hors écran
         context.drawImage(

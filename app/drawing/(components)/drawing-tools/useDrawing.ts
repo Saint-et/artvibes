@@ -1,18 +1,20 @@
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import UseAreaDrawCreative from "./useArea-drawing";
 import toast from "react-hot-toast";
 import { AiQuality, DrawArea, DrawForm, DrawingSetting, DrawSvg, DrawSvgFull, DrawText, FileDialogOpen, IsNewImage, IsNewOverlay, IsNewOverlaySave, MenuLayer, RenderingOption } from "@/utils/interface";
 import { DrawingName, SystemLogo } from "@/public/assets/data/data";
 import useSelectDrawing from "./usedrawing-select";
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { boolean, z } from "zod";
 import useDrawingRendering from "./drawing-rendering/drawing-rendering";
 import useUtilsDrawing from "../utils/utilsDrawing";
 import { useAppContext } from "@/app/provider/useAppContext";
 import { DrawingLoadDefault, NewImgDefault } from "@/public/assets/data/defaultValue-drawing";
 import GrabScrollComponent from "../drawing-navbar/(components)/grab-to-scroll";
 import useWaifu2xTfjs from "../utils/waifu2x-tfjs/waifu2x-tfjs";
+import { EditorState, convertFromRaw, RawDraftContentState, convertToRaw, RichUtils, Editor, SelectionState } from "draft-js";
 
 const FormSchema = z.object({
     pin: z.string().min(6, {
@@ -123,11 +125,16 @@ export default function useDrawing() {
         overflowCanvas: 'clip',
         overflowExpand: 'clip',
         deleteOutsideOverlay: 'no',
+        storage: 'no',
+        background: 'yes',
+        language: 'French',
+        optimization: 'resolution',
         paint: {
             hideElCanvas: false,
             showDrawSelected: false,
             opacity: false,
-        }
+        },
+        imgRendering: false,
     });
 
     const [isFileDialogOpenNewImgAlert, setFileDialogOpenNewImgAlert] = useState<boolean>(false);
@@ -142,6 +149,7 @@ export default function useDrawing() {
     const overlayImgBgRef = useRef<HTMLDivElement | null>(null);
     const expandDivRef = useRef<HTMLDivElement | null>(null);
     const blanketRef = useRef<HTMLDivElement | null>(null);
+    const textSizeRef = useRef<HTMLInputElement | null>(null);
 
     const insetImgRef = useRef<HTMLDivElement | null>(null);
     const insetExpandRef = useRef<HTMLDivElement | null>(null);
@@ -163,12 +171,13 @@ export default function useDrawing() {
     const mainSidebarRef = useRef<HTMLDivElement | null>(null);
     const sidebarRef = useRef<HTMLDivElement | null>(null);
     const dialogLastImportRef = useRef<HTMLDivElement | null>(null);
+    const editorRef = useRef<Editor>(null);
     const [cropVisible, setCropVisible] = useState<boolean>(false);
     const [isFileDialogOpen, setFileDialogOpen] = useState<FileDialogOpen>(
         {
             lastImport: false,
-            models: false,
             editNewPage: false,
+            help: false
         }
     );
     const [isFreeAreaCrop, setFreeAreaCrop] = useState<boolean>(true);
@@ -290,6 +299,58 @@ export default function useDrawing() {
         tta: 1,
     });
 
+    const [contentRichText, setContentRichText] = useState([
+        [
+            {
+                text: "Bonjour ",
+                style: { color: "red", fontSize: "16px", fontWeight: "bold" },
+            },
+            {
+                text: "volkito",
+                style: { color: "green", fontSize: "16px", fontWeight: "bold" },
+            },
+        ]
+    ]);
+
+
+    const [contentRichTextSave, setContentRichTextSave] = useState([
+        [
+            {
+                text: "Bonjour ",
+                style: { color: "red", fontSize: "16px", fontWeight: "bold" },
+            },
+            {
+                text: "volkito",
+                style: { color: "green", fontSize: "16px", fontWeight: "bold" },
+            },
+        ]
+    ]);
+
+    const rawContent: RawDraftContentState = {
+        blocks: [
+            {
+                key: "1",
+                text: DrawingName,
+                type: "unstyled",
+                depth: 0,
+                inlineStyleRanges: [
+                    { offset: 0, length: 15, style: "CODE" },
+                ],
+                entityRanges: [],
+                data: {
+
+                },
+            },
+        ],
+        entityMap: {},
+    };
+
+    const [editorState, setEditorState] = useState(() =>
+        EditorState.createWithContent(convertFromRaw(rawContent))
+    );
+
+
+
     const handleChange = async (newValue: number[]) => {
         // Update the zoom level
         setZoom(newValue);
@@ -313,6 +374,11 @@ export default function useDrawing() {
         isImageSize.w < isImageSize.h
             ? isImageSize.w
             : isImageSize.h;
+
+
+    const defaultSize = (sizePositionOverlerlay / 2) + (drawingExpandImg.expand / 2);
+    const defaultPositionW = (isImageSize.w / 2) - (sizePositionOverlerlay / 4 + drawingExpandImg.expand / 4);
+    const defaultPositionH = (isImageSize.h / 2) - (sizePositionOverlerlay / 4 + drawingExpandImg.expand / 4);
 
 
     const handleButtonClickImport = async () => {
@@ -467,10 +533,10 @@ export default function useDrawing() {
                                         borderColor: extractBoxShadowColor(
                                             overlayImgRef?.current ? overlayImgRef.current.style.boxShadow : '#000000'
                                         ),
-                                        h: sizePositionOverlerlay / 2,
-                                        w: sizePositionOverlerlay / 2,
-                                        x: isImageSize.w / 2 - (sizePositionOverlerlay / 4),
-                                        y: isImageSize.h / 2 - (sizePositionOverlerlay / 4),
+                                        h: defaultSize,
+                                        w: defaultSize,
+                                        x: defaultPositionW,
+                                        y: defaultPositionH,
                                         rotate: 0,
                                         filter: {
                                             brightness: isImgOverlay.filter.brightness,
@@ -894,6 +960,9 @@ export default function useDrawing() {
         });
     }
 
+
+
+
     const handleResetImgOverlay = () => {
         setImgOverlay({
             id: 0,
@@ -926,6 +995,9 @@ export default function useDrawing() {
         setFormCanvasVisible("")
     }
     const handleResetText = () => {
+        if (editorRef.current) {
+            editorRef.current?.blur();
+        }
         setDrawText({
             id: 0,
             value: "",
@@ -938,6 +1010,7 @@ export default function useDrawing() {
             opacity: 1.0,
         });
         setTextCanvasVisible(false)
+        setEditorState(EditorState.createWithContent(convertFromRaw(rawContent)))
     }
     const handleResetSvg = () => {
         setDrawSvg({
@@ -990,10 +1063,10 @@ export default function useDrawing() {
             borderColor: shadow ? '#000000' : extractBoxShadowColor(
                 overlayImgRef?.current ? overlayImgRef.current.style.boxShadow : '#000000'
             ),
-            h: newImg ? sizePositionOverlerlay / 2 : drawArea.height,
-            w: newImg ? sizePositionOverlerlay / 2 : drawArea.width,
-            x: newImg ? isImageSize.w / 2 - sizePositionOverlerlay / 4 : drawArea.positionX + drawArea.leftOffset,
-            y: newImg ? isImageSize.h / 2 - sizePositionOverlerlay / 4 : drawArea.positionY + drawArea.topOffset,
+            h: newImg ? defaultSize : drawArea.height,
+            w: newImg ? defaultSize : drawArea.width,
+            x: newImg ? defaultPositionW : drawArea.positionX + drawArea.leftOffset,
+            y: newImg ? defaultPositionH : drawArea.positionY + drawArea.topOffset,
             rotate: newImg ? 0 : drawArea.rotate,
             filter: {
                 brightness: isImgOverlay.filter.brightness,
@@ -1040,10 +1113,10 @@ export default function useDrawing() {
             color: boxShadowColor,
             thickness: drawForm.thickness,
             opacity: drawForm.opacity,
-            h: form ? sizePositionOverlerlay / 2 : drawArea.height,
-            w: form ? sizePositionOverlerlay / 2 : drawArea.width,
-            x: form ? isImageSize.w / 2 - sizePositionOverlerlay / 4 : drawArea.positionX + drawArea.leftOffset,
-            y: form ? isImageSize.h / 2 - sizePositionOverlerlay / 4 : drawArea.positionY + drawArea.topOffset,
+            h: form ? defaultSize : drawArea.height,
+            w: form ? defaultSize : drawArea.width,
+            x: form ? defaultPositionW : drawArea.positionX + drawArea.leftOffset,
+            y: form ? defaultPositionH : drawArea.positionY + drawArea.topOffset,
             rotate: form ? 0 : drawArea.rotate,
         }
 
@@ -1066,24 +1139,41 @@ export default function useDrawing() {
         });
     }
 
-    const handleSaveText = () => {
+
+    const handleSaveText = async (newValue?: boolean) => {
+        //const editorStateToRaw = convertToRaw(editorState.getCurrentContent());
+
+        const selection = editorState.getSelection();
+        //const contentState = props.editorState.getCurrentContent();
+
+        // Créer une nouvelle sélection vide
+        const clearedSelection = selection.merge({
+            anchorOffset: selection.getStartOffset(),
+            focusOffset: selection.getStartOffset(),
+            isBackward: false,
+        });
+
+        // Forcer la nouvelle sélection dans l'état
+        const newEditorState = EditorState.forceSelection(editorState, clearedSelection);
+
         const newElement = {
             layerType: 'text',
             id: Date.now(),
-            text: drawText.value,
-            color: drawText.color,
+            editorDraftjs: newEditorState,
+            //color: drawText.color,
             overflowContainer: "expand",
-            fontSize: drawText.fontSize,
-            underline: drawText.underline,
-            fontStyle: drawText.fontStyle,
-            fontWeight: drawText.fontWeight,
+            //fontSize: drawText.fontSize,
+            //fontSize: newValue === true ? 30 : drawText.fontSize,
+            //underline: drawText.underline,
+            //fontStyle: drawText.fontStyle,
+            //fontWeight: drawText.fontWeight,
             textAlign: drawText.textAlign,
-            opacity: drawText.opacity,
-            h: drawArea.height,
-            w: drawArea.width,
-            x: drawArea.positionX + drawArea.leftOffset,
-            y: drawArea.positionY + drawArea.topOffset,
-            rotate: drawArea.rotate,
+            //opacity: drawText.opacity,
+            h: newValue ? defaultSize : drawArea.height,
+            w: newValue ? defaultSize : drawArea.width,
+            x: newValue ? defaultPositionW : drawArea.positionX + drawArea.leftOffset,
+            y: newValue ? defaultPositionH : drawArea.positionY + drawArea.topOffset,
+            rotate: newValue ? 0 : drawArea.rotate,
         };
         setLayers((prevLayers: any) => {
             const updatedLayers = prevLayers.map((el: any) => {
@@ -1128,10 +1218,10 @@ export default function useDrawing() {
             borderColor: color || "#000000",
             opacity: drawSvg.opacity,
             svg: newSvg ? newSvg : drawSvg.svg,
-            h: newSvg ? sizePositionOverlerlay / 2 : drawArea.height,
-            w: newSvg ? sizePositionOverlerlay / 2 : drawArea.width,
-            x: newSvg ? isImageSize.w / 2 - sizePositionOverlerlay / 4 : drawArea.positionX + drawArea.leftOffset,
-            y: newSvg ? isImageSize.h / 2 - sizePositionOverlerlay / 4 : drawArea.positionY + drawArea.topOffset,
+            h: newSvg ? defaultSize : drawArea.height,
+            w: newSvg ? defaultSize : drawArea.width,
+            x: newSvg ? defaultPositionW : drawArea.positionX + drawArea.leftOffset,
+            y: newSvg ? defaultPositionH : drawArea.positionY + drawArea.topOffset,
             rotate: newSvg ? 0 : drawArea.rotate,
             filter: {
                 brightness: drawSvg.filter.brightness,
@@ -1198,10 +1288,10 @@ export default function useDrawing() {
             color: colorBg || "#000000",
             opacity: drawSvgFull.opacity,
             svg: newSvg ? newSvg : drawSvgFull.svg,
-            h: newSvg ? sizePositionOverlerlay / 2 : drawArea.height,
-            w: newSvg ? sizePositionOverlerlay / 2 : drawArea.width,
-            x: newSvg ? isImageSize.w / 2 - sizePositionOverlerlay / 4 : drawArea.positionX + drawArea.leftOffset,
-            y: newSvg ? isImageSize.h / 2 - sizePositionOverlerlay / 4 : drawArea.positionY + drawArea.topOffset,
+            h: newSvg ? defaultSize : drawArea.height,
+            w: newSvg ? defaultSize : drawArea.width,
+            x: newSvg ? defaultPositionW : drawArea.positionX + drawArea.leftOffset,
+            y: newSvg ? defaultPositionH : drawArea.positionY + drawArea.topOffset,
             rotate: newSvg ? 0 : drawArea.rotate,
         }
 
@@ -1259,7 +1349,7 @@ export default function useDrawing() {
         } else if (isFormCanvasVisible) {
             handleSaveForm()
         }
-        else if (textCanvasVisible && drawText.value) {
+        else if (textCanvasVisible) {
             handleSaveText()
         }
         else if (drawSvg.img) {
@@ -1306,7 +1396,9 @@ export default function useDrawing() {
                     overlayFiltersRef.current &&
                     overlayFiltersRef.current.contains(event.target as Node) ||
                     drawingSidebarToolsSettingRef.current &&
-                    drawingSidebarToolsSettingRef.current.contains(event.target as Node)
+                    drawingSidebarToolsSettingRef.current.contains(event.target as Node) ||
+                    textSizeRef.current &&
+                    textSizeRef.current.contains(event.target as Node)
                 ) {
                     return;
                 }
@@ -1512,6 +1604,8 @@ export default function useDrawing() {
         expandDivRef,
         blanketRef,
         canvasDrawRef,
+        textSizeRef,
+        editorRef,
 
         elementIndex, setElementIndex,
         isRenderingOpen, setIsRenderingOpen,
@@ -1666,6 +1760,13 @@ export default function useDrawing() {
         strokeRectBgRef,
         handleAiQuality,
         hasTransparency,
+
+        defaultSize,
+        defaultPositionW,
+        defaultPositionH,
+        contentRichText, setContentRichText,
+        contentRichTextSave, setContentRichTextSave,
+        editorState, setEditorState,
 
     }
 }

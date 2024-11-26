@@ -24,6 +24,32 @@ import addsMin from "@/public/assets/images/artvibesAddsMin.png";
 import addsDrawingMin from "@/public/assets/images/drawingAdds.png";
 import addsPremiumMin from "@/public/assets/images/premiumAdds.png";
 
+
+import SystemDrawingAbstractImport1 from '../images/drawing/gallerie/abstract/13295111_5186991.jpg';
+import SystemDrawingAbstractImport2 from '../images/drawing/gallerie/abstract/14658088_5509862.jpg';
+import SystemDrawingAbstractImport3 from '../images/drawing/gallerie/abstract/18220884_v1016-b-09.jpg';
+import SystemDrawingAbstractImport4 from '../images/drawing/gallerie/abstract/19535793_63448745568367.jpg';
+import SystemDrawingAbstractImport5 from '../images/drawing/gallerie/abstract/22356241_24894249737469.jpg';
+import SystemDrawingAbstractImport6 from '../images/drawing/gallerie/abstract/6437445_3306716.jpg';
+import SystemDrawingAbstractImport7 from '../images/drawing/gallerie/abstract/6706373_3395620.jpg';
+import SystemDrawingAbstractImport8 from '../images/drawing/gallerie/abstract/137965495_34da9859-2fbd-468d-b952-ab920832b4e0.jpg';
+import SystemDrawingAbstractImport9 from '../images/drawing/gallerie/abstract/158741998_11d6f99f-dbd7-48ef-8b98-bfec076e7421.jpg';
+import SystemDrawingAbstractImport0 from '../images/drawing/gallerie/abstract/bokeh-texture.jpg';
+
+
+import SystemDrawingcommercialImport1 from '../images/drawing/gallerie/commercial/abstract-blur-furniture-shop-store-interior.jpg';
+import SystemDrawingcommercialImport2 from '../images/drawing/gallerie/commercial/abstract-customer-white-light-store.jpg';
+import SystemDrawingcommercialImport3 from '../images/drawing/gallerie/commercial/contexte-energie-nucleaire-ia-innovation-future-technologie-rupture.jpg';
+import SystemDrawingcommercialImport4 from '../images/drawing/gallerie/commercial/corporate-business-handshake-business-partners.jpg';
+import SystemDrawingcommercialImport5 from '../images/drawing/gallerie/commercial/cropped-image-woman-inputting-card-information-key-phone-laptop-while-shopping-online.jpg';
+import SystemDrawingcommercialImport6 from '../images/drawing/gallerie/commercial/cyber-monday-retail-sales.jpg';
+import SystemDrawingcommercialImport7 from '../images/drawing/gallerie/commercial/homme-affaires-examiner-papiers-table.jpg';
+import SystemDrawingcommercialImport8 from '../images/drawing/gallerie/commercial/lieu-travail-ecouteurs-ordinateur-portable-dans-espace-copie-du-soir.jpg';
+import SystemDrawingcommercialImport9 from '../images/drawing/gallerie/commercial/materiel-scolaire-ligne-maison.jpg';
+
+import SystemDrawingWallpaperImport1 from '../images/drawing/gallerie/wallpaper/2494.jpg';
+import SystemDrawingWallpaperImport2 from '../images/drawing/gallerie/wallpaper/variety-wonderful-abstract-forms-with-oil-water.jpg';
+
 export const DrawingVersion = 'Development';
 export const DrawingName = 'Kitsune-Studio';
 
@@ -109,6 +135,36 @@ export const DrawingLoadItems = [{
   description: `Inspired by artists and individuals. Turn your walls into an art gallery home with captivating posters and enveloping manga.`,
 }
 ];
+
+export const SystemBackgroungAbstractImg = [
+  SystemDrawingAbstractImport1,
+  SystemDrawingAbstractImport2,
+  SystemDrawingAbstractImport3,
+  SystemDrawingAbstractImport4,
+  SystemDrawingAbstractImport5,
+  SystemDrawingAbstractImport6,
+  SystemDrawingAbstractImport7,
+  SystemDrawingAbstractImport8,
+  SystemDrawingAbstractImport9,
+  SystemDrawingAbstractImport0,
+];
+
+export const SystemBackgroungWallpaperImg = [
+  SystemDrawingWallpaperImport1,
+  SystemDrawingWallpaperImport2,
+];
+
+export const SystemBackgroungCommercialImg = [
+  SystemDrawingcommercialImport1,
+  SystemDrawingcommercialImport2,
+  SystemDrawingcommercialImport3,
+  SystemDrawingcommercialImport4,
+  SystemDrawingcommercialImport5,
+  SystemDrawingcommercialImport6,
+  SystemDrawingcommercialImport7,
+  SystemDrawingcommercialImport8,
+  SystemDrawingcommercialImport9,
+]
 
 export const SystemCarouselImg = [
   Illustration,
@@ -463,7 +519,6 @@ export const AddsInternals = [
   }
 ]
 
-
 export const DataBlanket = [
   {
     opacity: 0.2,
@@ -496,6 +551,47 @@ export const DataBlanket = [
   },
 ]
 
-export const DataSizeText = [
-  4, 8, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40
-]
+export const ColorsDrawing = [
+  { name: "black", value: "#000000" },
+  { name: "white", value: "#FFFFFF" },
+  { name: "red", value: "#EF4444" },
+  { name: "blue", value: "#3B82F6" },
+  { name: "bluedark", value: "#3F48CC" },
+  { name: "green", value: "#10B981" },
+  { name: "yellow", value: "#F59E0B" },
+  { name: "purple", value: "#8B5CF6" },
+  { name: "pink", value: "#EC4899" },
+];
+
+export const ItalicDraftjsMap = {
+  "ITALIC_none": { fontStyle: "normal" },
+  "ITALIC_italic": { fontStyle: "italic" },
+};
+export const UnderlineDraftjsMap = {
+  "UNDERLINE_none": { textDecoration: "none" },
+  "UNDERLINE_underline": { textDecoration: "underline" },
+};
+export const BoldDraftjsMap = {
+  "BOLD_none": { fontWeight: "normal" },
+  "BOLD_bold": { fontWeight: "bolder" },
+};
+
+export const ColorDraftjsMap = ColorsDrawing?.reduce<Record<string, { color: string }>>(
+  (acc, el) => {
+    acc[`COLOR_${el.name}`] = { color: el.value };
+    return acc;
+  },
+  {}
+);
+
+const arrayFontSizeDraftjsMapMin = Array.from({ length: 50 }, (_, index) => 4 + index * 2);
+const arrayFontSizeDraftjsMapMax = Array.from({ length: 30 }, (_, index) => 110 + index * 10);
+
+export const arrayFontSizeDraftjsMap = [...arrayFontSizeDraftjsMapMin, ...arrayFontSizeDraftjsMapMax]
+export const FontSizeDraftjsMap = arrayFontSizeDraftjsMap?.reduce<Record<string, { fontSize: number }>>(
+  (acc, el) => {
+    acc[`FONT_SIZE_${el}`] = { fontSize: el };
+    return acc;
+  },
+  {}
+);

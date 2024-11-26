@@ -86,6 +86,7 @@ import useUtilsDrawing from "../utils/utilsDrawing";
 import { Textarea } from "@/components/ui/textarea";
 import SvgComponents from "./area-tools/overlay/svg-file";
 import SvgFullComponents from "./area-tools/overlay/svg-file-full";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface DrawingPagePopoverProps {
   isImgOverlay: IsNewOverlay;
@@ -526,6 +527,21 @@ const PagePopover: React.FC<DrawingPagePopoverProps> = (props) => {
                           <FaItalic className="text-1xl" />
                         </Button>
                       </div>
+                      <Select>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Size" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 50 }, (_, index) => {
+                            const value = 4 + index * 2; // Commence à 4 et incrémente par 2
+                            return (
+                              <SelectItem key={value} value={`${value}`}>
+                                {value}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
                     </div>
                   )}
                   {props.drawSvg.svg !== "" && (

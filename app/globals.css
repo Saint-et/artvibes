@@ -166,7 +166,7 @@
     }
     .scrollbar-style {
       overflow: auto;
-      scrollbar-color: rgb(40, 40, 40) rgba(0, 0, 0, 0);
+      scrollbar-color: rgb(40, 40, 40) #0d0d0d;
     }
     .gradient-animated5 {
       background: linear-gradient(-45deg, #00ff9d, #4e8cd3, #ff00cc, #934ed3);
@@ -201,8 +201,9 @@
 background-size: 20px 20px;
     }
     .drawing-css-bg-negatif {
-      background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, #7d000085 10px, #7d000085 20px);
-background-color: #ff00008f;
+      background-image: repeating-linear-gradient(45deg, #ff0000 0, #ff0000 2px, transparent 0, transparent 50%);
+background-size: 25px 25px;
+background-color: rgba(255, 0, 0, 0.3);
     }
     .drawing-css-bg-main-tranparent {
       background-color: #c9c9c9;
@@ -359,23 +360,6 @@ background-color: #ff00008f;
       opacity: 0;
    }
  }
- /* Initialement, la page est invisible */
-.open-element-page-top {
-  top: 0px;
-  animation: animation-top 300ms ease-in-out;
-}
-
-@keyframes animation-top {
-  0% {
-    top: -200px;
- }
- 80% {
-   top: 20px;
-}
-  100% {
-    top: 0px;
- }
-}
 
 .main-bg-animated {
   animation: main-bg-animated 60s ease infinite;

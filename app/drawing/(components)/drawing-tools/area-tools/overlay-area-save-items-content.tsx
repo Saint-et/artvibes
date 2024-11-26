@@ -21,6 +21,8 @@ import DrawingArea from "./draw/drawing-area";
 import React, { MutableRefObject } from "react";
 import SvgComponents from "./overlay/svg-file";
 import SvgFullComponents from "./overlay/svg-file-full";
+import { convertFromRaw, Editor, EditorState } from "draft-js";
+import { BoldDraftjsMap, ColorDraftjsMap, FontSizeDraftjsMap, ItalicDraftjsMap, UnderlineDraftjsMap } from "@/public/assets/data/data";
 
 interface TextEditDrawingImgContentProps {
   isMenuOpen: number;
@@ -31,7 +33,6 @@ interface TextEditDrawingImgContentProps {
     e: React.MouseEvent,
     direction: ResizeDirection
   ) => void;
-  croppedImageUrl: string | null;
   zoom: number[];
   isImgOverlay: IsNewOverlay;
   isImgOverlaySave: IsNewOverlaySave[];
@@ -67,10 +68,12 @@ interface TextEditDrawingImgContentProps {
   strokeRectBgRef: MutableRefObject<SVGRectElement | null>;
   isDrawingSetting: DrawingSetting;
   setDrawingSetting: React.Dispatch<React.SetStateAction<any>>;
-  el: any;
+  el: LayerElement;
   expandDiv2: number;
   isDrawingLoad: LoadedImage;
   drawSvgFull: DrawSvgFull;
+  editorState: any;
+  setEditorState: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const OverlayAreaSaveItemsContent: React.FC<TextEditDrawingImgContentProps> = (
@@ -380,25 +383,40 @@ const OverlayAreaSaveItemsContent: React.FC<TextEditDrawingImgContentProps> = (
             <>
               {props.drawText.id !== props.el.id && (
                 <div
-                  className="input_textareaCreative"
+                  className="input_textareaCreative select-none"
                   style={{
-                    userSelect: "none",
                     zIndex: 50,
                     position: "absolute",
-                    wordBreak: "break-all",
                     textAlign: props.el.textAlign,
-                    fontSize: props.el.fontSize,
-                    color: props.el.color,
+                    //fontSize: props.el.fontSize,
+                    //color: props.el.color,
                     left: props.el.x + props.expandDiv2,
                     top: props.el.y + props.expandDiv2,
                     width: props.el.w,
                     height: props.el.h,
                     transform: `rotate(${props.el.rotate}deg)`,
+                    userSelect: "none",
+                    cursor: 'default'
                   }}
-                  {...(props.el.text && {
-                    dangerouslySetInnerHTML: { __html: props.el.text },
-                  })}
-                />
+                  onMouseDown={(e) => e.preventDefault()}
+                  onContextMenu={(e) => e.preventDefault()}
+                  onDragStart={(e) => e.preventDefault()}
+                >
+                  <Editor
+                    editorState={props.el.editorDraftjs}
+                    customStyleMap={{
+                      ...ColorDraftjsMap,
+                      ...FontSizeDraftjsMap,
+                      ...ItalicDraftjsMap,
+                      ...UnderlineDraftjsMap,
+                      ...BoldDraftjsMap,
+                    }}
+                    readOnly={true}
+                    onChange={() => {
+                      return;
+                    }}
+                  />
+                </div>
               )}
             </>
           )}

@@ -120,8 +120,6 @@ export default function useWaifu2xTfjs() {
 
         x = padding(x, offset, h2 - offset - h, offset, w2 - offset - w);
 
-
-
         let tasks = preProcess(x, config);
 
         return { tasks: tasks, config: config }

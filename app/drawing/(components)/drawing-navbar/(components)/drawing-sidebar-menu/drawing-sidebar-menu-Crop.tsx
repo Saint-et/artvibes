@@ -18,6 +18,8 @@ import { LuCrop, LuLink2, LuMaximize, LuMinimize } from "react-icons/lu";
 import useUtilsDrawing from "../../../utils/utilsDrawing";
 import { DrawingName } from "@/public/assets/data/data";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useRef } from "react";
 
 interface DrawingSidebarMenuCropProps {
   canvasCropRef: React.RefObject<HTMLCanvasElement>;
@@ -248,13 +250,12 @@ const DrawingSidebarMenuCrop: React.FC<DrawingSidebarMenuCropProps> = (
           </div>
           <Separator className="my-4" />
           <div className="text-neutral-500 text-sm">
-            Note : L'option "recadrage" doit impérativement être définie dès le
-            début du projet. Toute modification ultérieure de cette option peut
-            entraîner des conséquences imprévues, telles que le déplacement ou
-            la déformation de certains éléments sur le canevas. Pour garantir
-            une mise en page cohérente et éviter tout désalignement ou
-            altération de proportions, il est fortement recommandé de fixer
-            cette valeur dès les premières étapes.
+            Note: The "cropping" option must be set as of the start of the
+            project. Any subsequent changes to this option may unintended
+            consequences, such as displacement or the distortion of certain
+            elements on the canvas. To guarantee a consistent layout and avoid
+            any misalignment or alteration of proportions, it is strongly
+            recommended to fix this value from the earliest stages.
           </div>
         </CardContent>
       </Card>

@@ -66,7 +66,9 @@ const DrawingSidebarMenuAI: React.FC<DrawingSidebarMenuModelsProps> = (
           <Separator className="my-2" />
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1">
-              <AccordionTrigger>Reduce image noise or resize ?</AccordionTrigger>
+              <AccordionTrigger>
+                Reduce image noise or resize ?
+              </AccordionTrigger>
               <AccordionContent>
                 <CardContent className="grid grid-cols-1 gap-4">
                   <div className="flex w-full items-center justify-center">
@@ -179,7 +181,7 @@ const DrawingSidebarMenuAI: React.FC<DrawingSidebarMenuModelsProps> = (
                               props.isAiQuality?.scale === 1
                             }
                           >
-                            Improving quality by AI
+                            Start process ...
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
@@ -187,15 +189,13 @@ const DrawingSidebarMenuAI: React.FC<DrawingSidebarMenuModelsProps> = (
                             <AlertDialogTitle>
                               Improving quality by AI
                             </AlertDialogTitle>
-                            <AlertDialogDescription className="text-neutral-500 text-sm">
-                              Info : Seule l’image d’origine sera retravaillée
-                              sans tenir compte des modifications afin
-                              d’optimiser le rendu.
+                            <AlertDialogDescription className="text-amber-500 text-sm">
+                              Info: the process takes a little time to Finish.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <div className="flex justify-center">
-                            <Card className="w-[90%] max-w-[300px]">
-                              <CardContent className="p-1">
+                            <Card className="w-[90%] max-w-[300px] h-[90%] max-h-[300px] overflow-clip">
+                              <CardContent className="p-0">
                                 <Image
                                   className="w-[100%] rounded-md"
                                   src={props.isNewImage.img}
@@ -223,9 +223,18 @@ const DrawingSidebarMenuAI: React.FC<DrawingSidebarMenuModelsProps> = (
                       </AlertDialog>
                     </div>
                   </div>
-                  <div className="text-neutral-500 text-sm">
-                    Info : Seule l’image d’origine sera retravaillée sans tenir
-                    compte des modifications afin d’optimiser le rendu.
+                  <div className="text-yellow-500 text-sm">
+                    Caution: The use of this AI model may require important
+                    resources on your computer, such as particular in terms of
+                    processor and graphics memory. To ensure an optimal
+                    experience, it is recommended Adapt rendering requirements
+                    based on capabilities of your device. If your computer has
+                    slowdowns, consider reducing the resolution or complexity of
+                    tasks to lighten the load and ensure a smoother operation
+                  </div>
+                  <div className="text-neutral-500 text-sm mt-4">
+                    Note: Only the original image will be reworked without
+                    holding account for changes to optimize rendering.
                   </div>
                 </CardContent>
               </AccordionContent>
@@ -263,11 +272,10 @@ const DrawingSidebarMenuAI: React.FC<DrawingSidebarMenuModelsProps> = (
                       </Button>
                     </div>
                   </div>
-                  <div className="text-neutral-500 text-sm">
-                    Attention : L'utilisation de cette fonctionnalité
-                    d'intelligence artificielle nécessitera des gems. Veuillez
-                    vous assurer que vous avez suffisamment de gems disponibles
-                    avant de continuer.
+                  <div className="text-yellow-500 text-sm">
+                    Caution: Using this feature of artificial intelligence will
+                    require gems. Please Make sure you have enough gems
+                    available before continuing.
                   </div>
                 </CardContent>
               </AccordionContent>

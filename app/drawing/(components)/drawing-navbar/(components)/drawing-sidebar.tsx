@@ -19,7 +19,6 @@ import {
   DrawText,
   ExpandImg,
   FileDialogOpen,
-  IsNewCropImage,
   IsNewImage,
   IsNewOverlay,
   IsNewOverlaySave,
@@ -31,12 +30,10 @@ import {
 } from "@/utils/interface";
 import { ResizeDirection } from "@/utils/type";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MutableRefObject, SetStateAction } from "react";
+import { MutableRefObject } from "react";
 import DrawingSidebarMenuAI from "./drawing-sidebar-menu/drawing-sidebar-menu-ai";
 import DrawingSidebarMenuExpand from "./drawing-sidebar-menu/drawing-sidebar-menu-expand";
 import DrawingSidebarMenuBlanket from "./drawing-sidebar-menu/drawing-sidebar-menu-blanket";
-import DrawingSidebarMenuParams from "./drawing-sidebar-menu/drawing-sidebar-menu-params";
-import DrawingSidebarMenuEdit from "./drawing-sidebar-menu/drawing-sidebar-menu-edit";
 
 interface DrawingSidebarProps {
   isMenuOpen: number;
@@ -103,7 +100,11 @@ interface DrawingSidebarProps {
   setDrawingExpandImg: React.Dispatch<React.SetStateAction<any>>;
   dialogLastImportRef: MutableRefObject<HTMLDivElement | null>;
   isDrawingLoad: LoadedImage | undefined;
-  handleSaveImgOverlay: (newImg?: string, form?: string, shadow?: number) => void;
+  handleSaveImgOverlay: (
+    newImg?: string,
+    form?: string,
+    shadow?: number
+  ) => void;
   handleResetImgOverlay: () => void;
   setDrawForm: React.Dispatch<React.SetStateAction<any>>;
   drawForm: DrawForm;
@@ -152,14 +153,20 @@ interface DrawingSidebarProps {
   setDrawSvgFull: React.Dispatch<React.SetStateAction<DrawSvgFull>>;
   handleSaveSvgFull: (newSvg?: string) => void;
   handleResetSvgFull: () => void;
-
+  captureElement: () => void;
+  textSizeRef: React.RefObject<HTMLInputElement>;
+  handleSaveText: (newValue?: boolean) => void;
+  contentRichText: any;
+  setContentRichText: React.Dispatch<React.SetStateAction<any>>;
+  editorState: any;
+  setEditorState: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const DrawingSidebar: React.FC<DrawingSidebarProps> = (props) => {
   // <DrawingSidebarMenu {...props} /> bg-[#0a0a0a] bg-[#0a0a0a]
 
   if (!props.isNewImage.img) return null;
-  if (props.isMenuOpen === 99) return null;
+  //if (props.isMenuOpen === 99) return null;
   if (props.isMenuOpen === 100) return null;
   if (props.isMenuOpen === 0) return null;
 
@@ -170,10 +177,6 @@ const DrawingSidebar: React.FC<DrawingSidebarProps> = (props) => {
         className="w-[100%] min-w-[300px] max-w-[300px] block bg-[#0d0d0d]"
       >
         <DrawingSidebarMenuAI {...props} />
-        
-        <DrawingSidebarMenuEdit {...props} />
-
-        <DrawingSidebarMenuParams {...props} />
 
         <DrawingSidebarMenuText {...props} />
 
