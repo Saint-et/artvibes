@@ -16,13 +16,20 @@ import {
   NewImageSize,
   SystemSettings,
 } from "@/utils/interface";
-import { ResizeDirection } from "@/utils/type";
+import { CustomStyleMap, ResizeDirection } from "@/utils/type";
 import DrawingArea from "./draw/drawing-area";
 import React, { MutableRefObject } from "react";
 import SvgComponents from "./overlay/svg-file";
 import SvgFullComponents from "./overlay/svg-file-full";
 import { convertFromRaw, Editor, EditorState } from "draft-js";
-import { BoldDraftjsMap, ColorDraftjsMap, FontSizeDraftjsMap, ItalicDraftjsMap, UnderlineDraftjsMap } from "@/public/assets/data/data";
+import {
+  BoldDraftjsMap,
+  ColorDraftjsMap,
+  FontSizeDraftjsMap,
+  ItalicDraftjsMap,
+  PoliceMapDraftjsMap,
+  UnderlineDraftjsMap,
+} from "@/public/assets/data/data";
 
 interface TextEditDrawingImgContentProps {
   isMenuOpen: number;
@@ -74,6 +81,8 @@ interface TextEditDrawingImgContentProps {
   drawSvgFull: DrawSvgFull;
   editorState: any;
   setEditorState: React.Dispatch<React.SetStateAction<any>>;
+  customStyleMap: CustomStyleMap;
+  customStyleShadowMap: CustomStyleMap;
 }
 
 const OverlayAreaSaveItemsContent: React.FC<TextEditDrawingImgContentProps> = (
@@ -396,7 +405,7 @@ const OverlayAreaSaveItemsContent: React.FC<TextEditDrawingImgContentProps> = (
                     height: props.el.h,
                     transform: `rotate(${props.el.rotate}deg)`,
                     userSelect: "none",
-                    cursor: 'default'
+                    cursor: "default",
                   }}
                   onMouseDown={(e) => e.preventDefault()}
                   onContextMenu={(e) => e.preventDefault()}
@@ -410,6 +419,9 @@ const OverlayAreaSaveItemsContent: React.FC<TextEditDrawingImgContentProps> = (
                       ...ItalicDraftjsMap,
                       ...UnderlineDraftjsMap,
                       ...BoldDraftjsMap,
+                      ...props.customStyleMap,
+                      ...PoliceMapDraftjsMap,
+                      ...props.customStyleShadowMap
                     }}
                     readOnly={true}
                     onChange={() => {

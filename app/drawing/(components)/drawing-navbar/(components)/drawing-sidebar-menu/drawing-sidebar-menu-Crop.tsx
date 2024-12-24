@@ -15,11 +15,12 @@ import {
 import { ResizeDirection } from "@/utils/type";
 import { Separator } from "@/components/ui/separator";
 import { LuCrop, LuLink2, LuMaximize, LuMinimize } from "react-icons/lu";
-import useUtilsDrawing from "../../../utils/utilsDrawing";
+//import useUtilsDrawing from "../../../utils/utilsDrawing";
 import { DrawingName } from "@/public/assets/data/data";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useRef } from "react";
+import { generateRandomId, resizeImageBase64 } from "@/utils/utils";
 
 interface DrawingSidebarMenuCropProps {
   canvasCropRef: React.RefObject<HTMLCanvasElement>;
@@ -53,7 +54,7 @@ interface DrawingSidebarMenuCropProps {
 const DrawingSidebarMenuCrop: React.FC<DrawingSidebarMenuCropProps> = (
   props
 ) => {
-  const UseUtilsDrawing = useUtilsDrawing();
+  //const UseUtilsDrawing = useUtilsDrawing();
 
   const addCropPicture = () => {
     return new Promise((resolve, reject) => {
@@ -61,7 +62,7 @@ const DrawingSidebarMenuCrop: React.FC<DrawingSidebarMenuCropProps> = (
         if (!props.croppedImageUrl) {
           return reject(new Error("Failed to save image"));
         }
-        UseUtilsDrawing.resizeImageBase64(
+        resizeImageBase64(
           props.croppedImageUrl,
           300,
           function (resizedBlob: any) {
@@ -69,7 +70,7 @@ const DrawingSidebarMenuCrop: React.FC<DrawingSidebarMenuCropProps> = (
               return reject(new Error("Failed to save image"));
             }
             const imgValue: IsNewImage = {
-              id: UseUtilsDrawing.generateRandomId(),
+              id: generateRandomId(),
               fileName: `${DrawingName}-${Date.now()}`,
               img: props.croppedImageUrl,
               miniature: resizedBlob || "",
@@ -127,7 +128,7 @@ const DrawingSidebarMenuCrop: React.FC<DrawingSidebarMenuCropProps> = (
   return (
     <>
       <Card className="border-none rounded-none bg-transparent">
-        <CardContent className="grid grid-cols-1 gap-2 p-4">
+        <CardContent className="grid grid-cols-1 gap-2 p-4 text-black dark:text-white">
           <div className="text-1xl flex justify-between">
             Crop :<LuCrop className="h-4 w-4" />
           </div>

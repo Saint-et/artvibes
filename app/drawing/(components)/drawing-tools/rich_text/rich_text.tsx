@@ -3,30 +3,27 @@ import {
   ColorDraftjsMap,
   FontSizeDraftjsMap,
   ItalicDraftjsMap,
+  PoliceMapDraftjsMap,
   UnderlineDraftjsMap,
 } from "@/public/assets/data/data";
-import { DrawText, LayerElement } from "@/utils/interface";
-import { convertFromRaw, Editor, EditorState } from "draft-js";
-import { useRef } from "react";
+import { DrawText } from "@/utils/interface";
+import { CustomStyleMap } from "@/utils/type";
+import { getStylesValuesAtCursor } from "@/utils/utils";
+import { ContentState, Editor, EditorState, SelectionState } from "draft-js";
+import { useEffect } from "react";
 //import "draft-js/dist/Draft.css";
-
-interface RichTextItem {
-  text: string;
-  style: Record<string, string>;
-}
 
 interface RichTextProps {
   //updateContent: (newContent: RichTextItem[]) => void;
   //textCanvasRef: React.RefObject<Editor | null>;
   drawText: DrawText;
-  //setDrawText: React.Dispatch<React.SetStateAction<any>>;
-  //contentRichText: RichTextItem[];
-  //setContentRichText: React.Dispatch<React.SetStateAction<any>>;
-  //contentRichTextSave: RichTextItem[];
-  //setContentRichTextSave: React.Dispatch<React.SetStateAction<any>>;
+  setDrawText: React.Dispatch<React.SetStateAction<any>>;
   editorState: any;
   setEditorState: React.Dispatch<React.SetStateAction<any>>;
   editorRef: React.RefObject<Editor>;
+  customStyleMap: CustomStyleMap;
+  customStyleShadowMap: CustomStyleMap;
+  setCustomStyleMap: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const RichTextChild: React.FC<RichTextProps> = (props) => {
@@ -41,6 +38,39 @@ const RichTextChild: React.FC<RichTextProps> = (props) => {
     }
     return "";
   };
+
+  const customStyleSelectionMap = {
+    ...ColorDraftjsMap,
+    ...FontSizeDraftjsMap,
+    ...ItalicDraftjsMap,
+    ...UnderlineDraftjsMap,
+    ...BoldDraftjsMap,
+    ...props.customStyleMap,
+    ...props.customStyleShadowMap,
+    ...PoliceMapDraftjsMap,
+  };
+
+  const handleGetStyleDraftJs = () => {
+    if (!props.editorRef.current) return;
+    const cursorData = getStylesValuesAtCursor(
+      props.editorState,
+      customStyleSelectionMap
+    );
+    if (!cursorData) return;
+    
+    props.setDrawText((prev: DrawText) => ({
+      ...prev,
+      fontSize: cursorData.fontSize,
+      textDecoration: cursorData.textDecoration,
+      textShadow: cursorData.textShadow,
+      fontStyle: cursorData.fontStyle,
+      fontWeight: cursorData.fontWeight,
+    }));
+  };
+
+  useEffect(() => {
+    handleGetStyleDraftJs();
+  }, [props.editorRef.current]);
 
   return (
     <div
@@ -57,6 +87,9 @@ const RichTextChild: React.FC<RichTextProps> = (props) => {
         width: "100%",
         height: "100%",
       }}
+      onClick={() => {
+        handleGetStyleDraftJs();
+      }}
     >
       <Editor
         ref={props.editorRef}
@@ -66,6 +99,9 @@ const RichTextChild: React.FC<RichTextProps> = (props) => {
           ...ItalicDraftjsMap,
           ...UnderlineDraftjsMap,
           ...BoldDraftjsMap,
+          ...props.customStyleMap,
+          ...props.customStyleShadowMap,
+          ...PoliceMapDraftjsMap,
         }}
         blockStyleFn={blockStyleFn}
         editorState={props.editorState}

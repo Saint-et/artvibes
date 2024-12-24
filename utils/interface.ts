@@ -30,9 +30,10 @@ type TextAlign = 'left' | 'right' | 'center' | 'justify' | 'start' | 'end';
 export interface DrawText {
   id: number;
   value: string;
-  color: string;
+  colorDraftjs: string;
   fontSize: number;
-  underline: string;
+  textDecoration: string;
+  textShadow: string;
   fontStyle: string;
   fontWeight: string;
   textAlign: TextAlign;
@@ -156,9 +157,10 @@ export interface ImgBorderOn {
 }
 
 export interface RenderingOption {
-  reziseImg: true;
+  reziseImg: boolean;
   sharpenImg: boolean;
-  smoothImg: true;
+  smoothImg: boolean;
+  format: 'png' | 'jpg/jpeg' | 'pdf';
   width: number;
   height: number;
 }
@@ -205,6 +207,14 @@ export interface DrawSvgFull {
   color: string;
   opacity: number;
 }
+
+export interface DrawFiligrane {
+  fontSize: number;
+  text: string;
+  img: string;
+  color: string;
+  opacity: number;
+}
 export interface IsNewOverlaySave {
   id: number;
   form: string;
@@ -244,6 +254,10 @@ type DrawingSeparatorBorderType =
 type DrawingSettingYNType =
   | 'no'
   | 'yes';
+type DrawingSettingBGType =
+  | 'default'
+  | 'image'
+  | 'animated';
 type DrawingSettingLanguageType =
   | 'French'
   | 'English';
@@ -254,19 +268,24 @@ export interface DrawingSetting {
   separatorBorder: DrawingSeparatorBorderType;
   transparence: boolean;
   maxZoom: number;
+  maxZoomAuto: boolean;
   overflowCanvas: string;
   overflowExpand: string;
   deleteOutsideOverlay: DrawingSettingYNType;
   language: DrawingSettingLanguageType;
   optimization: DrawingSettingOptimizationType;
   storage: DrawingSettingYNType;
+  theme: string;
   paint: {
     hideElCanvas: boolean;
     showDrawSelected: boolean;
     opacity: boolean;
   },
   imgRendering: boolean,
-  background: DrawingSettingYNType,
+  background: DrawingSettingBGType,
+  backgroundImg: string,
+  backgroundAnimated: boolean,
+  backgroundHeight: number,
 }
 export interface LayerDrawForm {
   layerType: 'form';
@@ -308,6 +327,7 @@ export interface LayerElement {
   editorDraftjs: any;
   text: string;
   svgImg: string;
+  stringSvgImgRendering: string;
   svg: string;
   fontSize: number;
   underline: string;
@@ -320,6 +340,7 @@ export interface LayerElement {
   borderColor: string;
   expand: number;
   color: string;
+  colorDraftjs: any;
   thickness: number;
   formType: string;
   h: number;
@@ -376,7 +397,16 @@ export interface WaifuProcess {
   }
 }
 export interface FileDialogOpen {
+  resizeImage: boolean;
+  preview: boolean;
   lastImport: boolean;
   editNewPage: boolean;
   help: boolean;
+  backgroundAdvanced: boolean;
+}
+
+export interface ResizeInterface {
+  link: boolean;
+  h: number;
+  w: number;
 }

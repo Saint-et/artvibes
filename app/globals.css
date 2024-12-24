@@ -1,8 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Bonbon&family=Bungee+Outline&family=Bungee+Spice&family=Codystar:wght@300;400&family=Eater&family=Edu+AU+VIC+WA+NT+Arrows:wght@400..700&family=Hanalei&family=Megrim&family=Monofett&family=Montserrat+Subrayada:wght@400;700&family=Nabla&family=Nosifer&family=Oi&family=Playwrite+AR:wght@100..400&family=Protest+Revolution&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Rubik+Glitch+Pop&family=Rubik+Lines&family=Rubik+Maze&family=Rubik+Puddles&family=Rubik+Storm&family=Rubik+Vinyl&family=Sacramento&family=Sankofa+Display&family=Splash&family=Tiny5&family=Workbench&family=Zen+Tokyo+Zoo&display=swap');
+
 @tailwind base;
   @tailwind components;
   @tailwind utilities;
+  @tailwind fontFamily;
 
-  @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
 
   @layer base {
     :root {
@@ -99,6 +102,109 @@
       --ring: 216 12.2% 83.9%;
     }*/
   }
+
+  @layer fontFamily {
+    .roboto-regular {
+      font-family: "Roboto", sans-serif;
+    }
+    .playwrite-ar {
+      font-family: "Playwrite AR", sans-serif;
+    }
+    .bonbon-regular {
+      font-family: "Bonbon", sans-serif;
+    }
+    .montserrat-subrayada-regular {
+      font-family: "Montserrat Subrayada", sans-serif;
+    }
+    .protest-revolution-regular {
+      font-family: "Protest Revolution", sans-serif;
+    }
+    .rubik-puddles-regular {
+      font-family: "Rubik Puddles", sans-serif;
+    }
+    .oi-regular {
+      font-family: "Oi", serif;
+    }
+    .eater-regular {
+      font-family: "Eater", serif;
+    }
+    .bungee-spice-regular {
+      font-family: "Bungee Spice", sans-serif;
+    }
+    .bungee-outline-regular {
+      font-family: "Bungee Outline", sans-serif;
+    }
+    .rubik-vinyl-regular {
+      font-family: "Rubik Vinyl", sans-serif;
+    }
+    .splash-regular {
+      font-family: "Splash", sans-serif;
+    }
+    .tiny5-regular {
+      font-family: "Tiny5", sans-serif;
+    }
+    .sacramento-regular {
+      font-family: "Sacramento", sans-serif;
+    }
+    .edu-au-vic-wa-nt-arrows {
+      font-family: "Edu AU VIC WA NT Arrows", sans-serif;
+    }
+    .sankofa-display-regular {
+      font-family: "Sankofa Display", sans-serif;
+    }
+    .megrim-regular {
+      font-family: "Megrim", sans-serif;
+    }
+    .codystar-regular {
+      font-family: "Codystar", sans-serif;
+    }
+    .nosifer-regular {
+      font-family: "Nosifer", sans-serif;
+    }
+    .nabla {
+      font-family: "Nabla", system-ui;
+    }
+    .hanalei-regular {
+      font-family: "Hanalei", system-ui;
+    }
+    .rubik-storm-regular {
+      font-family: "Rubik Storm", system-ui;
+    }
+    .rubik-maze-regular {
+      font-family: "Rubik Maze", system-ui;
+    }
+
+    .rubik-lines-regular {
+      font-family: "Rubik Lines", system-ui;
+      font-weight: 400;
+      font-style: normal;
+    }
+    .workbench {
+      font-family: "Workbench", sans-serif;
+      font-optical-sizing: auto;
+      font-weight: 400;
+      font-style: normal;
+      font-variation-settings:
+        "BLED" 0,
+        "SCAN" 0;
+    }
+    .rubik-glitch-pop-regular {
+      font-family: "Rubik Glitch Pop", system-ui;
+      font-weight: 400;
+      font-style: normal;
+    }
+    .zen-tokyo-zoo-regular {
+      font-family: "Zen Tokyo Zoo", system-ui;
+      font-weight: 400;
+      font-style: normal;
+    }
+    .monofett-regular {
+      font-family: "Monofett", monospace;
+      font-weight: 400;
+      font-style: normal;
+    }
+  }
+
   @layer utilities {
     .progress-barAnimation {
       width: 0%;
@@ -161,10 +267,11 @@
     .admin{
       background: linear-gradient(to right, #005c97, #363795);
     }
-    .roboto-regular {
-      font-family: "Roboto", sans-serif;
-    }
     .scrollbar-style {
+      overflow: auto;
+      scrollbar-color: #c5c5c5 #ffffff;
+    }
+    .scrollbar-style[data-theme="dark"] {
       overflow: auto;
       scrollbar-color: rgb(40, 40, 40) #0d0d0d;
     }
@@ -301,6 +408,63 @@ background-color: rgba(255, 0, 0, 0.3);
 	75% {
 		opacity: 0;
 	}
+}
+
+.spinner {
+  width: 19.2px;
+  height: 19.2px;
+  animation: spinner-y0fdc1 2s infinite ease;
+  transform-style: preserve-3d;
+}
+
+.spinner > div {
+  background-color: rgba(255,38,230,0.2);
+  height: 100%;
+  position: absolute;
+  width: 100%;
+  border: 1px solid #ff26e6;
+}
+
+.spinner div:nth-of-type(1) {
+  transform: translateZ(-9.6px) rotateY(180deg);
+}
+
+.spinner div:nth-of-type(2) {
+  transform: rotateY(-270deg) translateX(50%);
+  transform-origin: top right;
+}
+
+.spinner div:nth-of-type(3) {
+  transform: rotateY(270deg) translateX(-50%);
+  transform-origin: center left;
+}
+
+.spinner div:nth-of-type(4) {
+  transform: rotateX(90deg) translateY(-50%);
+  transform-origin: top center;
+}
+
+.spinner div:nth-of-type(5) {
+  transform: rotateX(-90deg) translateY(50%);
+  transform-origin: bottom center;
+}
+
+.spinner div:nth-of-type(6) {
+  transform: translateZ(9.6px);
+}
+
+@keyframes spinner-y0fdc1 {
+  0% {
+     transform: rotate(45deg) rotateX(-25deg) rotateY(25deg);
+  }
+
+  50% {
+     transform: rotate(45deg) rotateX(-385deg) rotateY(25deg);
+  }
+
+  100% {
+     transform: rotate(45deg) rotateX(-385deg) rotateY(385deg);
+  }
 }
   }
   @layer profile {
@@ -493,7 +657,7 @@ background-color: rgba(255, 0, 0, 0.3);
 }
 .input_textareaCreative {
   font-family: Arial, sans-serif;
-  color: black;
+  color: #000000;
   outline: none;
   width: 100%;
   height: 100%;

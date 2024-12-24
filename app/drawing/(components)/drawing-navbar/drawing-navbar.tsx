@@ -12,14 +12,14 @@ import {
   LuFilePlus2,
   LuFolder,
   LuGalleryHorizontalEnd,
-  LuGauge,
+  LuSquareSlash,
   LuImage,
-  LuLanguages,
   LuLayoutDashboard,
   LuLink2,
   LuPackageX,
   LuSave,
   LuSearchCode,
+  LuSlidersHorizontal,
   LuVideo,
 } from "react-icons/lu";
 import { Separator } from "@/components/ui/separator";
@@ -63,15 +63,50 @@ interface DrawingNavbarProps {
   setMenuOpen: React.Dispatch<React.SetStateAction<any>>;
   isMenuOpen: number;
   isNewImage: IsNewImage;
-  captureElement: () => void;
+  handleNewMaxZoom: () => void;
 }
 
 const overflow = ["clip", "visible"];
 const yesNo = ["no", "yes"];
 const language = ["English", "French"];
 const optimization = ["resolution", "performance"];
+const theme = ["light", "dark"];
 
 const DrawingNavbar: React.FC<DrawingNavbarProps> = (props) => {
+  const BgSystem = [
+    {
+      type: "default",
+      click: () => {
+        props.setDrawingSetting((prevState: DrawingSetting) => ({
+          ...prevState,
+          background: "default",
+        }));
+      },
+    },
+    {
+      type: "image",
+      click: () => {
+        props.setDrawingSetting((prevState: DrawingSetting) => ({
+          ...prevState,
+          background: "image",
+        }));
+        props.setFileDialogOpen((prevState: FileDialogOpen) => ({
+          ...prevState,
+          backgroundAdvanced: true,
+        }));
+      },
+    },
+    {
+      type: "animated",
+      click: () => {
+        props.setDrawingSetting((prevState: DrawingSetting) => ({
+          ...prevState,
+          background: "animated",
+        }));
+      },
+    },
+  ];
+
   const toolItems = [
     {
       title: "Picture",
@@ -81,43 +116,49 @@ const DrawingNavbar: React.FC<DrawingNavbarProps> = (props) => {
           ...prevState,
           imgRendering: true,
         }));
-        props.captureElement();
+        //props.captureElement();
       },
     },
     {
       title: "Gif",
       icon: LuGalleryHorizontalEnd,
+      disabled: true,
       click: () => {
         toast.error("Unavailable at the moment.");
       },
     },
     {
-      title: "Video",
-      icon: LuVideo,
-      click: () => {
-        toast.error("Unavailable at the moment.");
-      },
-    },
-    {
-      title: "Create models",
+      title: "Models",
       icon: LuLayoutDashboard,
       click: () => {
         toast.error("Unavailable at the moment.");
       },
+      disabled: props.isDrawingSetting.storage === "no",
+      badge: props.isDrawingSetting.storage === "no" && (
+        <Badge className="ml-2" variant={"destructive"}>
+          storage
+        </Badge>
+      ),
     },
   ];
+
   return (
     <>
-      <Menubar className="border-none ml-2">
+      <Menubar className="border-none ml-2 bg-transparent text-black dark:text-white">
         <MenubarMenu>
-          <MenubarTrigger className="gradient-animated1">
+          <MenubarTrigger className="gradient-animated1 text-white">
             Finish
             <LuArrowDownToLine className="ml-2" />
           </MenubarTrigger>
           <MenubarContent style={{ zIndex: 3100 }}>
             {toolItems?.map((el, index) => (
-              <MenubarItem key={index} onClick={el.click}>
+              <MenubarItem
+                key={index}
+                onClick={el.click}
+                disabled={el.disabled}
+              >
                 {el.title}
+                {el.badge}
                 <MenubarShortcut>
                   <el.icon />
                 </MenubarShortcut>
@@ -172,6 +213,7 @@ const DrawingNavbar: React.FC<DrawingNavbarProps> = (props) => {
             <div className="mb-1 text-center text-gray-500 text-[12px] font-bold">
               Project
             </div>
+            <MenubarSeparator className="my-1" />
             <Input
               type="text"
               onClick={(e: any) => {
@@ -197,6 +239,20 @@ const DrawingNavbar: React.FC<DrawingNavbarProps> = (props) => {
             />
             <MenubarSeparator className="my-1" />
             <MenubarItem
+              onClick={() => {
+                props.setFileDialogOpen((prevState: FileDialogOpen) => ({
+                  ...prevState,
+                  resizeImage: !prevState.resizeImage,
+                }));
+              }}
+            >
+              Resize
+              <MenubarShortcut>
+                <LuSquareSlash />
+              </MenubarShortcut>
+            </MenubarItem>
+            <MenubarSeparator className="my-1" />
+            <MenubarItem
               className="flex items-center text-[13px] text-blue-500 hover:underline"
               onClick={() => {
                 props.setMenuOpen(props.isMenuOpen === 9 ? 0 : 9);
@@ -219,12 +275,24 @@ const DrawingNavbar: React.FC<DrawingNavbarProps> = (props) => {
           <MenubarTrigger>Option</MenubarTrigger>
           <MenubarContent style={{ zIndex: 3100 }}>
             <div className="mb-1 text-center text-gray-500 text-[12px] font-bold">
-              Canvas
+              Display
             </div>
             <MenubarSeparator />
             <MenubarSub>
               <MenubarSubTrigger>Zoom max</MenubarSubTrigger>
               <MenubarSubContent>
+                <MenubarCheckboxItem
+                  onClick={() => {
+                    props.setDrawingSetting((prevState: DrawingSetting) => ({
+                      ...prevState,
+                      maxZoomAuto: true,
+                    }));
+                    props.handleNewMaxZoom();
+                  }}
+                  checked={props.isDrawingSetting.maxZoomAuto}
+                >
+                  Auto
+                </MenubarCheckboxItem>
                 {Array.from({ length: 5 }, (_, index) => {
                   const value = (index + 1) * 2; // Commence à 4 et incrémente par 2
                   return (
@@ -235,10 +303,14 @@ const DrawingNavbar: React.FC<DrawingNavbarProps> = (props) => {
                           (prevState: DrawingSetting) => ({
                             ...prevState,
                             maxZoom: value,
+                            maxZoomAuto: false,
                           })
                         );
                       }}
-                      checked={value === props.isDrawingSetting.maxZoom}
+                      checked={
+                        !props.isDrawingSetting.maxZoomAuto &&
+                        value === props.isDrawingSetting.maxZoom
+                      }
                     >
                       {value}x
                     </MenubarCheckboxItem>
@@ -309,6 +381,49 @@ const DrawingNavbar: React.FC<DrawingNavbarProps> = (props) => {
             </div>
             <MenubarSeparator />
             <MenubarSub>
+              <MenubarSubTrigger>Appearance</MenubarSubTrigger>
+              <MenubarSubContent>
+                <div className="mb-1 text-center text-gray-500 text-[12px] font-bold">
+                  Theme
+                </div>
+                {theme?.map((el) => (
+                  <MenubarCheckboxItem
+                    checked={el === props.isDrawingSetting.theme}
+                    key={el}
+                    onClick={() => {
+                      const root = document.documentElement;
+                      if (!root) return;
+                      props.setDrawingSetting((prevState: DrawingSetting) => ({
+                        ...prevState,
+                        theme: el,
+                      }));
+                      root.style.colorScheme = el;
+                      root.className = el;
+                      localStorage.setItem("theme", el);
+                      props.setDrawingSetting((prev: DrawingSetting) => ({
+                        ...prev,
+                        theme: el,
+                      }));
+                    }}
+                  >
+                    {el}
+                  </MenubarCheckboxItem>
+                ))}
+                <div className="mb-1 text-center text-gray-500 text-[12px] font-bold">
+                  background
+                </div>
+                {BgSystem?.map((el) => (
+                  <MenubarCheckboxItem
+                    checked={el.type === props.isDrawingSetting.background}
+                    key={el.type}
+                    onClick={el.click}
+                  >
+                    {el.type}
+                  </MenubarCheckboxItem>
+                ))}
+              </MenubarSubContent>
+            </MenubarSub>
+            <MenubarSub>
               <MenubarSubTrigger>Langage</MenubarSubTrigger>
               <MenubarSubContent>
                 {language?.map((el) => (
@@ -319,25 +434,6 @@ const DrawingNavbar: React.FC<DrawingNavbarProps> = (props) => {
                       props.setDrawingSetting((prevState: DrawingSetting) => ({
                         ...prevState,
                         language: el,
-                      }));
-                    }}
-                  >
-                    {el}
-                  </MenubarCheckboxItem>
-                ))}
-              </MenubarSubContent>
-            </MenubarSub>
-            <MenubarSub>
-              <MenubarSubTrigger>background</MenubarSubTrigger>
-              <MenubarSubContent>
-                {yesNo?.map((el) => (
-                  <MenubarCheckboxItem
-                    checked={el === props.isDrawingSetting.background}
-                    key={el}
-                    onClick={() => {
-                      props.setDrawingSetting((prevState: DrawingSetting) => ({
-                        ...prevState,
-                        background: el,
                       }));
                     }}
                   >

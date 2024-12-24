@@ -18,7 +18,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           style={{
-            opacity: props.drawSvg.opacity
+            opacity: props.drawSvg.opacity,
           }}
         >
           <defs>
@@ -27,7 +27,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
             </clipPath>
           </defs>
           <image
-            href={`${props.drawSvg.img}`}
+            href={`${props.drawSvg.img || props.drawSvg.svgImg}`}
             style={{
               ...(props.drawSvg.filter && {
                 filter: `
@@ -83,7 +83,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           style={{
-            opacity: props.drawSvg.opacity
+            opacity: props.drawSvg.opacity,
           }}
         >
           <defs>
@@ -92,7 +92,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
             </clipPath>
           </defs>
           <image
-            href={`${props.drawSvg.img}`}
+            href={`${props.drawSvg.img || props.drawSvg.svgImg}`}
             style={{
               ...(props.drawSvg.filter && {
                 filter: `
@@ -152,7 +152,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           style={{
-            opacity: props.drawSvg.opacity
+            opacity: props.drawSvg.opacity,
           }}
         >
           <defs>
@@ -161,7 +161,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
             </clipPath>
           </defs>
           <image
-            href={`${props.drawSvg.img}`}
+            href={`${props.drawSvg.img || props.drawSvg.svgImg}`}
             style={{
               ...(props.drawSvg.filter && {
                 filter: `
@@ -218,7 +218,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           style={{
-            opacity: props.drawSvg.opacity
+            opacity: props.drawSvg.opacity,
           }}
         >
           <defs>
@@ -227,7 +227,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
             </clipPath>
           </defs>
           <image
-            href={`${props.drawSvg.img}`}
+            href={`${props.drawSvg.img || props.drawSvg.svgImg}`}
             style={{
               ...(props.drawSvg.filter && {
                 filter: `
@@ -283,7 +283,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           style={{
-            opacity: props.drawSvg.opacity
+            opacity: props.drawSvg.opacity,
           }}
         >
           <defs>
@@ -292,7 +292,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
             </clipPath>
           </defs>
           <image
-            href={`${props.drawSvg.img}`}
+            href={`${props.drawSvg.img || props.drawSvg.svgImg}`}
             style={{
               ...(props.drawSvg.filter && {
                 filter: `
@@ -339,7 +339,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           style={{
-            opacity: props.drawSvg.opacity
+            opacity: props.drawSvg.opacity,
           }}
         >
           <defs>
@@ -348,7 +348,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
             </clipPath>
           </defs>
           <image
-            href={`${props.drawSvg.img}`}
+            href={`${props.drawSvg.img || props.drawSvg.svgImg}`}
             style={{
               ...(props.drawSvg.filter && {
                 filter: `
@@ -407,7 +407,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           style={{
-            opacity: props.drawSvg.opacity
+            opacity: props.drawSvg.opacity,
           }}
         >
           <defs>
@@ -416,7 +416,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
             </clipPath>
           </defs>
           <image
-            href={`${props.drawSvg.img}`}
+            href={`${props.drawSvg.img || props.drawSvg.svgImg}`}
             style={{
               ...(props.drawSvg.filter && {
                 filter: `
@@ -473,7 +473,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           style={{
-            opacity: props.drawSvg.opacity
+            opacity: props.drawSvg.opacity,
           }}
         >
           <defs>
@@ -482,7 +482,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
             </clipPath>
           </defs>
           <image
-            href={`${props.drawSvg.img}`}
+            href={`${props.drawSvg.img || props.drawSvg.svgImg}`}
             style={{
               ...(props.drawSvg.filter && {
                 filter: `
@@ -541,7 +541,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           style={{
-            opacity: props.drawSvg.opacity
+            opacity: props.drawSvg.opacity,
           }}
         >
           <defs>
@@ -550,7 +550,7 @@ const SvgComponents: React.FC<SvgComponentsProps> = (props) => {
             </clipPath>
           </defs>
           <image
-            href={`${props.drawSvg.img}`}
+            href={`${props.drawSvg.img || props.drawSvg.svgImg}`}
             style={{
               ...(props.drawSvg.filter && {
                 filter: `

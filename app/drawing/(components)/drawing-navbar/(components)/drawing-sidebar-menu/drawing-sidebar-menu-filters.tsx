@@ -30,7 +30,7 @@ const DrawingSidebarMenuFilters: React.FC<DrawingSidebarMenuFiltersProps> = (
   return (
     <>
       <Card className="border-none rounded-none bg-transparent">
-        <CardContent className="grid grid-cols-1 gap-2 p-4">
+        <CardContent className="grid grid-cols-1 gap-2 p-4 text-black dark:text-white">
           <div className="text-1xl flex justify-between">
             Filters :<LuSliders className="h-4 w-4" />
           </div>
@@ -43,7 +43,7 @@ const DrawingSidebarMenuFilters: React.FC<DrawingSidebarMenuFiltersProps> = (
               />
             </div>
           </ScrollArea>
-          <Separator className="my-4" />
+          <Separator className="my-2" />
           <RandomFilters
             setSystemSetting={props.setSystemSetting}
             systemSetting={props.systemSetting}
@@ -51,7 +51,7 @@ const DrawingSidebarMenuFilters: React.FC<DrawingSidebarMenuFiltersProps> = (
             historical={historical}
             setHistorical={setHistorical}
           />
-          <Separator className="my-4" />
+          <Separator className="my-2" />
           <ScrollArea className="h-[300px] w-full p-4">
             <DrawingFilterSlider {...props} />
           </ScrollArea>

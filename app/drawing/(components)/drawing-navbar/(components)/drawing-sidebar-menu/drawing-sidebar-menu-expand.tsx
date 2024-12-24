@@ -5,7 +5,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
-import { ExpandImg, FileDialogOpen, IsNewImage } from "@/utils/interface";
+import {
+  DrawingSetting,
+  ExpandImg,
+  FileDialogOpen,
+  IsNewImage,
+} from "@/utils/interface";
 import { useState, useRef, MutableRefObject } from "react";
 import {
   LuArrowLeft,
@@ -23,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ColorsDrawing } from "@/public/assets/data/data";
+import { ArrayExpand, ColorsDrawing } from "@/public/assets/data/data";
 
 interface DrawingSidebarMenuExpandProps {
   isMenuOpen: number;
@@ -35,6 +40,8 @@ interface DrawingSidebarMenuExpandProps {
   isNewImageImport: IsNewImage[];
   expandDivRef: MutableRefObject<HTMLDivElement | null>;
   setFileDialogOpen: React.Dispatch<React.SetStateAction<any>>;
+  handleNewMaxZoom: (zoom?: number, expand?: number) => void;
+  isDrawingSetting: DrawingSetting;
 }
 
 const DrawingSidebarMenuExpand: React.FC<DrawingSidebarMenuExpandProps> = (
@@ -128,7 +135,7 @@ const DrawingSidebarMenuExpand: React.FC<DrawingSidebarMenuExpandProps> = (
   return (
     <>
       <Card className="border-none rounded-none bg-transparent">
-        <CardContent className="grid grid-cols-1 gap-2 p-4">
+        <CardContent className="grid grid-cols-1 gap-2 p-4 text-black dark:text-white">
           <div className="text-1xl flex justify-between">
             Expand :<LuScaling className="h-4 w-4" />
           </div>
@@ -150,20 +157,19 @@ const DrawingSidebarMenuExpand: React.FC<DrawingSidebarMenuExpandProps> = (
                 ...prevState,
                 expand: parseInt(e),
               }));
+              if (!props.isDrawingSetting.maxZoomAuto) return;
+              props.handleNewMaxZoom(undefined, parseInt(e));
             }}
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full text-white">
               <div>{props.drawingExpandImg.expand} px</div>
             </SelectTrigger>
             <SelectContent>
-              {Array.from({ length: 11 }, (_, index) => {
-                const value = 100 * index; // Commence à 4 et incrémente par 2
-                return (
-                  <SelectItem key={value} value={`${value}`}>
-                    {value} px
-                  </SelectItem>
-                );
-              })}
+              {ArrayExpand.map((value) => (
+                <SelectItem key={value} value={`${value}`}>
+                  {value} px
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Separator className="my-2" />
@@ -205,7 +211,7 @@ const DrawingSidebarMenuExpand: React.FC<DrawingSidebarMenuExpandProps> = (
 
               <div className="grid grid-cols-5 gap-4">
                 <Button
-                  className="rounded-full hue-background"
+                  className="rounded-full border hue-background"
                   variant="ghost"
                   size="icon"
                   onClick={handleButtonClickColor}
@@ -245,7 +251,7 @@ const DrawingSidebarMenuExpand: React.FC<DrawingSidebarMenuExpandProps> = (
                 {ColorsDrawing.map((color: any) => (
                   <Button
                     key={color.name}
-                    className="rounded-full"
+                    className="rounded-full border"
                     style={{ backgroundColor: color.value }}
                     size="icon"
                     onMouseDown={(e) => {

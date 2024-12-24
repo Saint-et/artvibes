@@ -25,4 +25,8 @@ export type DrawTypeNowCanvas =
   | "eraser"
   | "brush"
   | "highlight";
-//| null;
+
+  
+  export type CustomStyleMap = {
+  [key: string]: { value: string };
+};

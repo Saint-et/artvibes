@@ -18,23 +18,35 @@ import {
   LuArrowRight,
   LuBook,
   LuBrainCircuit,
+  LuFile,
   LuFolder,
   LuImage,
+  LuImagePlus,
   LuInfo,
   LuLayoutDashboard,
+  LuMail,
   LuPen,
   LuPencilRuler,
   LuSearch,
+  LuShare2,
+  LuSunMoon,
   LuTrash,
 } from "react-icons/lu";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
-import { FileDialogOpen, IsNewImage, LoadedImage } from "@/utils/interface";
+import {
+  DrawingSetting,
+  FileDialogOpen,
+  IsNewImage,
+  LoadedImage,
+} from "@/utils/interface";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/app/provider/useAppContext";
 import Credits from "@/app/(components)/credit/credits";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface DrawingDrawingIntroProps {
   isNewImage: IsNewImage;
@@ -49,6 +61,8 @@ interface DrawingDrawingIntroProps {
   handleDrop: (event: React.DragEvent<HTMLDivElement>) => void;
   handleButtonClickImport: () => void;
   setIsProfilMenuOpen: React.Dispatch<React.SetStateAction<any>>;
+  setDrawingSetting: React.Dispatch<React.SetStateAction<any>>;
+  isDrawingSetting: DrawingSetting;
 }
 
 const DrawingIntro: React.FC<DrawingDrawingIntroProps> = (props) => {
@@ -71,15 +85,60 @@ const DrawingIntro: React.FC<DrawingDrawingIntroProps> = (props) => {
             <div className="h-[100%] w-[90%] max-w-[1200px]">
               <ScrollArea className="h-[100%] w-[100%] border-none">
                 <Card className="p-4 w-[100%] h-[100%] bg-inherit border-none open-element-page-melted">
-                  <CardHeader className="bg-black/90 rounded mb-4 border">
-                    <CardTitle className="flex items-center justify-start">
-                      {DrawingName}{" "}
-                      <Avatar className="ml-4">
-                        <AvatarImage src={SystemImg.src} />
-                        <AvatarFallback>KS</AvatarFallback>
-                      </Avatar>
-                    </CardTitle>
-                    <CardDescription>Version: {DrawingVersion}</CardDescription>
+                  <CardHeader className="bg-white dark:bg-black text-black dark:text-white rounded mb-4 border flex flex-row justify-between">
+                    <div>
+                      <CardTitle className="flex items-center justify-start">
+                        {DrawingName}{" "}
+                        <Avatar className="ml-4">
+                          <AvatarImage src={SystemImg.src} />
+                          <AvatarFallback>KS</AvatarFallback>
+                        </Avatar>
+                      </CardTitle>
+                      <CardDescription>
+                        Version: {DrawingVersion}
+                      </CardDescription>
+                      <div className="flex space-x-4 mt-4">
+                        <Button variant="default">
+                          Contact <LuMail className="ml-2" />
+                        </Button>
+                        <Button variant="default">
+                          Share <LuShare2 className="ml-2" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="airplane-mode"
+                        className="bg-white dark:bg-white"
+                        checked={
+                          props.isDrawingSetting.theme === "dark" ? true : false
+                        }
+                        onCheckedChange={(el) => {
+                          const root = document.documentElement;
+                          if (!root) return;
+                          if (el) {
+                            root.style.colorScheme = "dark";
+                            root.className = "dark";
+                            localStorage.setItem("theme", "dark");
+                            props.setDrawingSetting((prev: DrawingSetting) => ({
+                              ...prev,
+                              theme: "dark",
+                            }));
+                          } else {
+                            root.style.colorScheme = "light";
+                            root.className = "light";
+                            localStorage.setItem("theme", "light");
+                            props.setDrawingSetting((prev: DrawingSetting) => ({
+                              ...prev,
+                              theme: "light",
+                            }));
+                          }
+                        }}
+                      />
+                      <Label htmlFor="airplane-mode">
+                        <LuSunMoon className="text-2xl" />
+                      </Label>
+                    </div>
                   </CardHeader>
 
                   <CardContent className="grid grid-cols-1 gap-4 border-none">
@@ -141,20 +200,6 @@ const DrawingIntro: React.FC<DrawingDrawingIntroProps> = (props) => {
                               <Button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  props.setFileDialogOpen(
-                                    (prevState: FileDialogOpen) => ({
-                                      ...prevState,
-                                      lastImport: !prevState.lastImport,
-                                    })
-                                  );
-                                }}
-                                variant="outline"
-                              >
-                                <LuFolder className="w-5 h-5 mr-2" /> Files ...
-                              </Button>
-                              <Button
-                                onClick={(e) => {
-                                  e.stopPropagation();
                                 }}
                                 onDoubleClick={() => {
                                   UseAppContext.handleResetWorksDrawing();
@@ -200,22 +245,51 @@ const DrawingIntro: React.FC<DrawingDrawingIntroProps> = (props) => {
                               Edit
                             </Button>
                             <Button
+                              variant="outline"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                props.setFileDialogOpen(
-                                  (prevState: FileDialogOpen) => ({
-                                    ...prevState,
-                                    lastImport: !prevState.lastImport,
-                                  })
-                                );
+                                props.handleButtonClickImport();
                               }}
-                              variant="outline"
                             >
-                              <LuFolder className="w-5 h-5 mr-2" /> Files ...
+                              <LuImagePlus className="w-5 h-5 mr-2" />
+                              Import
                             </Button>
                           </div>
                         </div>
                       )}
+                      <div
+                        className="bg-secondary-foreground rounded-lg shadow-lg p-6 group cursor-pointer hover:scale-105 transition-transform duration-300"
+                        style={{
+                          backgroundImage: `url(${props.isDrawingLoad?.LearnImage})`,
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: "cover",
+                          backgroundPosition: `${50}% ${50}%`,
+                        }}
+                        onClick={() => {
+                          props.setFileDialogOpen(
+                            (prevState: FileDialogOpen) => ({
+                              ...prevState,
+                              lastImport: !prevState.lastImport,
+                            })
+                          );
+                        }}
+                      >
+                        <div className="drawing-css-bg text-white rounded-full p-4 inline-block mb-4 group-hover:animate-bounce shadow-md">
+                          <LuFile className="w-8 h-8" />
+                        </div>
+                        <h3
+                          className="text-lg font-semibold mb-2 group-hover:underline decoration-solid decoration-2 underline-offset-4 transition-colors duration-300"
+                          style={{ textShadow: "#000000 1px 0 10px" }}
+                        >
+                          Files ...
+                        </h3>
+                        <Button
+                          variant="outline"
+                          className="opacity-30 group-hover:opacity-100"
+                        >
+                          <LuArrowRight className="w-5 h-5 mr-2" /> open ...
+                        </Button>
+                      </div>
                       <div
                         className="bg-secondary-foreground rounded-lg shadow-lg p-6 group cursor-pointer hover:scale-105 transition-transform duration-300"
                         style={{
@@ -331,8 +405,15 @@ const DrawingIntro: React.FC<DrawingDrawingIntroProps> = (props) => {
               <div className="h-[80vh] w-full rounded-lg">
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="flex h-[90%] w-[90%] max-h-[400px] max-w-[800px] flex-col items-center justify-center rounded-lg text-white">
-                    <LuArrowDownToLine className="h-10 w-10 mb-2" />
-                    <p className="text-2xl font-bold">
+                    <div className="spinner mb-4">
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                    </div>
+                    <p className="text-2xl font-bold bg-gradient-to-tr from-indigo-500 via-pink-500 to-indigo-500 bg-clip-text text-transparent">
                       Glissez-déposez vos images ici
                     </p>
                     <div className="flex text-slate-400 gap-1">

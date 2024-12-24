@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
-import { ViewerImage } from "./viewer-image";
 import { AppProvider } from "./provider/useAppContext";
 import { DrawingName, SystemLogo } from "@/public/assets/data/data";
+import ViewerImage from "@/app/viewer-image";
 //import toast from "react-hot-toast";
 //toast.error("This didn't work.");
 
@@ -21,8 +21,8 @@ export default function RootLayout({
     <html className="scrollbar-style" style={{ colorScheme: "dark" }} lang="fr">
       <body className="bg-black roboto-regular text-white select-none">
         <AppProvider>
-          {/*<NavbarSystem />*/}
           <ViewerImage />
+          {/*<NavbarSystem />*/}
           <Toaster
             position="top-center"
             reverseOrder={false}

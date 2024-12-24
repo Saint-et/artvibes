@@ -7,10 +7,9 @@ import {
   LoadedImage,
   SystemSettings,
 } from "@/utils/interface";
-import { ResizeDirection } from "@/utils/type";
+import { CustomStyleMap, ResizeDirection } from "@/utils/type";
 import React, { MutableRefObject, useEffect, useRef, useState } from "react";
 import { RemoveScroll } from "react-remove-scroll";
-import useUtilsDrawing from "../../../utils/utilsDrawing";
 import Rich_text from "../../rich_text/rich_text";
 import { Editor } from "draft-js";
 
@@ -42,13 +41,13 @@ interface TextEditDrawingProps {
   textCanvasVisible: boolean;
   drawText: DrawText;
   setDrawText: React.Dispatch<React.SetStateAction<any>>;
-  contentRichText: any;
-  setContentRichText: React.Dispatch<React.SetStateAction<any>>;
-  contentRichTextSave: any;
-  setContentRichTextSave: React.Dispatch<React.SetStateAction<any>>;
   editorRef: React.RefObject<Editor>;
   editorState: any;
   setEditorState: React.Dispatch<React.SetStateAction<any>>;
+  customStyleMap: CustomStyleMap;
+  setCustomStyleMap: React.Dispatch<React.SetStateAction<any>>;
+  setOutsideClickActive: React.Dispatch<React.SetStateAction<any>>;
+  customStyleShadowMap: CustomStyleMap;
 }
 
 const OverlayArea: React.FC<TextEditDrawingProps> = (props) => {
@@ -177,6 +176,9 @@ const OverlayArea: React.FC<TextEditDrawingProps> = (props) => {
         //transition: !props.isResizing ? "250ms" : "0ms",
         //...handleStyleForm(props.isImgOverlay.form),
         //border: `${Math.max(3 / props.zoom[0], 2)}px dashed #006aff`,
+      }}
+      onMouseDown={() => {
+        props.setOutsideClickActive(true)
       }}
       onMouseEnter={() => {
         props.setDisabledScroll(true);

@@ -82,11 +82,16 @@ import {
 import DrawingFilterSlider from "./filters/filter-sliders";
 import DrawingFilterImg from "./filters/filter-img";
 import AreaDirectionTools from "./area-tools/area-direction-tools";
-import useUtilsDrawing from "../utils/utilsDrawing";
-import { Textarea } from "@/components/ui/textarea";
 import SvgComponents from "./area-tools/overlay/svg-file";
 import SvgFullComponents from "./area-tools/overlay/svg-file-full";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { rgbToHex } from "@/utils/utils";
 
 interface DrawingPagePopoverProps {
   isImgOverlay: IsNewOverlay;
@@ -139,10 +144,10 @@ interface DrawingPagePopoverProps {
   setDrawSvgFull: React.Dispatch<React.SetStateAction<any>>;
   handleResetSvgFull: () => void;
   handleSaveSvgFull: () => void;
+  setOutsideClickActive: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const PagePopover: React.FC<DrawingPagePopoverProps> = (props) => {
-  const { rgbToHex } = useUtilsDrawing();
 
   const colorInputRef = useRef<HTMLInputElement | null>(null);
   const colorInput2Ref = useRef<HTMLInputElement | null>(null);
@@ -866,6 +871,7 @@ const PagePopover: React.FC<DrawingPagePopoverProps> = (props) => {
                   className="flex flex-col justify-center items-center h-full rounded-full h-[40px] w-[40px] hue-background"
                   variant="ghost"
                   onClick={() => {
+                    props.setOutsideClickActive(false);
                     handleButtonClickColor(colorInput2Ref.current);
                   }}
                   size={"icon"}
@@ -919,6 +925,7 @@ const PagePopover: React.FC<DrawingPagePopoverProps> = (props) => {
                   className="flex flex-col justify-center items-center h-full rounded-full h-[40px] w-[40px]"
                   variant="ghost"
                   onClick={() => {
+                    props.setOutsideClickActive(false);
                     handleButtonClickColor(colorInputRef.current);
                   }}
                   style={{
@@ -976,6 +983,7 @@ const PagePopover: React.FC<DrawingPagePopoverProps> = (props) => {
                   className="flex flex-col justify-center items-center h-full rounded-full h-[40px] w-[40px] hue-background"
                   variant="ghost"
                   onClick={() => {
+                    props.setOutsideClickActive(false);
                     handleButtonClickColor(colorInputRef.current);
                   }}
                   size={"icon"}
@@ -1024,6 +1032,7 @@ const PagePopover: React.FC<DrawingPagePopoverProps> = (props) => {
                 className="flex flex-col justify-center items-center h-full rounded-full h-[40px] w-[40px] hue-background"
                 variant={"outline"}
                 onClick={() => {
+                  props.setOutsideClickActive(false);
                   handleButtonClickColor(colorInputRef.current);
                 }}
                 size={"icon"}
@@ -1052,6 +1061,7 @@ const PagePopover: React.FC<DrawingPagePopoverProps> = (props) => {
                   className="flex flex-col justify-center items-center h-full rounded-full h-[40px] w-[40px] hue-background"
                   variant="ghost"
                   onClick={() => {
+                    props.setOutsideClickActive(false);
                     handleButtonClickColor(colorInputRef.current);
                   }}
                   size={"icon"}
@@ -1105,6 +1115,7 @@ const PagePopover: React.FC<DrawingPagePopoverProps> = (props) => {
                   className="flex flex-col justify-center items-center h-full rounded-full h-[40px] w-[40px] hue-background"
                   variant="ghost"
                   onClick={() => {
+                    props.setOutsideClickActive(false);
                     handleButtonClickColor(colorInputRef.current);
                   }}
                   size={"icon"}

@@ -1,7 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
 import useWaifu2xTfjsUtils from './waifu2x-utils';
 import { WaifuProcess } from '@/utils/interface';
-const noiseLevel = ['None', 'Low', 'Medium', 'High', 'Highest'];
 
 
 export default function useWaifu2xTfjs() {

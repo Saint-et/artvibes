@@ -11,6 +11,7 @@ import {
   Blanket,
   DrawArea,
   DrawDrawing,
+  DrawFiligrane,
   DrawForm,
   DrawingSetting,
   DrawNowInterface,
@@ -28,12 +29,13 @@ import {
   NewImageSize,
   SystemShadow,
 } from "@/utils/interface";
-import { ResizeDirection } from "@/utils/type";
+import { CustomStyleMap, ResizeDirection } from "@/utils/type";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MutableRefObject } from "react";
 import DrawingSidebarMenuAI from "./drawing-sidebar-menu/drawing-sidebar-menu-ai";
 import DrawingSidebarMenuExpand from "./drawing-sidebar-menu/drawing-sidebar-menu-expand";
 import DrawingSidebarMenuBlanket from "./drawing-sidebar-menu/drawing-sidebar-menu-blanket";
+import DrawingSidebarMenuFiligrane from "./drawing-sidebar-menu/drawing-sidebar-menu-filigrane";
 
 interface DrawingSidebarProps {
   isMenuOpen: number;
@@ -153,13 +155,18 @@ interface DrawingSidebarProps {
   setDrawSvgFull: React.Dispatch<React.SetStateAction<DrawSvgFull>>;
   handleSaveSvgFull: (newSvg?: string) => void;
   handleResetSvgFull: () => void;
-  captureElement: () => void;
   textSizeRef: React.RefObject<HTMLInputElement>;
   handleSaveText: (newValue?: boolean) => void;
-  contentRichText: any;
-  setContentRichText: React.Dispatch<React.SetStateAction<any>>;
   editorState: any;
   setEditorState: React.Dispatch<React.SetStateAction<any>>;
+  customStyleMap: CustomStyleMap;
+  setCustomStyleMap: React.Dispatch<React.SetStateAction<any>>;
+  setOutsideClickActive: React.Dispatch<React.SetStateAction<any>>;
+  customStyleShadowMap: CustomStyleMap;
+  setCustomStyleShadowMap: React.Dispatch<React.SetStateAction<any>>;
+    drawFiligrane: DrawFiligrane;
+    setDrawFiligrane: React.Dispatch<React.SetStateAction<any>>;
+    handleNewMaxZoom: () => void;
 }
 
 const DrawingSidebar: React.FC<DrawingSidebarProps> = (props) => {
@@ -174,7 +181,7 @@ const DrawingSidebar: React.FC<DrawingSidebarProps> = (props) => {
     <>
       <ScrollArea
         ref={props.sidebarRef}
-        className="w-[100%] min-w-[300px] max-w-[300px] block bg-[#0d0d0d]"
+        className="w-[100%] min-w-[300px] max-w-[300px] block bg-[#F5F5F7] dark:bg-[#0d0d0d]"
       >
         <DrawingSidebarMenuAI {...props} />
 
@@ -193,6 +200,9 @@ const DrawingSidebar: React.FC<DrawingSidebarProps> = (props) => {
         <DrawingSidebarMenuClones {...props} />
 
         <DrawingSidebarMenuExpand {...props} />
+
+        <DrawingSidebarMenuFiligrane {...props} />
+
       </ScrollArea>
     </>
   );

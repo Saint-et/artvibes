@@ -59,7 +59,7 @@ const DrawingSidebarMenuAI: React.FC<DrawingSidebarMenuModelsProps> = (
   return (
     <>
       <Card className="border-none rounded-none bg-transparent">
-        <CardContent className="grid grid-cols-1 gap-2 p-4">
+        <CardContent className="grid grid-cols-1 gap-2 p-4 text-black dark:text-white">
           <div className="text-1xl flex justify-between">
             AI :<LuSparkles className="h-4 w-4" />
           </div>
@@ -82,7 +82,7 @@ const DrawingSidebarMenuAI: React.FC<DrawingSidebarMenuModelsProps> = (
                           }));
                         }}
                       >
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full text-white">
                           <SelectValue
                             defaultValue={props.isAiQuality?.style}
                             placeholder={props.isAiQuality?.style}
@@ -105,7 +105,7 @@ const DrawingSidebarMenuAI: React.FC<DrawingSidebarMenuModelsProps> = (
                           }));
                         }}
                       >
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full text-white">
                           <SelectValue
                             defaultValue={`${props.isAiQuality?.noise}`}
                             placeholder={

@@ -80,7 +80,7 @@ const DrawingSidebarMenuClones: React.FC<DrawingSidebarMenuClonesProps> = (
   return (
     <>
       <Card className="border-none rounded-none bg-transparent">
-        <CardContent className="grid grid-cols-1 gap-2 p-4">
+        <CardContent className="grid grid-cols-1 gap-2 p-4 text-black dark:text-white">
           <div className="text-1xl flex justify-between">
             Shadow :<LuMoonStar className="h-4 w-4" />
           </div>
@@ -149,7 +149,7 @@ const DrawingSidebarMenuClones: React.FC<DrawingSidebarMenuClonesProps> = (
               {ColorsDrawing.map((color: any) => (
                 <Button
                   key={color.name}
-                  className="rounded-full"
+                  className="rounded-full border"
                   style={{ backgroundColor: color.value }}
                   size="icon"
                   disabled={!props.systemShadow.type.insetImg}
@@ -272,7 +272,7 @@ const DrawingSidebarMenuClones: React.FC<DrawingSidebarMenuClonesProps> = (
               {ColorsDrawing.map((color: any) => (
                 <Button
                   key={color.name}
-                  className="rounded-full"
+                  className="rounded-full border"
                   style={{ backgroundColor: color.value }}
                   size="icon"
                   disabled={!props.systemShadow.type.insetExpand}
@@ -408,7 +408,7 @@ const DrawingSidebarMenuClones: React.FC<DrawingSidebarMenuClonesProps> = (
               {ColorsDrawing.map((color: any) => (
                 <Button
                   key={color.name}
-                  className="rounded-full"
+                  className="rounded-full border"
                   style={{ backgroundColor: color.value }}
                   size="icon"
                   disabled={!props.systemShadow.type.outsideImg}

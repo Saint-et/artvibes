@@ -32,7 +32,6 @@ import {
   LuSettings2,
   LuX,
 } from "react-icons/lu";
-import useUtilsDrawing from "../../../utils/utilsDrawing";
 import {
   Dialog,
   DialogContent,
@@ -83,8 +82,6 @@ interface DrawingSidebarMenuFormsProps {
 const DrawingSidebarMenuForms: React.FC<DrawingSidebarMenuFormsProps> = (
   props
 ) => {
-  const UseUtilsDrawing = useUtilsDrawing();
-
   const inputColorRef = useRef<HTMLInputElement | null>(null);
 
   const handleButtonClickColor = (ref: HTMLInputElement | null) => {
@@ -115,7 +112,7 @@ const DrawingSidebarMenuForms: React.FC<DrawingSidebarMenuFormsProps> = (
   return (
     <>
       <Card className="border-none rounded-none bg-transparent">
-        <CardContent className="grid grid-cols-1 gap-2 p-4">
+        <CardContent className="grid grid-cols-1 gap-2 p-4 text-black dark:text-white">
           <div className="text-1xl flex justify-between">
             Drawing :<LuPencil className="h-4 w-4" />
           </div>
@@ -230,6 +227,7 @@ const DrawingSidebarMenuForms: React.FC<DrawingSidebarMenuFormsProps> = (
           <Separator className="my-4" />
           <div>thickness : {props.drawDrawing.thickness}px</div>
           <Slider
+            className="rounded-full border"
             value={[props.drawDrawing.thickness]}
             onValueChange={(e) =>
               props.setDrawDrawing((prevState: any) => ({
@@ -284,7 +282,7 @@ const DrawingSidebarMenuForms: React.FC<DrawingSidebarMenuFormsProps> = (
                     color: color.value,
                   }))
                 }
-                className="w-full h-9 rounded-full"
+                className="rounded-full border"
                 style={{ backgroundColor: color.value }}
                 size="icon"
               />
@@ -626,12 +624,10 @@ const DrawingSidebarMenuForms: React.FC<DrawingSidebarMenuFormsProps> = (
                                 (element: any) => element.id !== el.id
                               )
                             );
-                            const updatedLayers =
-                              UseUtilsDrawing.removeElementFromLayerInLayers(
-                                props.isLayers,
-                                el.id
-                              );
-                            props.setLayers(updatedLayers);
+                            const updatedElements = props.isLayers.filter(
+                              (element) => element.id !== el.id
+                            );
+                            props.setLayers(updatedElements);
                           }}
                         >
                           <LuX />

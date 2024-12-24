@@ -4,207 +4,100 @@ import { Slider } from "@/components/ui/slider";
 const DrawingFilterSlider = (props: any) => {
   const dynamicFilterKey = props.keyName || "filter";
 
-  const handleSliderChangeBrightness = (newValue: number[]) => {
-    const newBrightness = newValue[0];
+  const handleSliderChange = (key: string, newValue: number[]) => {
     if (props.inSide) {
       return props.setSystemSetting((prevState: any) => ({
         ...prevState,
         [dynamicFilterKey]: {
           ...prevState[dynamicFilterKey],
-          brightness: newBrightness,
+          [key]: newValue,
         },
       }));
     }
     props.setSystemSetting({
       ...props.systemSetting,
-      brightness: newBrightness,
+      [key]: newValue,
     });
   };
-  const handleSliderChangeContrast = (newValue: number[]) => {
-    const newContrast = newValue[0];
-    if (props.inSide) {
-      return props.setSystemSetting((prevState: any) => ({
-        ...prevState,
-        [dynamicFilterKey]: {
-          ...prevState[dynamicFilterKey],
-          contrast: newContrast,
-        },
-      }));
-    }
-    props.setSystemSetting({ ...props.systemSetting, contrast: newContrast });
-  };
-  const handleSliderChangeSaturation = (newValue: number[]) => {
-    const newSaturation = newValue[0];
-    if (props.inSide) {
-      return props.setSystemSetting((prevState: any) => ({
-        ...prevState,
-        [dynamicFilterKey]: {
-          ...prevState[dynamicFilterKey],
-          saturation: newSaturation,
-        },
-      }));
-    }
-    props.setSystemSetting({
-      ...props.systemSetting,
-      saturation: newSaturation,
-    });
-  };
-  const handleSliderChangeHue = (newValue: number[]) => {
-    const newHue = newValue[0];
-    if (props.inSide) {
-      return props.setSystemSetting((prevState: any) => ({
-        ...prevState,
-        [dynamicFilterKey]: {
-          ...prevState[dynamicFilterKey],
-          hue: newHue,
-        },
-      }));
-    }
-    props.setSystemSetting({ ...props.systemSetting, hue: newHue });
-  };
-  const handleSliderChangeBlur = (newValue: number[]) => {
-    const newBlur = newValue[0];
-    if (props.inSide) {
-      return props.setSystemSetting((prevState: any) => ({
-        ...prevState,
-        [dynamicFilterKey]: {
-          ...prevState[dynamicFilterKey],
-          blur: newBlur,
-        },
-      }));
-    }
-    props.setSystemSetting({ ...props.systemSetting, blur: newBlur });
-  };
-  const handleSliderChangeSepia = (newValue: number[]) => {
-    const newSepia = newValue[0];
-    if (props.inSide) {
-      return props.setSystemSetting((prevState: any) => ({
-        ...prevState,
-        [dynamicFilterKey]: {
-          ...prevState[dynamicFilterKey],
-          sepia: newSepia,
-        },
-      }));
-    }
-    props.setSystemSetting({ ...props.systemSetting, sepia: newSepia });
-  };
-  const handleSliderChangeGrayscale = (newValue: number[]) => {
-    const newGrayscale = newValue[0];
-    if (props.inSide) {
-      return props.setSystemSetting((prevState: any) => ({
-        ...prevState,
-        [dynamicFilterKey]: {
-          ...prevState[dynamicFilterKey],
-          grayscale: newGrayscale,
-        },
-      }));
-    }
-    props.setSystemSetting({ ...props.systemSetting, grayscale: newGrayscale });
-  };
-  const handleSliderChangeInvert = (newValue: number[]) => {
-    const newInvert = newValue[0];
-    if (props.inSide) {
-      return props.setSystemSetting((prevState: any) => ({
-        ...prevState,
-        [dynamicFilterKey]: {
-          ...prevState[dynamicFilterKey],
-          invert: newInvert,
-        },
-      }));
-    }
-    props.setSystemSetting({ ...props.systemSetting, invert: newInvert });
-  };
+
+  const SlidersValue = [
+    {
+      title: "Brightness",
+      value: props.systemSetting?.brightness,
+      function: (e: any) => handleSliderChange("brightness", e[0]),
+      max: 200,
+      step: 1,
+    },
+    {
+      title: "Contrast",
+      value: props.systemSetting?.contrast,
+      function: (e: any) => handleSliderChange("contrast", e[0]),
+      max: 200,
+      step: 1,
+    },
+    {
+      title: "Saturation",
+      value: props.systemSetting?.saturation,
+      function: (e: any) => handleSliderChange("saturation", e[0]),
+      max: 200,
+      step: 1,
+    },
+    {
+      title: "Sepia",
+      value: props.systemSetting?.sepia,
+      function: (e: any) => handleSliderChange("sepia", e[0]),
+      max: 100,
+      step: 1,
+    },
+    {
+      title: "Grayscale",
+      value: props.systemSetting?.grayscale,
+      function: (e: any) => handleSliderChange("grayscale", e[0]),
+      max: 100,
+      step: 1,
+    },
+    {
+      title: "Invert",
+      value: props.systemSetting?.invert,
+      function: (e: any) => handleSliderChange("invert", e[0]),
+      max: 100,
+      step: 1,
+    },
+    {
+      title: "Hue",
+      value: props.systemSetting?.hue,
+      function: (e: any) => handleSliderChange("hue", e[0]),
+      max: 350,
+      step: 1,
+    },
+    {
+      title: "Blur",
+      value: props.systemSetting?.blur,
+      function: (e: any) => handleSliderChange("blur", e[0]),
+      max: 10,
+      step: 1,
+    },
+  ];
 
   return (
     <>
       <div>
-        <div className="flex justify-between">
-          Brightness <div>{props.systemSetting?.brightness}%</div>
-        </div>
-        <Slider
-          onValueChange={handleSliderChangeBrightness}
-          value={[props.systemSetting?.brightness]}
-          defaultValue={[props.systemSetting?.brightness]}
-          max={200}
-          step={1}
-        />
-        <Separator className="my-4" />
-        <div className="flex justify-between">
-          Contrast <div>{props.systemSetting?.contrast}%</div>
-        </div>
-        <Slider
-          onValueChange={handleSliderChangeContrast}
-          value={[props.systemSetting?.contrast]}
-          defaultValue={[props.systemSetting?.contrast]}
-          max={200}
-          step={1}
-        />
-        <Separator className="my-4" />
-        <div className="flex justify-between">
-          Saturation <div>{props.systemSetting?.saturation}%</div>
-        </div>
-        <Slider
-          onValueChange={handleSliderChangeSaturation}
-          value={[props.systemSetting?.saturation]}
-          defaultValue={[props.systemSetting?.saturation]}
-          max={200}
-          step={1}
-        />
-        <Separator className="my-4" />
-        <div className="flex justify-between">
-          Sepia <div>{props.systemSetting?.sepia}%</div>
-        </div>
-        <Slider
-          onValueChange={handleSliderChangeSepia}
-          value={[props.systemSetting?.sepia]}
-          defaultValue={[props.systemSetting?.sepia]}
-          max={100}
-          step={1}
-        />
-        <Separator className="my-4" />
-        <div className="flex justify-between">
-          Grayscale <div>{props.systemSetting?.grayscale}%</div>
-        </div>
-        <Slider
-          onValueChange={handleSliderChangeGrayscale}
-          value={[props.systemSetting?.grayscale]}
-          defaultValue={[props.systemSetting?.grayscale]}
-          max={100}
-          step={1}
-        />
-        <Separator className="my-4" />
-        <div className="flex justify-between">
-          Invert <div>{props.systemSetting?.invert}%</div>
-        </div>
-        <Slider
-          onValueChange={handleSliderChangeInvert}
-          value={[props.systemSetting?.invert]}
-          defaultValue={[props.systemSetting?.invert]}
-          max={100}
-          step={1}
-        />
-        <Separator className="my-4" />
-        <div className="flex justify-between">
-          Hue <div>{props.systemSetting?.hue}%</div>
-        </div>
-        <Slider
-          onValueChange={handleSliderChangeHue}
-          value={[props.systemSetting?.hue]}
-          defaultValue={[props.systemSetting?.hue]}
-          max={350}
-          step={1}
-        />
-        <Separator className="my-4" />
-        <div className="flex justify-between">
-          Blur <div>{props.systemSetting?.blur}%</div>
-        </div>
-        <Slider
-          onValueChange={handleSliderChangeBlur}
-          value={[props.systemSetting?.blur]}
-          defaultValue={[props.systemSetting?.blur]}
-          max={10}
-          step={1}
-        />
+        {SlidersValue?.map((el, index) => (
+          <div key={index}>
+            <div className="flex justify-between">
+              {el.title} <div>{el.value}%</div>
+            </div>
+            <Slider
+              className="rounded-full border"
+              onValueChange={el.function}
+              value={[el.value]}
+              defaultValue={[el.value]}
+              max={el.max}
+              step={el.step}
+            />
+            {index + 1 !== SlidersValue.length && <Separator className="my-4" />}
+          </div>
+        ))}
       </div>
     </>
   );

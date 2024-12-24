@@ -11,7 +11,7 @@ interface LoaderAppProps {
 }
 
 const LoaderApp: React.FC<LoaderAppProps> = (props) => {
-  const UseAppContext = useAppContext()
+  const UseAppContext = useAppContext();
   if (props.Waifu2xTfjs?.startProcess)
     return (
       <>
@@ -40,7 +40,14 @@ const LoaderApp: React.FC<LoaderAppProps> = (props) => {
                 </>
               ) : (
                 <h2 className="flex items-center text-2xl font-bold mb-4 text-foreground">
-                  <LuLoader2 className="w-6 h-6 mr-2 animate-spin" />
+                  <div className="spinner mr-4">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                  </div>
                   Preparation...
                 </h2>
               )}
@@ -79,7 +86,14 @@ const LoaderApp: React.FC<LoaderAppProps> = (props) => {
               {props.name}
             </h2>
             <h2 className="flex items-center text-2xl font-bold mb-4 text-foreground">
-              <LuLoader2 className="w-6 h-6 mr-2 animate-spin" />
+              <div className="spinner mr-4">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
               Chargement en cours...
             </h2>
             <div className="mb-4">{UseAppContext.isDrawingLoad?.stateLoad}</div>

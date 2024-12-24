@@ -72,36 +72,36 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
   const formBtnImg = props.isDrawingLoad?.defaultImage;
 
   const handleStyleForm = (el: string) => {
-    if (el === "squareFull") return { background: "#ffffff", borderRadius: 0 };
+    if (el === "squareFull") return { background: "#87A2FF", borderRadius: 0 };
     if (el === "squareEmpty")
       return {
-        boxShadow: `inset 0px 0px 0px ${2}px ${"#ffffff"}`,
+        boxShadow: `inset 0px 0px 0px ${2}px ${"#87A2FF"}`,
         borderRadius: 0,
       };
 
     if (el === "squareRoundedFull")
-      return { background: "#ffffff", borderRadius: 10 };
+      return { background: "#87A2FF", borderRadius: 10 };
     if (el === "squareRoundedEmpty")
       return {
-        boxShadow: `inset 0px 0px 0px ${2}px ${"#ffffff"}`,
+        boxShadow: `inset 0px 0px 0px ${2}px ${"#87A2FF"}`,
         borderRadius: 10,
       };
 
     if (el === "circleFull")
-      return { background: "#ffffff", borderRadius: 9999 };
+      return { background: "#87A2FF", borderRadius: 9999 };
     if (el === "circleEmpty")
       return {
-        boxShadow: `inset 0px 0px 0px ${2}px ${"#ffffff"}`,
+        boxShadow: `inset 0px 0px 0px ${2}px ${"#87A2FF"}`,
         borderRadius: 9999,
       };
   };
 
-  /*
-
   const svgRef = useRef(null);
 
+    /*
   const handlesvgtoimg = () => {
     const svgElement = svgRef.current; // Sélectionnez votre élément SVG
+    console.log(svgElement);
 
     if (!svgElement) return;
 
@@ -144,8 +144,7 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
     // Charger l'image SVG dans l'objet Image
     img.src = url;
   };
-
-  */
+*/
   /*
   onClick={() => {
     if (props.isFormCanvasVisible !== "") {
@@ -276,48 +275,48 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
   const svgFullList = [
     {
       svg: "square-full",
-      backgroundColor: "#ffffff",
-      color: "#ffffff",
+      backgroundColor: "#87A2FF",
+      color: "#87A2FF",
     },
     {
       svg: "circle-full",
-      backgroundColor: "#ffffff",
-      color: "#ffffff",
+      backgroundColor: "#87A2FF",
+      color: "#87A2FF",
     },
     {
       svg: "triangle-full",
-      backgroundColor: "#ffffff",
-      color: "#ffffff",
+      backgroundColor: "#87A2FF",
+      color: "#87A2FF",
     },
     {
       svg: "cloud-full",
-      backgroundColor: "#ffffff",
-      color: "#ffffff",
+      backgroundColor: "#87A2FF",
+      color: "#87A2FF",
     },
     {
       svg: "ticket-full",
-      backgroundColor: "#ffffff",
-      color: "#ffffff",
+      backgroundColor: "#87A2FF",
+      color: "#87A2FF",
     },
     {
       svg: "droplet-full",
-      backgroundColor: "#ffffff",
-      color: "#ffffff",
+      backgroundColor: "#87A2FF",
+      color: "#87A2FF",
     },
     {
       svg: "star-full",
-      backgroundColor: "#ffffff",
-      color: "#ffffff",
+      backgroundColor: "#87A2FF",
+      color: "#87A2FF",
     },
     {
       svg: "heart-full",
-      backgroundColor: "#ffffff",
-      color: "#ffffff",
+      backgroundColor: "#87A2FF",
+      color: "#87A2FF",
     },
     {
       svg: "hexagon-full",
-      backgroundColor: "#ffffff",
-      color: "#ffffff",
+      backgroundColor: "#87A2FF",
+      color: "#87A2FF",
     },
   ];
   return (
@@ -325,7 +324,7 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
       {props.isMenuOpen === 8 && (
         <>
           <Card className="border-none rounded-none bg-transparent">
-            <CardContent className="grid grid-cols-1 gap-2 p-4">
+            <CardContent className="grid grid-cols-1 gap-2 p-4 text-black dark:text-white">
               <div className="text-1xl flex justify-between">
                 Shape :<LuCircle className="h-4 w-4" />
               </div>
@@ -385,7 +384,7 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
               </div>
             </CardContent>
             <Separator className="my-4" />
-            <CardContent className="p-1">
+            <CardContent className="p-1 text-black dark:text-white">
               <div className="mt-4">Custom image shape :</div>
               <Accordion type="single" collapsible>
                 <AccordionItem value="item-1" className="w-full p-4">
@@ -407,6 +406,7 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
                       />
                     </div>
                     <Slider
+                      className="border rounded-full"
                       onValueChange={(e: any) => {
                         props.setDrawSvg((prevState: DrawSvg) => ({
                           ...prevState,
@@ -436,6 +436,7 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
                       />
                     </div>
                     <Slider
+                      className="border rounded-full"
                       onValueChange={(e: any) => {
                         props.setDrawSvg((prevState: DrawSvg) => ({
                           ...prevState,
@@ -468,6 +469,7 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
                       />
                     </div>
                     <Slider
+                      className="border rounded-full"
                       onValueChange={(e: any) => {
                         props.setDrawSvg((prevState: DrawSvg) => ({
                           ...prevState,
@@ -500,6 +502,7 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
                       />
                     </div>
                     <Slider
+                      className="border rounded-full"
                       onValueChange={(e: any) => {
                         props.setDrawSvg((prevState: DrawSvg) => ({
                           ...prevState,
@@ -550,7 +553,7 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
               </div>
             </CardContent>
             <Separator className="my-4" />
-            <CardContent className="p-1">
+            <CardContent className="p-1 text-black dark:text-white">
               <div className="mt-4">Basic Shape :</div>
               <div className="grid grid-cols-3 gap-2 p-1">
                 {StyleForm?.map((el, index) => (
@@ -591,7 +594,7 @@ const DrawingSidebarMenuOverlay: React.FC<DrawingSidebarMenuOverlayProps> = (
               </div>
             </CardContent>
             <Separator className="my-4" />
-            <CardContent className="p-1">
+            <CardContent className="p-1 text-black dark:text-white">
               <div className="mt-4">Custom shape :</div>
               <div className="grid grid-cols-3 gap-2 p-1">
                 {svgFullList?.map((el, index) => (

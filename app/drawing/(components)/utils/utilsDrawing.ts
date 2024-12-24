@@ -1,5 +1,8 @@
-import { DrawingName } from "@/public/assets/data/data";
-import { LayerElement } from "@/utils/interface";
+/*
+
+import { ArrayExpand, DrawingName } from "@/public/assets/data/data";
+import { LayerElement, NewImageSize } from "@/utils/interface";
+import { ContentState, EditorState, SelectionState } from "draft-js";
 
 
 
@@ -45,28 +48,6 @@ export default function useUtilsDrawing() {
     return Math.floor(Math.random() * 1000000) + Date.now();
   };
 
-
-  const SetNewImport = async (img: string) => {
-    return {
-      id: generateRandomId(),
-      fileName: `${DrawingName}-${Date.now()}`,
-      img: img,
-      bgColor: "#000000",
-      bgType: 'bgTransparent',
-      bgExpand: img,
-      expandFilter: {
-        brightness: 100,
-        contrast: 100,
-        saturation: 100,
-        hue: 0,
-        blur: 0,
-        sepia: 0,
-        grayscale: 0,
-        invert: 0
-      },
-    }
-  }
-
   const handleFindOneElement = (array: any[], id: any, idName: string, symbole: string) => {
     let layerFind
     if (symbole === '===') {
@@ -77,9 +58,7 @@ export default function useUtilsDrawing() {
     return layerFind;
   };
 
-  //  // Calculer le ratio d'aspect pour maintenir les proportions
-  //
-
+  // Calculer le ratio d'aspect pour maintenir les proportions
   function resizeImageBase64(base64Image: string, targetWidth = 200, callback: (resizedBase64: string | null) => void) {
     const img = new Image();
     img.src = base64Image;  // Charger l'image en base64
@@ -88,6 +67,35 @@ export default function useUtilsDrawing() {
       // Calculer le ratio d'aspect pour maintenir les proportions
       const aspectRatio = img.height / img.width;
       const targetHeight = targetWidth * aspectRatio;
+
+      // Créer un canvas avec les nouvelles dimensions
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+
+      if (!context) return;
+
+      // Ajuster les dimensions du canvas
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+
+      // Dessiner l'image redimensionnée dans le canvas
+      context.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+      // Obtenir l'image redimensionnée sous forme de base64
+      const resizedBase64 = canvas.toDataURL('image/png'); // Retourner l'image au format PNG
+      callback(resizedBase64);
+    };
+
+    img.onerror = () => {
+      callback(null);  // Gérer l'erreur de chargement d'image
+    };
+  }
+
+  function resizeNewImageBase64(base64Image: string, targetWidth = 200, targetHeight = 200, callback: (resizedBase64: string | null) => void) {
+    const img = new Image();
+    img.src = base64Image;  // Charger l'image en base64
+
+    img.onload = () => {
 
       // Créer un canvas avec les nouvelles dimensions
       const canvas = document.createElement('canvas');
@@ -188,18 +196,107 @@ export default function useUtilsDrawing() {
     });
   }
 
+  // Fonction pour récupérer les valeurs CSS des styles appliqués au curseur
+  const getStylesValuesAtCursor = (editorState: EditorState, customStyleSelectionMap: any): Record<string, string | undefined> | undefined => {
+    const selectionState: SelectionState = editorState.getSelection();
+
+    // Vérifiez que le curseur est bien placé sans texte sélectionné
+    if (!selectionState.isCollapsed()) {
+      //console.warn("Le curseur n'est pas placé à un seul endroit.");
+      return undefined;
+    }
+
+    //const contentState: ContentState = editorState.getCurrentContent();
+    //const blockKey = selectionState.getStartKey();
+    //const block = contentState.getBlockForKey(blockKey);
+    //const offset = selectionState.getStartOffset();
+
+    // Récupérer les styles actifs à la position du curseur
+    const currentInlineStyle = editorState.getCurrentInlineStyle();
+
+    // Convertir les styles en valeurs CSS
+    const stylesValues = currentInlineStyle.reduce<Record<string, string | undefined>>(
+      (acc: any, style: any) => {
+        const styleValue = customStyleSelectionMap[style as keyof typeof customStyleSelectionMap];
+        if (styleValue) {
+          Object.assign(acc, styleValue);
+        }
+        return acc;
+      },
+      {}
+    );
+
+    return stylesValues;
+  };
+
+
+  const CreateWatermarkedText = (
+    text: string,
+    isImageSize: NewImageSize,
+    color = 'rgb(255, 255, 255)',
+    fontSize = 40,
+    callback: (watermarkedText: string | null) => void
+  ) => {
+    // Dimensions de l'image
+    const canvasWidth = isImageSize.w + ArrayExpand[ArrayExpand.length - 1];
+    const canvasHeight = isImageSize.h + ArrayExpand[ArrayExpand.length - 1];
+
+    // Créez un élément canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      console.error("Impossible d'obtenir le contexte de rendu pour le canvas.");
+      return callback(null);
+    }
+
+    // Définir le style du texte
+    ctx.font = `bold ${fontSize}px Arial`;
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Mesurez la largeur du texte
+    const textWidth = ctx.measureText(text).width;
+    const margin = textWidth; // Assurez-vous que l'espacement est suffisant
+
+    // Angle de rotation
+    const angle = -Math.PI / 4;
+
+    // Dessiner les filigranes à plusieurs positions
+    for (let y = fontSize; y < canvas.height + margin; y += margin) {
+      for (let x = textWidth / 2; x < canvas.width + margin; x += margin) {
+        ctx.save(); // Sauvegarder l'état du contexte
+        ctx.translate(x, y); // Déplacer le point de référence au centre du texte
+        ctx.rotate(angle); // Appliquer la rotation
+        ctx.fillText(text, 0, 0); // Dessiner le texte
+        ctx.restore(); // Restaurer l'état précédent du contexte
+      }
+    }
+
+    // Convertir le canvas en une image PNG
+    const dataURL = canvas.toDataURL('image/png');
+    callback(dataURL);
+  };
+
   return {
     hexToRgba,
     rgbToHex,
     extractBoxShadowColor,
-    SetNewImport,
+    //SetNewImport,
     handleFindOneElement,
     resizeImageBase64,
+    resizeNewImageBase64,
     removeElementFromLayerInLayers,
     loadImageToCanvas,
     generateRandomId,
     hasTransparency,
+    getStylesValuesAtCursor,
+    CreateWatermarkedText
 
   }
 
 }
+  */

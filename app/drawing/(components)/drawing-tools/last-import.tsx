@@ -33,12 +33,16 @@ import {
 import { MutableRefObject, useRef, useState } from "react";
 import {
   DrawArea,
+  DrawingSetting,
   ExpandImg,
   FileDialogOpen,
   IsNewCropImage,
   IsNewImage,
   IsNewOverlay,
+  LayerElement,
   NewImageSize,
+  RenderingOption,
+  ResizeInterface,
 } from "@/utils/interface";
 import {
   Carousel,
@@ -52,22 +56,14 @@ import {
   SystemBackgroungWallpaperImg,
 } from "@/public/assets/data/data";
 import {
-  LuArrowDownToLine,
   LuArrowLeft,
   LuFolder,
-  LuInfo,
-  LuLink,
   LuLink2,
-  LuLoader,
-  LuLoader2,
   LuPictureInPicture,
-  LuPlus,
   LuScaling,
-  LuSparkles,
 } from "react-icons/lu";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import useUtilsDrawing from "../utils/utilsDrawing";
 import {
   Command,
   CommandEmpty,
@@ -84,6 +80,10 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
+import { number } from "zod";
+import { useAppContext } from "@/app/provider/useAppContext";
+import { resizeImageBase64, resizeNewImageBase64 } from "@/utils/utils";
 
 interface LastImportProps {
   handleDeleteImport: (e: number) => void;
@@ -112,19 +112,27 @@ interface LastImportProps {
   isDraggingDrop: boolean;
   setDrawingExpandImg: React.Dispatch<React.SetStateAction<any>>;
   drawingExpandImg: ExpandImg;
+  isDrawingSetting: DrawingSetting;
+  setDrawingSetting: React.Dispatch<React.SetStateAction<DrawingSetting>>;
   handleSaveImgOverlay: (
     newImg?: string,
     form?: string,
     shadow?: number,
     miniature?: string
   ) => void;
+  isSystemResize: ResizeInterface;
+  setSystemResize: React.Dispatch<React.SetStateAction<ResizeInterface>>;
+  isRenderingOption: RenderingOption;
+  setIsRenderingOption: React.Dispatch<React.SetStateAction<any>>;
+  handleRenderingToast: (isLayers: LayerElement[]) => Promise<string>;
+  handleSvgConverter: () => Promise<LayerElement[]>;
 }
 
 type LastImportTabsType = "background" | "models" | "import";
 type LastSubMenuBgType = "Abstract" | "Wallpaper" | "Commercial" | null;
 
 const LastImport: React.FC<LastImportProps> = (props) => {
-  const { resizeImageBase64 } = useUtilsDrawing();
+  const { handleViewImage } = useAppContext();
 
   const [lastImportTabs, setLastImportTabs] = useState<{
     menu: LastImportTabsType;
@@ -139,7 +147,7 @@ const LastImport: React.FC<LastImportProps> = (props) => {
 
   const [isSystemColor, setSystemColor] = useState<string>("#ffffff");
   const [isTransparent, setIsTransparent] = useState<boolean>(false);
-  const [isSystemSize, setSystemSize] = useState<{ w: number; h: number }>({
+  const [isSystemSize, setSystemSize] = useState<NewImageSize>({
     w: 1200,
     h: 800,
   });
@@ -450,6 +458,92 @@ const LastImport: React.FC<LastImportProps> = (props) => {
           h: Math.min(isSystemSize.w, isSystemSize.h), // La hauteur devient la plus petite dimension
         };
 
+  if (props.isFileDialogOpen.backgroundAdvanced)
+    return (
+      <>
+        <Card
+          className="open-element-page-melted border-blue-500"
+          style={{
+            zIndex: 50,
+            position: "absolute",
+            left: "50%",
+            width: 500,
+            height: "max-content",
+            transform: "translateX(-50%)",
+            bottom: "80px",
+            transition: "500ms",
+          }}
+        >
+          <CardContent className="flex flex-col items-center justify-center p-1 gap-2">
+            <div className="mb-1 text-center text-gray-500 text-[14px] font-bold">
+              Glissez-déposez l'image ici
+            </div>
+            <Slider
+              className="py-2"
+              defaultValue={[props.isDrawingSetting.backgroundHeight]}
+              max={100}
+              step={1}
+              onValueChange={(e: number[]) => {
+                props.setDrawingSetting((prevState: DrawingSetting) => ({
+                  ...prevState,
+                  backgroundHeight: e[0],
+                }));
+              }}
+            />
+            <Separator className="my-2" />
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="backgroundAdvanced"
+                checked={props.isDrawingSetting.backgroundAnimated}
+                onCheckedChange={(e: boolean) => {
+                  props.setDrawingSetting((prevState: DrawingSetting) => ({
+                    ...prevState,
+                    backgroundAnimated: e,
+                  }));
+                }}
+              />
+              <label
+                htmlFor="backgroundAdvanced"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Animated image ?
+              </label>
+            </div>
+            <Separator className="my-2" />
+            <div className="flex space-x-2">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  props.setFileDialogOpen((prevState: FileDialogOpen) => ({
+                    ...prevState,
+                    backgroundAdvanced: !prevState.backgroundAdvanced,
+                  }));
+                  props.setDrawingSetting((prevState: DrawingSetting) => ({
+                    ...prevState,
+                    backgroundImg: "",
+                  }));
+                }}
+              >
+                Delete
+              </Button>
+              <Button variant="ghost">Add new image</Button>
+              <Button
+                variant="activeBlue"
+                onClick={() => {
+                  props.setFileDialogOpen((prevState: FileDialogOpen) => ({
+                    ...prevState,
+                    backgroundAdvanced: !prevState.backgroundAdvanced,
+                  }));
+                }}
+              >
+                Save background
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </>
+    );
+
   return (
     <>
       <Dialog
@@ -491,8 +585,15 @@ const LastImport: React.FC<LastImportProps> = (props) => {
                 <div className="h-[80vh] w-full rounded-lg">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="flex h-[90%] w-[90%] max-h-[400px] max-w-[800px] flex-col items-center justify-center rounded-lg text-white">
-                      <LuArrowDownToLine className="h-10 w-10 mb-2" />
-                      <p className="text-2xl font-bold">
+                      <div className="spinner mb-4">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                      </div>
+                      <p className="text-2xl font-bold bg-gradient-to-tr from-indigo-500 via-pink-500 to-indigo-500 bg-clip-text text-transparent">
                         Glissez-déposez vos images ici
                       </p>
                       <div className="flex text-slate-400 gap-1">
@@ -624,7 +725,14 @@ const LastImport: React.FC<LastImportProps> = (props) => {
                           <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/75 to-transparent p-4 text-white">
                             <div className="flex flex-col items-center gap-2">
                               {blobUrl.id === props.isNewImage.id && (
-                                <LuLink2 className="text-2xl" />
+                                <div className="spinner">
+                                  <div></div>
+                                  <div></div>
+                                  <div></div>
+                                  <div></div>
+                                  <div></div>
+                                  <div></div>
+                                </div>
                               )}
                               <div className="p-1 flex gap-2 m-2 opacity-30 group-hover:opacity-100">
                                 <Button
@@ -1054,6 +1162,266 @@ const LastImport: React.FC<LastImportProps> = (props) => {
               ))}
             </CommandList>
           </Command>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={props.isFileDialogOpen.resizeImage}
+        onOpenChange={(e: boolean) => {
+          props.setFileDialogOpen((prevState: FileDialogOpen) => ({
+            ...prevState,
+            resizeImage: e,
+          }));
+          props.setSystemResize({
+            ...props.isSystemResize,
+            w: props.isImageSize.w,
+            h: props.isImageSize.h,
+          });
+        }}
+      >
+        <DialogContent
+          className="h-max w-[98%] max-w-[500px] flex flex-col justify-start p-2"
+          style={{ zIndex: 100100 }}
+        >
+          <DialogHeader>
+            <DialogTitle>Resize image</DialogTitle>
+            <DialogDescription>
+              Retrouvez toutes les fonctionnalités ici.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <div className="flex items-center justify-between gap-2 w-[98%] max-w-[400px]">
+              <div className="flex flex-col items-start justify-center">
+                Width:
+                <Input
+                  min={0}
+                  value={Math.round(props.isSystemResize.w)}
+                  onChange={(e) => {
+                    const newValue = Number(e.target.value); // Convertir la valeur en un nombre
+                    if (props.isSystemResize.link) {
+                      if (!isNaN(newValue) && newValue > 0) {
+                        const aspectRatio =
+                          props.isImageSize.h / props.isImageSize.w;
+                        const targetHeight = newValue * aspectRatio;
+                        props.setSystemResize({
+                          ...props.isSystemResize,
+                          w: newValue,
+                          h: targetHeight,
+                        });
+                      } else {
+                        console.error("Veuillez entrer une largeur valide.");
+                      }
+                    } else {
+                      props.setSystemResize((prev: ResizeInterface) => ({
+                        ...prev,
+                        w: newValue, // Utiliser la valeur convertie
+                      }));
+                    }
+                  }}
+                  className="w-full h-[40px] bg-inherit"
+                  type="number"
+                  placeholder="width"
+                />
+              </div>
+              <Button
+                className="mb-[-25px]"
+                variant={props.isSystemResize.link ? "activeBlue" : "outline"}
+                size="icon"
+                onClick={() => {
+                  props.setSystemResize((prev: ResizeInterface) => ({
+                    ...prev,
+                    link: !prev.link, // Utiliser la valeur convertie
+                  }));
+                }}
+              >
+                <LuLink2 />
+              </Button>
+              <div className="flex flex-col items-start justify-center">
+                Height:
+                <Input
+                  min={0}
+                  value={Math.round(props.isSystemResize.h)}
+                  onChange={(e) => {
+                    const newValue = Number(e.target.value); // Convertir la valeur en un nombre
+                    if (props.isSystemResize.link) {
+                      if (!isNaN(newValue) && newValue > 0) {
+                        const aspectRatio =
+                          props.isImageSize.w / props.isImageSize.h;
+                        const targetWidth = newValue * aspectRatio;
+                        props.setSystemResize({
+                          ...props.isSystemResize,
+                          w: targetWidth,
+                          h: newValue,
+                        });
+                      } else {
+                        console.error("Veuillez entrer une largeur valide.");
+                      }
+                    } else {
+                      props.setSystemResize((prev: ResizeInterface) => ({
+                        ...prev,
+                        h: newValue, // Utiliser la valeur convertie
+                      }));
+                    }
+                  }}
+                  className="w-full h-[40px] bg-inherit"
+                  type="number"
+                  placeholder="height"
+                />
+              </div>
+            </div>
+            <Button
+              className="w-full max-w-[300px]"
+              variant="activeBlue"
+              onClick={() => {
+                resizeNewImageBase64(
+                  props.isNewImage.img as string,
+                  props.isSystemResize.w,
+                  props.isSystemResize.h,
+                  function (resizedBlob: any) {
+                    props.setNewImage((prev: IsNewImage) => ({
+                      ...prev,
+                      img: resizedBlob,
+                    }));
+                    props.setFileDialogOpen((prevState: FileDialogOpen) => ({
+                      ...prevState,
+                      resizeImage: false,
+                    }));
+                  }
+                );
+              }}
+            >
+              Resize
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={props.isFileDialogOpen.preview}
+        onOpenChange={(e: boolean) => {
+          props.setFileDialogOpen((prevState: FileDialogOpen) => ({
+            ...prevState,
+            preview: e,
+          }));
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Preview option</DialogTitle>
+            <DialogDescription>
+              Make sure to adjust the preview according to the desired options
+              for downloading. The settings you apply will be automatically
+              saved for the final rendering.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mb-4">Rendering option :</div>
+          <div className="items-top flex space-x-2">
+            <Checkbox
+              checked={props.isRenderingOption.reziseImg}
+              onCheckedChange={(checked: boolean) => {
+                props.setIsRenderingOption({
+                  ...props.isRenderingOption,
+                  reziseImg: checked, // Utilisation de `checked` qui est un booléen
+                });
+              }}
+              id="terms0"
+            />
+            <div className="grid gap-1.5 leading-none">
+              <label
+                htmlFor="terms0"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Resize the image.
+              </label>
+              <p className="text-sm text-muted-foreground">
+                This allows you to decide whether or not to keep the new
+                dimensions after the change.
+              </p>
+            </div>
+          </div>
+          <div className="items-top flex space-x-2">
+            <Checkbox
+              checked={props.isRenderingOption.smoothImg}
+              onCheckedChange={(checked: boolean) => {
+                props.setIsRenderingOption({
+                  ...props.isRenderingOption,
+                  smoothImg: checked, // Utilisation de `checked` qui est un booléen
+                });
+              }}
+              id="terms1"
+            />
+            <div className="grid gap-1.5 leading-none">
+              <label
+                htmlFor="terms1"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Smooth the image to make it less pixelated.
+              </label>
+              <p className="text-sm text-muted-foreground">
+                If this option behaves unexpectedly, turn off the.
+              </p>
+            </div>
+          </div>
+          <div className="items-top flex space-x-2">
+            <Checkbox
+              checked={props.isRenderingOption.sharpenImg}
+              onCheckedChange={(checked: boolean) => {
+                props.setIsRenderingOption({
+                  ...props.isRenderingOption,
+                  sharpenImg: checked, // Utilisation de `checked` qui est un booléen
+                });
+              }}
+              id="terms2"
+            />
+            <div className="grid gap-1.5 leading-none">
+              <label
+                htmlFor="terms2"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Increased the sharpness of the image.
+              </label>
+              <p className="text-sm text-muted-foreground">
+                If this option behaves unexpectedly, turn off the.
+              </p>
+            </div>
+          </div>
+          <Button
+            className="w-full mt-4"
+            variant="activeBlue"
+            onClick={() => {
+              props.setFileDialogOpen((prevState: FileDialogOpen) => ({
+                ...prevState,
+                preview: false,
+              }));
+              if (props.isNewImage.img === "") return;
+              toast.promise(
+                props
+                  .handleSvgConverter()
+                  .then((layers) => {
+                    if (!layers) {
+                      throw new Error("Layer conversion failed");
+                    }
+                    return props.handleRenderingToast(layers);
+                  })
+                  .then((result) => {
+                    if (!result) {
+                      throw new Error("Rendering failed");
+                    }
+                    if (handleViewImage) {
+                      handleViewImage(result as string);
+                    }
+                    return "Successfully completed rendering.";
+                  }),
+                {
+                  loading: "Processing images and rendering...",
+                  success: "All steps completed successfully.",
+                  error: "An error occurred during the process.",
+                }
+              );
+            }}
+          >
+            Show overview
+          </Button>
         </DialogContent>
       </Dialog>
     </>

@@ -20,7 +20,7 @@ import {
   IsNewImage,
   LayerElement,
 } from "@/utils/interface";
-import { ResizeDirection } from "@/utils/type";
+import { CustomStyleMap, ResizeDirection } from "@/utils/type";
 import { MutableRefObject, useState } from "react";
 import {
   LuBan,
@@ -69,7 +69,13 @@ import {
 import SvgComponents from "../../drawing-tools/area-tools/overlay/svg-file";
 import SvgFullComponents from "../../drawing-tools/area-tools/overlay/svg-file-full";
 import { Editor } from "draft-js";
-import { BoldDraftjsMap, ColorDraftjsMap, ItalicDraftjsMap, UnderlineDraftjsMap } from "@/public/assets/data/data";
+import {
+  BoldDraftjsMap,
+  ColorDraftjsMap,
+  ItalicDraftjsMap,
+  PoliceMapDraftjsMap,
+  UnderlineDraftjsMap,
+} from "@/public/assets/data/data";
 
 interface DrawingSidebarToolsProps {
   isImgOverlay: IsNewOverlay;
@@ -91,6 +97,8 @@ interface DrawingSidebarToolsProps {
   isNewImage: IsNewImage;
   drawingSidebarToolsRef: MutableRefObject<HTMLDivElement | null>;
   drawingSidebarToolsSettingRef: MutableRefObject<HTMLDivElement | null>;
+  customStyleMap: CustomStyleMap;
+  customStyleShadowMap: CustomStyleMap;
 }
 
 const DrawingSidebarTools: React.FC<DrawingSidebarToolsProps> = (props) => {
@@ -205,9 +213,9 @@ const DrawingSidebarTools: React.FC<DrawingSidebarToolsProps> = (props) => {
     <>
       <ScrollArea
         ref={props.drawingSidebarToolsRef}
-        className="w-[20%] min-w-[150px] max-w-[150px] block bg-[#0d0d0d]"
+        className="w-[20%] min-w-[150px] max-w-[150px] block bg-[#F5F5F7] dark:bg-[#0d0d0d]"
       >
-        <Card className="border-none rounded-none bg-inherit mb-5 p-2">
+        <Card className="border-none rounded-none bg-inherit mb-5 p-2 text-black dark:text-white shadow-none">
           <CardHeader className="p-1">
             <CardTitle className="text-[14px] flex justify-between items-center">
               Elements :{" "}
@@ -252,6 +260,7 @@ const DrawingSidebarTools: React.FC<DrawingSidebarToolsProps> = (props) => {
               return (
                 <Card
                   key={index}
+                  className="overflow-hidden"
                   onMouseEnter={() => {
                     props.setMenuLayer((prevState: any) => ({
                       ...prevState,
@@ -371,6 +380,9 @@ const DrawingSidebarTools: React.FC<DrawingSidebarToolsProps> = (props) => {
                             ...ItalicDraftjsMap,
                             ...UnderlineDraftjsMap,
                             ...BoldDraftjsMap,
+                            ...props.customStyleMap,
+                            ...PoliceMapDraftjsMap,
+                            ...props.customStyleShadowMap
                           }}
                           readOnly={true}
                           onChange={() => {

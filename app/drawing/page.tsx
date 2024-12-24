@@ -4,7 +4,7 @@ import DrawingNavbar from "./(components)/drawing-navbar/drawing-navbar";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   FaClockRotateLeft,
   FaTableCells,
@@ -48,6 +48,7 @@ import {
   LuArrowUpRightSquare,
   LuBoxSelect,
   LuExpand,
+  LuEye,
   LuFolder,
   LuFrame,
   LuGauge,
@@ -79,7 +80,9 @@ import {
   DrawingSetting,
   FileDialogOpen,
   IsNewImage,
+  LayerElement,
   LoadedImage,
+  ResizeInterface,
   WaifuProcess,
 } from "@/utils/interface";
 import { WaifuProcessDefault } from "@/public/assets/data/defaultValue-drawing";
@@ -100,11 +103,19 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { useAppContext } from "../provider/useAppContext";
+import toast from "react-hot-toast";
+import useDrawingRendering from "./(components)/drawing-tools/drawing-rendering/drawing-rendering";
+import { hasTransparency } from "@/utils/utils";
+import SvgComponents from "./(components)/drawing-tools/area-tools/overlay/svg-file";
+import { createRoot } from "react-dom/client";
+import { ScrollArea } from "@/components/ui/scroll-area";
 //import { loadModels } from "./(components)/utils/getModels";
 
 export default function Drawing() {
   const UseDrawing = useDrawing();
   const UtilsComponents = useUtilsComponents();
+  const UseDrawingRendering = useDrawingRendering();
 
   useEffect(() => {
     // Sauvegarde de l'état original de overflow du body
@@ -117,77 +128,27 @@ export default function Drawing() {
     };
   }, []);
 
-  const detectFaces = async (img: any, defaultArea: DrawArea) => {
-    /*
-    try {
-      await img.decode(); // Attend que l'image soit chargée complètement
-
-      const detections = await faceapi
-        .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks();
-
-      if (detections.length === 0) {
-        UseDrawing.setFaceApi({
-          facedetect: detections.length,
-          value: defaultArea,
-          faceApi: FaceApiDefault,
-        });
-        if (UseDrawing.isMenuOpen === 5) {
-          UseDrawing.setDrawArea(defaultArea);
-        }
-        throw new Error("Aucun visage détecté");
-      }
-
-      // detection.detection.box.x
-      const updatedFaceVisible = detections.map((detection) => ({
-        rotate: 0,
-        width: img.width / 2,
-        height: img.height / 2,
-        leftOffset: 0,
-        topOffset: 0,
-        positionX:
-          detection.detection.box.x +
-          detection.detection.box.width / 2 -
-          img.width / 4,
-        positionY:
-          detection.detection.box.y +
-          detection.detection.box.height / 2 -
-          img.height / 4,
+  useEffect(() => {
+    const theme = localStorage.getItem("theme");
+    if (!theme)
+      return UseDrawing.setDrawingSetting((prev: DrawingSetting) => ({
+        ...prev,
+        theme: "light",
       }));
-      const faceApi = detections.map((detection) => ({
-        imgWidth: img.width,
-        imgHeight: img.height,
-        width: detection.detection.box.width,
-        height: detection.detection.box.height,
-        positionX: detection.detection.box.x,
-        positionY: detection.detection.box.y,
-      }));
-      //console.log(updatedFaceVisible[0]);
-      if (UseDrawing.isMenuOpen === 5) {
-        UseDrawing.setDrawArea(updatedFaceVisible[0]);
-      }
-      UseDrawing.setFaceApi({
-        facedetect: detections.length,
-        value: updatedFaceVisible[0],
-        faceApi: faceApi[0],
-      });
-    } catch (error) {
-      if (UseDrawing.isMenuOpen === 5) {
-        UseDrawing.setDrawArea(defaultArea);
-      }
-      UseDrawing.setFaceApi({
-        facedetect: 0,
-        value: defaultArea,
-        faceApi: FaceApiDefault,
-      });
-      throw new Error("Aucun visage détecté");
-    }
-    */
-  };
+    UseDrawing.setDrawingSetting((prev: DrawingSetting) => ({
+      ...prev,
+      theme: theme,
+    }));
+    const root = document.documentElement;
+    root.style.colorScheme = theme;
+    root.className = theme;
+  }, []);
 
-  const handleInitialZoom = () => {
-    if (!UseDrawing?.imageRef.current) return;
-
+  const handleInitialZoom = (
+    imgWidth: number,
+    imgHeight: number,
+    expand: number
+  ) => {
     const vhW = typeof window !== "undefined" ? window.innerWidth : 0;
     const vhH = typeof window !== "undefined" ? window.innerHeight : 0;
     const maxWidth = vhW * 0.7;
@@ -195,18 +156,10 @@ export default function Drawing() {
 
     let initialZoom;
     // Calcul du facteur de redimensionnement initial
-    const widthScaleFactor =
-      maxWidth /
-      (UseDrawing?.imageRef.current?.width +
-        UseDrawing.drawingExpandImg.expand);
-    const heightScaleFactor =
-      maxHeight /
-      (UseDrawing?.imageRef.current?.height +
-        UseDrawing.drawingExpandImg.expand);
+    const widthScaleFactor = maxWidth / (imgWidth + expand);
+    const heightScaleFactor = maxHeight / (imgHeight + expand);
 
-    if (
-      UseDrawing?.imageRef.current?.width < UseDrawing?.imageRef.current?.height
-    ) {
+    if (imgWidth < imgHeight) {
       initialZoom = Math.min(widthScaleFactor, heightScaleFactor);
     } else {
       initialZoom = Math.min(heightScaleFactor, widthScaleFactor);
@@ -214,37 +167,85 @@ export default function Drawing() {
 
     return [Math.max(initialZoom, 0.02)];
   };
+
+  const handleNewMaxZoom = (
+    newZoomValue?: number[],
+    expand = UseDrawing.drawingExpandImg.expand
+  ) => {
+    const newZoom =
+      newZoomValue ||
+      handleInitialZoom(
+        UseDrawing.isImageSize.w,
+        UseDrawing.isImageSize.h,
+        expand
+      );
+
+    let initialMaxZoom: number = 2;
+
+    if (parseInt(newZoom[0].toFixed(0)) === 0) {
+      initialMaxZoom = 2;
+    } else if (parseInt(newZoom[0].toFixed(0)) === 1) {
+      initialMaxZoom = 4;
+    } else if (parseInt(newZoom[0].toFixed(0)) === 2) {
+      initialMaxZoom = 6;
+    } else if (parseInt(newZoom[0].toFixed(0)) === 3) {
+      initialMaxZoom = 8;
+    } else if (parseInt(newZoom[0].toFixed(0)) === 4) {
+      initialMaxZoom = 10;
+    }
+
+    if (UseDrawing.zoom[0] > initialMaxZoom) {
+      UseDrawing.setZoom([initialMaxZoom]);
+    }
+
+    toast(`Zoom max: ${initialMaxZoom}x (Option)`, {
+      duration: 1500,
+    });
+
+    UseDrawing.setDrawingSetting((prev: DrawingSetting) => ({
+      ...prev,
+      maxZoom: initialMaxZoom,
+    }));
+  };
+
+  const handleNewMaxZoomAuto = (imgWidth: number, imgHeight: number) => {
+    if (!UseDrawing.isDrawingSetting.maxZoomAuto) return;
+    const newZoom =
+      handleInitialZoom(
+        imgWidth,
+        imgHeight,
+        UseDrawing.drawingExpandImg.expand
+      ) || UseDrawing.zoom;
+    handleNewMaxZoom(newZoom);
+  };
+
   useEffect(() => {
     if (!UseDrawing.isNewImage.img) return;
 
     const img = new window.Image();
     img.src = UseDrawing.isNewImage.img;
     img.onload = () => {
-      const vhW = typeof window !== "undefined" ? window.innerWidth : 0;
-      const vhH = typeof window !== "undefined" ? window.innerHeight : 0;
-      const maxWidth = vhW * 0.7;
-      const maxHeight = vhH * 0.7;
+      UseDrawing.setZoom(
+        handleInitialZoom(
+          img.width,
+          img.height,
+          UseDrawing.drawingExpandImg.expand
+        )
+      );
 
-      let initialZoom;
-      // Calcul du facteur de redimensionnement initial
-      const widthScaleFactor =
-        maxWidth / (img.width + UseDrawing.drawingExpandImg.expand);
-      const heightScaleFactor =
-        maxHeight / (img.height + UseDrawing.drawingExpandImg.expand);
+      handleNewMaxZoomAuto(img.width, img.height);
 
-      if (img.width < img.height) {
-        initialZoom = Math.min(widthScaleFactor, heightScaleFactor);
-      } else {
-        initialZoom = Math.min(heightScaleFactor, widthScaleFactor);
-      }
-
-      UseDrawing.setZoom([Math.max(initialZoom, 0.02)]);
       UseDrawing.setImageSize({
         w: img.width,
         h: img.height,
       });
+      UseDrawing.setSystemResize((prev: ResizeInterface) => ({
+        ...prev,
+        w: img.width,
+        h: img.height,
+      }));
 
-      UseDrawing.hasTransparency(img).then((result) => {
+      hasTransparency(img).then((result) => {
         UseDrawing.setDrawingSetting((prevState: DrawingSetting) => ({
           ...prevState,
           transparence: result,
@@ -256,26 +257,6 @@ export default function Drawing() {
       console.error("Failed to load the image.");
     };
   }, [UseDrawing.isNewImage.img]);
-
-  //const handleSliderLuminosity = (newValue: number[]) => {
-  //  const newLuminosity = newValue[0];
-  //  UseDrawing.setDrawingSetting((prevState: DrawingSetting) => ({
-  //    ...prevState,
-  //    luminosity: newLuminosity,
-  //  }));
-  //};
-
-  //const pourcentageHeightFaceApi = Math.max(
-  //  Math.min(
-  //    Math.round(
-  //      (UseDrawing.faceApi.faceApi.positionY /
-  //        UseDrawing.faceApi.faceApi.height) *
-  //        200
-  //    ),
-  //    200
-  //  ),
-  //  0
-  //);
 
   const hExpand =
     (UseDrawing.isImageSize.h + UseDrawing.drawingExpandImg.expand) *
@@ -323,8 +304,111 @@ export default function Drawing() {
     },
   ];
 
+  const [testSvg, setTestSvg] = useState<
+    ({ stringSvg: string; id: number } | null)[]
+  >([]);
 
-  if (!UseDrawing.isDrawingLoad?.load)
+  const handleSvgConverter = async () => {
+    
+    return await new Promise<LayerElement[]>(async (resolve, reject) => {
+    const svgArray = UseDrawing.isLayers
+      .filter((el) => el.layerType === "overlay-svg")
+      .map((el) => {
+        // Créez un conteneur temporaire pour rendre le composant React
+        const tempContainer = document.createElement("div");
+
+        // Créez une racine React pour ce conteneur
+        const root = createRoot(tempContainer);
+
+        return new Promise<{ stringSvg: string; id: number } | null>(
+          (resolve) => {
+            // Rendez le composant React dans ce conteneur
+            root.render(
+              <SvgComponents
+                drawSvg={el}
+                strokePathRef={null}
+                strokeRectRef={null}
+              />
+            );
+
+            // Attendez un cycle pour assurer le rendu complet
+            setTimeout(() => {
+              const svgElement = tempContainer.querySelector("svg");
+
+              if (!svgElement) {
+                console.error("SVG introuvable dans le composant !");
+                root.unmount();
+                resolve(null);
+                return;
+              }
+
+              // Convertir l'élément SVG en une chaîne de texte
+              const svgData = new XMLSerializer().serializeToString(svgElement);
+
+              // Nettoyez le conteneur temporaire
+              root.unmount();
+
+              const svgBlob = new Blob([svgData], {
+                type: "image/svg+xml;charset=utf-8",
+              });
+              const url = URL.createObjectURL(svgBlob);
+
+              const img = new window.Image();
+              img.onload = function () {
+                // Créer un élément canvas
+                const canvas = document.createElement("canvas");
+                canvas.width = el.w;
+                canvas.height = el.h;
+
+                // Dessiner l'image SVG dans le canvas
+                const context = canvas.getContext("2d");
+                if (!context) return;
+
+                const svgSize = el.h < el.w ? el.h : el.w;
+
+                const x = (canvas.width - svgSize) / 2;
+                const y = (canvas.height - svgSize) / 2;
+
+                context.drawImage(img, x, y);
+
+                // Convertir le canvas en une image PNG
+                const pngImage = canvas.toDataURL("image/png");
+
+                resolve({ stringSvg: pngImage, id: el.id });
+              };
+              // Charger l'image SVG dans l'objet Image
+              img.src = url;
+            }, 2000); // L'attente peut être ajustée si nécessaire
+          }
+        );
+      });
+
+    Promise.all(svgArray)
+      .then((results: ({ stringSvg: string; id: number } | null)[]) => {
+        if (!results) return;
+        //UseDrawing.isLayers;
+        const updatedItems = UseDrawing.isLayers.map((item: LayerElement) => {
+          // Trouve l'élément correspondant dans `results` par ID
+          const matchingResult = results.find(
+            (result: { stringSvg: string; id: number } | null) =>
+              result?.id === item.id
+          );
+
+          // Si un élément correspondant est trouvé, met à jour `stringSvgImgRendering`
+          return matchingResult
+            ? { ...item, stringSvgImgRendering: matchingResult.stringSvg }
+            : item;
+        });
+        resolve(updatedItems);
+        //UseDrawing.setLayers(updatedItems); // Tableau mis à jour correctement
+      })
+      .catch(() => {
+        reject(null);
+      });
+    })
+  };
+
+  if (!UseDrawing.isDrawingLoad?.load || !UseDrawing.isDrawingSetting.theme)
     return (
       <>
         <LoaderApp
@@ -340,6 +424,30 @@ export default function Drawing() {
       onContextMenu={(e) => e.preventDefault()}
       onDragStart={(e) => e.preventDefault()}
     >
+      <Dialog
+        open={testSvg.length > 0}
+        onOpenChange={(e) => {
+          if (!e) {
+            setTestSvg([]);
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Are you absolutely sure?</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. This will permanently delete your
+              account and remove your data from our servers.
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-[300px] w-full rounded-md border p-4">
+            {testSvg.map((el, index) => (
+              <img key={index} src={el?.stringSvg} alt="" />
+            ))}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
       {UseDrawing.isWaifuProcess?.startProcess && (
         <LoaderApp
           background={UseDrawing.isDrawingLoad?.bgHome}
@@ -552,9 +660,9 @@ export default function Drawing() {
           </AlertDialogContent>
         </AlertDialog>
 
-        <DrawingRenderingImg {...UseDrawing} />
+        <DrawingRenderingImg {...UseDrawing} handleSvgConverter={handleSvgConverter} />
 
-        <div className="fixed top-0 flex justify-center bg-[#0d0d0d] h-[60px] w-full z-[3000]">
+        <div className="fixed top-0 flex justify-center bg-[#F5F5F7] dark:bg-[#0d0d0d] h-[60px] w-full z-[3000]">
           <div className="flex justify-between items-center w-[98%]">
             <div className="flex">
               <Avatar
@@ -569,27 +677,14 @@ export default function Drawing() {
                 <AvatarImage src={SystemImg.src} />
                 <AvatarFallback>KS</AvatarFallback>
               </Avatar>
-              <DrawingNavbar {...UseDrawing} />
+              <DrawingNavbar
+                {...UseDrawing}
+                handleNewMaxZoom={handleNewMaxZoom}
+              />
             </div>
 
-            <Card className="bg-inherit border-none hidden md:block">
+            <Card className="bg-inherit border-none hidden md:block text-black dark:text-white">
               <CardContent className="flex gap-2 p-2">
-                <Button
-                  variant={"ghost"}
-                  size={"icon"}
-                  className="p-2 rounded"
-                  onClick={() => {
-                    UseDrawing.setFileDialogOpen(
-                      (prevState: FileDialogOpen) => ({
-                        ...prevState,
-                        lastImport: !prevState.lastImport,
-                      })
-                    );
-                  }}
-                >
-                  <LuFolder className="h-4 w-4" />
-                </Button>
-                <Separator className="h-[40px]" orientation="vertical" />
                 <Button
                   variant={UseDrawing.isSelectArea ? "activeBlue" : "ghost"}
                   size={"icon"}
@@ -648,55 +743,25 @@ export default function Drawing() {
                 >
                   <FaTableCellsLarge className="h-4 w-4" />
                 </Button>
-                {/*
                 <Separator className="h-[40px]" orientation="vertical" />
-                <HoverCard>
-                  <HoverCardTrigger asChild>
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (UseDrawing.faceApi.facedetect === null) return;
-                        if (UseDrawing.isMenuOpen === 5) {
-                          return UseDrawing.setDrawArea(
-                            UseDrawing.faceApi.value
-                          );
-                        }
-                        if (UseDrawing.isMenuOpen === 11) {
-                          return UseDrawing.setBlanket((prevState: any) => ({
-                            ...prevState,
-                            size: pourcentageHeightFaceApi,
-                          }));
-                        }
-                      }}
-                      variant={
-                        UseDrawing.faceApi.facedetect === null
-                          ? "ghost"
-                          : UseDrawing.faceApi.facedetect > 0
-                          ? "activeBlue"
-                          : "destructive"
-                      }
-                      disabled={UseDrawing.faceApi.facedetect === null}
-                      size={"icon"}
-                    >
-                      {UseDrawing.faceApi.facedetect === null ? (
-                        <LuLoader2 className="h-5 w-5 animate-spin" />
-                      ) : (
-                        <LuScanFace className="h-5 w-5" />
-                      )}
-                    </Button>
-                  </HoverCardTrigger>
-                  <HoverCardContent className="text-neutral-500 text-sm">
-                    Note : L'intelligence artificielle utilisée pour la
-                    reconnaissance faciale est uniquement dédiée à cette tâche
-                    précise. Aucune donnée, image, ou information personnelle
-                    n'est enregistrée ni stockée à aucun moment du processus.
-                    Votre confidentialité est totalement respectée.
-                  </HoverCardContent>
-                </HoverCard>*/}
+                <Button
+                  variant="ghost"
+                  size={"icon"}
+                  onClick={() => {
+                    UseDrawing.setFileDialogOpen(
+                      (prevState: FileDialogOpen) => ({
+                        ...prevState,
+                        preview: true,
+                      })
+                    );
+                  }}
+                >
+                  <LuEye className="h-4 w-4" />
+                </Button>
               </CardContent>
             </Card>
 
-            <div className="flex">
+            <div className="flex text-black dark:text-white">
               <Button className="mr-5" variant="ghost" size="icon">
                 <FiArrowLeft className="h-4 w-4" />
               </Button>
@@ -713,26 +778,59 @@ export default function Drawing() {
 
         {UseDrawing?.isNewImage?.img ? (
           <>
-            {UseDrawing.isDrawingSetting.background === "no" && (
-              <video
-                className="w-screen h-screen fixed top-0 object-cover z-[-1] pt-[60px] pb-[60px]"
-                autoPlay={true}
-                muted
-                loop
-              >
-                <source
-                  src="/assets/videos/artvibe-studio/691452_bg.mp4"
-                  type="video/mp4"
-                />
-              </video>
+            {!UseDrawing?.isWaifuProcess.startProcess && (
+              <>
+                {UseDrawing.isDrawingSetting.background === "animated" && (
+                  <>
+                    <video
+                      className="w-screen h-screen fixed top-0 object-cover z-[-1] pt-[60px] pb-[60px]"
+                      autoPlay={true}
+                      muted
+                      loop
+                    >
+                      <source
+                        src="/assets/videos/artvibe-studio/691452_bg.mp4"
+                        type="video/mp4"
+                      />
+                    </video>
+                  </>
+                )}
+                {UseDrawing.isDrawingSetting.background === "image" && (
+                  <>
+                    <div
+                      className={
+                        !UseDrawing.isDrawingSetting.backgroundAnimated
+                          ? "w-screen h-screen fixed top-0 object-cover z-[-1] pt-[60px] pb-[60px]"
+                          : "w-screen h-screen fixed top-0 object-cover z-[-1] pt-[60px] pb-[60px] main-bg-animated"
+                      }
+                      style={{
+                        backgroundImage: `url(${
+                          UseDrawing.isDrawingSetting.backgroundImg ||
+                          UseDrawing.isNewImage.img
+                        })`,
+                        backgroundSize: "cover",
+                        backgroundRepeat: "no-repeat",
+                        transition: "150ms",
+                        ...(!UseDrawing.isDrawingSetting.backgroundAnimated
+                          ? {
+                              backgroundPosition: `0% ${UseDrawing.isDrawingSetting.backgroundHeight}%`,
+                            }
+                          : {}),
+                      }}
+                    />
+                  </>
+                )}
+              </>
             )}
             <div
               className="flex flex-col h-screen w-screen overflow-hidden pt-[60px] pb-[60px]"
               style={{
                 background:
-                  UseDrawing.isDrawingSetting.background === "yes"
-                    ? `linear-gradient(#191919, #0d0d0d)`
-                    : "#00000099",
+                  UseDrawing.isDrawingSetting.background === "default"
+                    ? UseDrawing.isDrawingSetting.theme === "dark"
+                      ? `linear-gradient(#191919, #0d0d0d)`
+                      : `linear-gradient(#cecece,#535353)`
+                    : "rgba(0, 0, 0, 0.6)",
               }}
               onDragOver={UseDrawing.handleDragOver}
             >
@@ -741,10 +839,12 @@ export default function Drawing() {
                   <DrawingSidebarMenu {...UseDrawing} />
                   <DrawingSidebar
                     {...UseDrawing}
+                    handleNewMaxZoom={handleNewMaxZoom}
                     //handleAlertStart={handleAlertStart}
                   />
                   <div
                     ref={UseDrawing.scrollGrabScrollRef}
+                    data-theme={UseDrawing.isDrawingSetting.theme}
                     className="scrollbar-style w-full h-full flex justify-start items-center" //flex justify-center items-start
                     style={{
                       overflow: "scroll",
@@ -1233,6 +1333,30 @@ export default function Drawing() {
                             }}
                           />
                         )}
+                        {UseDrawing?.drawFiligrane.img && (
+                          <div
+                            style={{
+                              zIndex: 380,
+                              position: "absolute",
+                              left: -(UseDrawing.drawingExpandImg.expand / 2),
+                              top: -(UseDrawing.drawingExpandImg.expand / 2),
+                              width: `${
+                                UseDrawing?.isImageSize.w +
+                                UseDrawing.drawingExpandImg.expand
+                              }px`,
+                              height: `${
+                                UseDrawing?.isImageSize.h +
+                                UseDrawing.drawingExpandImg.expand
+                              }px`,
+                              backgroundImage: `url(${UseDrawing?.drawFiligrane.img})`,
+                              //backgroundSize: "cover",
+                              backgroundPosition: "50% 50%",
+                              backgroundRepeat: "no-repeat",
+                              opacity: UseDrawing?.drawFiligrane.opacity,
+                              transition: "300ms",
+                            }}
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1242,17 +1366,48 @@ export default function Drawing() {
             </div>
           </>
         ) : (
-          <video
-            className="w-screen h-screen object-cover pt-[60px] pb-[60px]"
-            autoPlay={true}
-            muted
-            loop
-          >
-            <source
-              src="/assets/videos/artvibe-studio/691452_bg.mp4"
-              type="video/mp4"
-            />
-          </video>
+          <>
+            {(UseDrawing.isDrawingSetting.background === "animated" ||
+              (UseDrawing.isDrawingSetting.background === "default" &&
+                !UseDrawing.isDrawingSetting.backgroundImg)) && (
+              <>
+                <video
+                  className="w-screen h-screen fixed top-0 object-cover z-[-1] pt-[60px] pb-[60px]"
+                  autoPlay={true}
+                  muted
+                  loop
+                >
+                  <source
+                    src="/assets/videos/artvibe-studio/691452_bg.mp4"
+                    type="video/mp4"
+                  />
+                </video>
+              </>
+            )}
+            {UseDrawing.isDrawingSetting.background === "image" && (
+              <>
+                <div
+                  className={
+                    UseDrawing.isDrawingSetting.backgroundAnimated
+                      ? "w-screen h-screen fixed top-0 object-cover z-[-1] pt-[60px] pb-[60px] main-bg-animated"
+                      : "w-screen h-screen fixed top-0 object-cover z-[-1] pt-[60px] pb-[60px]"
+                  }
+                  style={{
+                    backgroundImage: `url(${
+                      UseDrawing.isDrawingSetting.backgroundImg ||
+                      UseDrawing.isNewImage.img
+                    })`,
+                    backgroundSize: "cover",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: `${
+                      UseDrawing.isDrawingSetting.backgroundHeight
+                    }% ${0}%`,
+                    transition: "150ms",
+                  }}
+                />
+              </>
+            )}
+          </>
         )}
 
         {/*<AlertPing
@@ -1261,7 +1416,7 @@ export default function Drawing() {
           onClickRef={UseDrawing.drawingSidebarToolsButtonRef.current}
         />*/}
 
-        <div className="fixed bottom-0 flex justify-center bg-[#0d0d0d] h-[60px] w-full z-[3000]">
+        <div className="fixed bottom-0 flex justify-center bg-[#F5F5F7] dark:bg-[#0d0d0d] text-black dark:text-white h-[60px] w-full z-[3000]">
           <div className="flex justify-between items-center w-[98%]">
             <Card className="bg-inherit border-none">
               <CardContent className="flex p-1 gap-4">
@@ -1326,7 +1481,7 @@ export default function Drawing() {
                     <LuSettings2 className="h-4 w-4" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent>
+                <PopoverContent style={{ zIndex: 3100 }}>
                   <div className="mb-1">File :</div>
                   <div className="flex flex-col gap-2">
                     <Button
@@ -1344,8 +1499,21 @@ export default function Drawing() {
                     </Button>
                   </div>
                   <Separator className="my-4" />
-                  <div className="mb-1">Select :</div>
+                  <div className="mb-1">System :</div>
                   <div className="flex flex-col gap-2">
+                    <Button
+                      onClick={() => {
+                        UseDrawing.setFileDialogOpen(
+                          (prevState: FileDialogOpen) => ({
+                            ...prevState,
+                            preview: true,
+                          })
+                        );
+                      }}
+                      variant="secondary"
+                    >
+                      <LuEye className="h-4 w-4 mr-4" /> Preview
+                    </Button>
                     <Button
                       onClick={() => {
                         UseDrawing.setSelectArea(!UseDrawing.isSelectArea);
@@ -1356,20 +1524,20 @@ export default function Drawing() {
                     >
                       <LuMousePointer className="h-4 w-4 mr-4" /> Selector
                     </Button>
-                  </div>
-                  <Separator className="my-4" />
-                  <div className="mb-1">Border :</div>
-                  <div className="flex flex-col gap-2">
-                    <Button
-                      onClick={() => {
-                        UseDrawing?.setImgBorderOn(!UseDrawing?.isImgBorderOn);
-                      }}
-                      variant={
-                        UseDrawing?.isImgBorderOn ? "activeBlue" : "secondary"
-                      }
-                    >
-                      <LuBoxSelect className="h-4 w-4 mr-4" /> img border
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        onClick={() => {
+                          UseDrawing?.setImgBorderOn(
+                            !UseDrawing?.isImgBorderOn
+                          );
+                        }}
+                        variant={
+                          UseDrawing?.isImgBorderOn ? "activeBlue" : "secondary"
+                        }
+                      >
+                        <LuBoxSelect className="h-4 w-4 mr-4" /> img border
+                      </Button>
+                    </div>
                   </div>
                   <Separator className="my-4" />
                   <div className="mb-1">Separator :</div>
@@ -1418,7 +1586,7 @@ export default function Drawing() {
                 </PopoverContent>
               </Popover>
               <Slider
-                className="ml-4 w-[300px]"
+                className="ml-4 w-[300px] rounded-full border focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                 defaultValue={UseDrawing.zoom}
                 value={UseDrawing.zoom}
                 onValueChange={UseDrawing.handleChange}
@@ -1432,7 +1600,13 @@ export default function Drawing() {
                 className="ml-2 mr-2 p-1 w-[100px]"
                 variant="ghost"
                 onClick={() => {
-                  UseDrawing.setZoom(handleInitialZoom() || UseDrawing.zoom);
+                  UseDrawing.setZoom(
+                    handleInitialZoom(
+                      UseDrawing.isImageSize.w,
+                      UseDrawing.isImageSize.h,
+                      UseDrawing.drawingExpandImg.expand
+                    ) || UseDrawing.zoom
+                  );
                 }}
               >
                 {(UseDrawing.zoom[0] * 200).toFixed(0)}%
@@ -1467,8 +1641,7 @@ export default function Drawing() {
           accept="image/jpeg, image/png"
           onChange={UseDrawing.handleFileChangeImport}
         />
-
-        <LastImport {...UseDrawing} />
+        <LastImport {...UseDrawing} handleSvgConverter={handleSvgConverter} />
 
         {UseDrawing.isDraggingDrop &&
           !UseDrawing.isFileDialogOpen.lastImport && (
@@ -1490,8 +1663,15 @@ export default function Drawing() {
                 <div className="h-[80vh] w-full rounded-lg">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="flex h-[90%] w-[90%] max-h-[400px] max-w-[800px] flex-col items-center justify-center rounded-lg text-white">
-                      <LuArrowDownToLine className="h-10 w-10 mb-2" />
-                      <p className="text-2xl font-bold">
+                      <div className="spinner mb-4">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                      </div>
+                      <p className="text-2xl font-bold bg-gradient-to-tr from-indigo-500 via-pink-500 to-indigo-500 bg-clip-text text-transparent">
                         Glissez-déposez vos images ici
                       </p>
                     </div>

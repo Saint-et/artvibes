@@ -16,7 +16,7 @@ import {
   NewImageSize,
   SystemSettings,
 } from "@/utils/interface";
-import { ResizeDirection } from "@/utils/type";
+import { CustomStyleMap, ResizeDirection } from "@/utils/type";
 import React, { MutableRefObject } from "react";
 import OverlayAreaSaveItemsContent from "./overlay-area-save-items-content";
 import SvgComponents from "./overlay/svg-file";
@@ -74,6 +74,10 @@ interface TextEditDrawingImgProps {
   textCanvasVisible: boolean;
   editorState: any;
   setEditorState: React.Dispatch<React.SetStateAction<any>>;
+  customStyleMap: CustomStyleMap;
+  setCustomStyleMap: React.Dispatch<React.SetStateAction<any>>;
+  customStyleShadowMap: CustomStyleMap;
+  setCustomStyleShadowMap: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const OverlayAreaSaveItems: React.FC<TextEditDrawingImgProps> = (props) => {

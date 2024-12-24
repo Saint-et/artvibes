@@ -76,7 +76,7 @@ const DrawingSidebarMenuBlanket: React.FC<DrawingSidebarMenuTextProps> = (
   return (
     <>
       <Card className="border-none rounded-none bg-transparent">
-        <CardContent className="grid grid-cols-1 gap-2 p-4">
+        <CardContent className="grid grid-cols-1 gap-2 p-4 text-black dark:text-white">
           <div className="text-1xl flex justify-between">
             Blanket :<LuPanelBottomClose className="h-4 w-4" />
           </div>
@@ -254,6 +254,7 @@ const DrawingSidebarMenuBlanket: React.FC<DrawingSidebarMenuTextProps> = (
             />
           </div>
           <Slider
+            className="rounded-full border"
             value={[props.isBlanket.opacity]}
             max={1}
             min={0}
@@ -279,6 +280,7 @@ const DrawingSidebarMenuBlanket: React.FC<DrawingSidebarMenuTextProps> = (
             />
           </div>
           <Slider
+            className="rounded-full border"
             value={[props.isBlanket.rotate]}
             max={360}
             min={0}
@@ -304,6 +306,7 @@ const DrawingSidebarMenuBlanket: React.FC<DrawingSidebarMenuTextProps> = (
             />
           </div>
           <Slider
+            className="rounded-full border"
             value={[props.isBlanket.size]}
             max={200}
             min={0}

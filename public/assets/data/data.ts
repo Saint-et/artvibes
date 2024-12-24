@@ -24,7 +24,6 @@ import addsMin from "@/public/assets/images/artvibesAddsMin.png";
 import addsDrawingMin from "@/public/assets/images/drawingAdds.png";
 import addsPremiumMin from "@/public/assets/images/premiumAdds.png";
 
-
 import SystemDrawingAbstractImport1 from '../images/drawing/gallerie/abstract/13295111_5186991.jpg';
 import SystemDrawingAbstractImport2 from '../images/drawing/gallerie/abstract/14658088_5509862.jpg';
 import SystemDrawingAbstractImport3 from '../images/drawing/gallerie/abstract/18220884_v1016-b-09.jpg';
@@ -35,7 +34,6 @@ import SystemDrawingAbstractImport7 from '../images/drawing/gallerie/abstract/67
 import SystemDrawingAbstractImport8 from '../images/drawing/gallerie/abstract/137965495_34da9859-2fbd-468d-b952-ab920832b4e0.jpg';
 import SystemDrawingAbstractImport9 from '../images/drawing/gallerie/abstract/158741998_11d6f99f-dbd7-48ef-8b98-bfec076e7421.jpg';
 import SystemDrawingAbstractImport0 from '../images/drawing/gallerie/abstract/bokeh-texture.jpg';
-
 
 import SystemDrawingcommercialImport1 from '../images/drawing/gallerie/commercial/abstract-blur-furniture-shop-store-interior.jpg';
 import SystemDrawingcommercialImport2 from '../images/drawing/gallerie/commercial/abstract-customer-white-light-store.jpg';
@@ -112,27 +110,18 @@ export const LoginItems = [{
 ];
 
 export const DrawingLoadItems = [{
-  title: "Créez Votre Compte :",
+  title: "Create your account :",
   description: `
-  Bien que notre application soit gratuite pour tous, nous
-  offrons des fonctionnalités supplémentaires et une
-  suppression des limites de temps pour nos utilisateurs
-  enregistrés. Créez votre compte aujourd'hui pour découvrir
-  l'ensemble complet des possibilités qu'offre Drawing.`,
+  Although our app is free for everyone, we
+  offer additional features and a
+  Removal of time limits for our users
+  Registered. Create your account today to discover
+  the complete set of possibilities offered by Kitsune-Studio.`,
 },
 {
-  title: "Welcome to our platform dedicated to art and manga enthusiasts !",
+  title: "Welcome to our platform dedicated to art !",
   description: `
-  Bienvenue sur Drawing, votre outil en ligne simple et
-  intuitif pour effectuer des modifications d'images de
-  manière rapide et efficace. Que vous soyez un professionnel
-  du design ou un utilisateur occasionnel, Drawing vous offre
-  une plateforme conviviale pour retoucher, recadrer, et
-  ajuster vos images sans avoir besoin de logiciels complexes.`,
-},
-{
-  title: "Explore, share and buy original creations.",
-  description: `Inspired by artists and individuals. Turn your walls into an art gallery home with captivating posters and enveloping manga.`,
+  Welcome to Kitsune-Studio, your simple and intuitive online tool for quick and efficient image editing. Whether you're a design professional or a casual user, Kitsune-Studio provides a user-friendly platform to retouch, crop, and adjust your images without the need for complex software..`,
 }
 ];
 
@@ -563,6 +552,57 @@ export const ColorsDrawing = [
   { name: "pink", value: "#EC4899" },
 ];
 
+export const PoliceMap = [
+  { name: "roboto-regular", value: "Roboto" },
+  { name: "playwrite-ar", value: "Playwrite AR" },
+  { name: "bonbon-regular", value: "Bonbon" },
+  { name: "rubik-vinyl-regular", value: "Rubik Vinyl" },
+  { name: "workbench", value: "Workbench" },
+  { name: "rubik-lines-regular", value: "Rubik Lines" },
+  { name: "splash-regular", value: "Splash" },
+  { name: "montserrat-subrayada-regular", value: "Montserrat Subrayada" },
+  { name: "protest-revolution-regular", value: "Protest Revolution" },
+  { name: "sacramento-regular", value: "Sacramento" },
+  { name: "rubik-puddles-regular", value: "Rubik Puddles" },
+  { name: "oi-regular", value: "Oi" },
+  { name: "eater-regular", value: "Eater" },
+  { name: "tiny5-regular", value: "Tiny5" },
+  { name: "megrim-regular", value: "Megrim" },
+  { name: "edu-au-vic-wa-nt-arrows", value: "Edu AU VIC WA NT Arrows" },
+  { name: "sankofa-display-regular", value: "Sankofa Display" },
+  { name: "hanalei-regular", value: "Hanalei" },
+  { name: "nabla", value: "Nabla" },
+  { name: "rubik-storm-regular", value: "Rubik Storm" },
+  { name: "rubik-glitch-pop-regular", value: "Rubik Glitch Pop" },
+  { name: "zen-tokyo-zoo-regular", value: "Zen Tokyo Zoo" },
+  { name: "monofett-regular", value: "Monofett" },
+  { name: "nosifer-regular", value: "Nosifer" },
+  { name: "rubik-maze-regular", value: "Rubik Maze" },
+  { name: "codystar-regular", value: "Codystar" },
+  { name: "bungee-outline-regular", value: "Bungee Outline" },
+  { name: "bungee-spice-regular", value: "Bungee Spice" },
+];
+export const ShadowTextDrawing = [
+  // br
+  { name: "shadow1", value: "0px 0px 2px" },
+  { name: "shadow2", value: "0px 0px 10px" },
+  //{ name: "shadow3", value: "5px 5px 0px" },
+  //// bl
+  //{ name: "shadow6", value: "-5px 5px 0px" },
+  //// tr
+  //{ name: "shadow8", value: "5px -5px 0px" },
+  //// tl
+  //{ name: "shadow6", value: "-5px -5px 0px" },
+];
+
+export const PoliceMapDraftjsMap = PoliceMap?.reduce<Record<string, { fontFamily: string }>>(
+  (acc, el) => {
+    acc[`FONTFAMILY_${el.name}`] = { fontFamily: el.value };
+    return acc;
+  },
+  {}
+);
+
 export const ItalicDraftjsMap = {
   "ITALIC_none": { fontStyle: "normal" },
   "ITALIC_italic": { fontStyle: "italic" },
@@ -584,7 +624,7 @@ export const ColorDraftjsMap = ColorsDrawing?.reduce<Record<string, { color: str
   {}
 );
 
-const arrayFontSizeDraftjsMapMin = Array.from({ length: 50 }, (_, index) => 4 + index * 2);
+export const arrayFontSizeDraftjsMapMin = Array.from({ length: 40 }, (_, index) => 6 + index * 2);
 const arrayFontSizeDraftjsMapMax = Array.from({ length: 30 }, (_, index) => 110 + index * 10);
 
 export const arrayFontSizeDraftjsMap = [...arrayFontSizeDraftjsMapMin, ...arrayFontSizeDraftjsMapMax]
@@ -595,3 +635,5 @@ export const FontSizeDraftjsMap = arrayFontSizeDraftjsMap?.reduce<Record<string,
   },
   {}
 );
+
+export const ArrayExpand = Array.from({ length: 11 }, (_, index) => 100 * index);

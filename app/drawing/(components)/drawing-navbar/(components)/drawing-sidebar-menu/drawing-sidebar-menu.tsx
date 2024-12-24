@@ -33,6 +33,7 @@ import {
   LuPictureInPicture,
   LuScaling,
   LuSettings2,
+  LuShield,
   LuSliders,
   LuSparkles,
   LuSquareStack,
@@ -48,7 +49,6 @@ interface DrawingSidebarMenuProps {
   zoom: number[];
   isSelectArea: boolean;
   setSelectArea: React.Dispatch<React.SetStateAction<any>>;
-  captureElement: () => void;
   resultImageUrl: string;
   mainSidebarRef: MutableRefObject<HTMLDivElement | null>;
   handleSetBasicOverlay: () => void;
@@ -63,18 +63,13 @@ interface DrawingSidebarMenuProps {
 }
 
 const DrawingSidebarMenu: React.FC<DrawingSidebarMenuProps> = (props) => {
-  const sizePositionOverlerlay =
-    props.isImageSize.w < props.isImageSize.h
-      ? props.isImageSize.w
-      : props.isImageSize.h;
-
   if (!props.isNewImage.img) return null;
 
   return (
     <>
       <ScrollArea
         ref={props.mainSidebarRef}
-        className="pr-2 w-[100%] min-w-[100px] max-w-[100px] block bg-[#0d0d0d]"
+        className="pr-2 w-[100%] min-w-[100px] max-w-[100px] block bg-[#F5F5F7] dark:bg-[#0d0d0d] border-r"
         onClick={() => {
           if (props.isMenuOpen !== 4 && props.isDrawingNowCanvas.id !== null) {
             props.DrawCanvasImg;
@@ -83,10 +78,10 @@ const DrawingSidebarMenu: React.FC<DrawingSidebarMenuProps> = (props) => {
       >
         <Card className="border-none rounded-none min-w-[110px] mt-5 h-full bg-transparent">
           <CardContent>
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 gap-2 text-black dark:text-white">
               <Separator className="my-0" />
               <Button
-                className="flex flex-col justify-center items-center h-full gradient-animated5"
+                className="flex flex-col justify-center items-center h-full gradient-animated5 text-white"
                 onClick={() => {
                   props.setMenuOpen(props.isMenuOpen === 9 ? 0 : 9);
                 }}
@@ -237,6 +232,18 @@ const DrawingSidebarMenu: React.FC<DrawingSidebarMenuProps> = (props) => {
                   The Frame option is currently unavailable at this time.
                 </PopoverContent>
               </Popover>
+              <Separator className="my-0" />
+              <Button
+                className="flex flex-col justify-center items-center h-full"
+                variant={props.isMenuOpen === 7 ? "activeBlue" : "ghost"}
+                onClick={() => {
+                  props.setMenuOpen(props.isMenuOpen === 7 ? 0 : 7);
+                }}
+              >
+                <LuShield className="h-6 w-6 mb-2 text-[#6EC207]" />
+                <div>Filigrane</div>
+              </Button>
+              <Separator className="my-0" />
             </div>
           </CardContent>
         </Card>

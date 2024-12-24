@@ -11,11 +11,20 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   DrawingSetting,
+  ExpandImg,
   IsNewImage,
+  IsNewOverlaySave,
+  LayerElement,
   LoadedImage,
   RenderingOption,
+  SystemSettings,
+  SystemShadow,
 } from "@/utils/interface";
-import { downloadImage } from "@/utils/utils";
+import {
+  downloadImage,
+  generateRandomId,
+  resizeImageBase64,
+} from "@/utils/utils";
 import toast from "react-hot-toast";
 import { FaDownload } from "react-icons/fa";
 import Image from "next/image";
@@ -30,10 +39,11 @@ import {
   LuVideo,
 } from "react-icons/lu";
 import { Separator } from "@/components/ui/separator";
-import useUtilsDrawing from "../../utils/utilsDrawing";
+//import useUtilsDrawing from "../../utils/utilsDrawing";
+import useDrawingRendering from "./drawing-rendering";
+import { DrawingName } from "@/public/assets/data/data";
 
 interface DrawingRenderingImgProps {
-  captureElement: () => void;
   resultImageUrl: string;
   handleSetBasicOverlay: () => void;
   isRenderingOpen: boolean;
@@ -48,46 +58,16 @@ interface DrawingRenderingImgProps {
   setNewImageImport: React.Dispatch<React.SetStateAction<any>>;
   setDrawingSetting: React.Dispatch<React.SetStateAction<DrawingSetting>>;
   isDrawingSetting: DrawingSetting;
+  isImgOverlaySave: IsNewOverlaySave[];
+  drawingExpandImg: ExpandImg;
+  systemShadow: SystemShadow;
+  systemSetting: SystemSettings;
+  handleRenderingToast: (isLayers: LayerElement[]) => Promise<string>;
+  handleSvgConverter: () => Promise<LayerElement[]>;
 }
 
 const DrawingRenderingImg: React.FC<DrawingRenderingImgProps> = (props) => {
-  const UseUtilsDrawing = useUtilsDrawing();
-
-  const handleDownload = () => {
-    if (!props.resultImageUrl) {
-      return toast.error("Unable to download.");
-    }
-
-    // Exemple de dataURL générée par canvas.toDataURL()
-    const dataURL = props.resultImageUrl;
-
-    // Nom du fichier pour le téléchargement
-    const fileName = props.isNewImage.fileName;
-
-    // Appel de la fonction pour télécharger l'image "jpg/jpeg"
-    downloadImage(dataURL, fileName, "png");
-  };
-
-  const handleImageLoad = (e: any) => {
-    if (!e) return;
-    const { naturalWidth, naturalHeight } = e.target;
-    props.setIsRenderingOption({
-      ...props.isRenderingOption,
-      width: naturalWidth,
-      height: naturalHeight,
-    });
-  };
-
-  const handleClick = async () => {
-    try {
-      const newImage = await UseUtilsDrawing.SetNewImport(props.resultImageUrl);
-      props.setNewImageImport((prevState: any) => [...prevState, newImage]);
-      toast.success(`Add to Files: image`);
-    } catch (error) {
-      toast.error("Error setting new import");
-      //console.error("Error setting new import:", error);
-    }
-  };
+  //const UseUtilsDrawing = useUtilsDrawing();
 
   return (
     <>
@@ -104,7 +84,7 @@ const DrawingRenderingImg: React.FC<DrawingRenderingImgProps> = (props) => {
           <DialogTitle></DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
-        <DialogContent className="h-[80vh] w-[98%] max-w-[1400px] p-2 z-[5000] bg-[#000000]">
+        <DialogContent className="h-[75vh] p-2 z-[5000]">
           <ScrollArea className="h-[100%] w-[100%] border-none">
             <Card className="border-none bg-inherit">
               <CardHeader>
@@ -112,202 +92,216 @@ const DrawingRenderingImg: React.FC<DrawingRenderingImgProps> = (props) => {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center flex-col">
-                  <div className="flex justify-center items-center gap-6 max-w-max h-max flex-col md:flex-row">
-                    <div className="flex justify-start items-center flex-col w-[90%] max-w-[500px] p-3">
-                      <div className="h-max w-max drawing-css-bg-main-tranparent border">
-                        <Image
-                          src={
-                            props.resultImageUrl ||
-                            props.isDrawingLoad?.defaultImage ||
-                            ""
-                          }
-                          alt="Placeholder Image"
-                          width={600}
-                          height={400}
-                          className="w-full h-full max-h-[450px] object-contain"
-                          onDragStart={(e) => e.preventDefault()}
-                          onContextMenu={(e) => e.preventDefault()}
-                          onLoad={handleImageLoad}
-                        />
+                  <div className="grid grid-cols-1 gap-6 max-w-max h-max">
+                    <div className="grid w-full max-w-sm items-center gap-1.5">
+                      <Label htmlFor="nameThisWork">Name your project</Label>
+                      <Input
+                        value={props.isNewImage.fileName}
+                        onChange={(e) => {
+                          props.setNewImage({
+                            ...props.isNewImage,
+                            fileName: e.target.value,
+                          });
+                        }}
+                        type="text"
+                        id="nameThisWork"
+                        placeholder="..."
+                      />
+                    </div>
+                    <div>Rendering option :</div>
+                    <div className="items-top flex space-x-2">
+                      <Checkbox
+                        checked={props.isRenderingOption.reziseImg}
+                        onCheckedChange={(checked: boolean) => {
+                          props.setIsRenderingOption({
+                            ...props.isRenderingOption,
+                            reziseImg: checked, // Utilisation de `checked` qui est un booléen
+                          });
+                        }}
+                        id="terms0"
+                      />
+                      <div className="grid gap-1.5 leading-none">
+                        <label
+                          htmlFor="terms0"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Resize the image.
+                        </label>
+                        <p className="text-sm text-muted-foreground">
+                          This allows you to decide whether or not to keep the
+                          new dimensions after the change.
+                        </p>
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 gap-6 max-w-max h-max">
-                      <div className="grid w-full max-w-sm items-center gap-1.5">
-                        <Label htmlFor="nameThisWork">Name your project</Label>
-                        <Input
-                          value={props.isNewImage.fileName}
-                          onChange={(e) => {
-                            props.setNewImage({
-                              ...props.isNewImage,
-                              fileName: e.target.value,
-                            });
-                          }}
-                          type="text"
-                          id="nameThisWork"
-                          placeholder="..."
-                        />
+                    <div className="items-top flex space-x-2">
+                      <Checkbox
+                        checked={props.isRenderingOption.smoothImg}
+                        onCheckedChange={(checked: boolean) => {
+                          props.setIsRenderingOption({
+                            ...props.isRenderingOption,
+                            smoothImg: checked, // Utilisation de `checked` qui est un booléen
+                          });
+                        }}
+                        id="terms1"
+                      />
+                      <div className="grid gap-1.5 leading-none">
+                        <label
+                          htmlFor="terms1"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Smooth the image to make it less pixelated.
+                        </label>
+                        <p className="text-sm text-muted-foreground">
+                          If this option behaves unexpectedly, turn off the.
+                        </p>
                       </div>
-                      <div>Rendering option :</div>
-                      <div className="items-top flex space-x-2">
-                        <Checkbox
-                          checked={props.isRenderingOption.reziseImg}
-                          onCheckedChange={(checked: boolean) => {
-                            props.setIsRenderingOption({
-                              ...props.isRenderingOption,
-                              reziseImg: checked, // Utilisation de `checked` qui est un booléen
-                            });
-                          }}
-                          id="terms0"
-                        />
-                        <div className="grid gap-1.5 leading-none">
-                          <label
-                            htmlFor="terms0"
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            Resize the image.
-                          </label>
-                          <p className="text-sm text-muted-foreground">
-                            This allows you to decide whether or not to keep the
-                            new dimensions after the change.
-                          </p>
+                    </div>
+                    <div className="items-top flex space-x-2">
+                      <Checkbox
+                        checked={props.isRenderingOption.sharpenImg}
+                        onCheckedChange={(checked: boolean) => {
+                          props.setIsRenderingOption({
+                            ...props.isRenderingOption,
+                            sharpenImg: checked, // Utilisation de `checked` qui est un booléen
+                          });
+                        }}
+                        id="terms2"
+                      />
+                      <div className="grid gap-1.5 leading-none">
+                        <label
+                          htmlFor="terms2"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Increased the sharpness of the image.
+                        </label>
+                        <p className="text-sm text-muted-foreground">
+                          If this option behaves unexpectedly, turn off the.
+                        </p>
+                      </div>
+                    </div>
+                    <Separator className="my-1" />
+                    <RadioGroup
+                      className="grid grid-cols-3 gap-2"
+                      value={props.isRenderingOption.format}
+                      onValueChange={(e) => {
+                        props.setIsRenderingOption({
+                          ...props.isRenderingOption,
+                          format: e, // Utilisation de `checked` qui est un booléen
+                        });
+                      }}
+                    >
+                      <div className="grid grid-cols-1 gap-2">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="png" id="r1" />
+                          <Label htmlFor="r1">.png</Label>
                         </div>
+                        <p className="text-sm text-muted-foreground">
+                          This format is best if you want to maintain high image
+                          quality.
+                        </p>
                       </div>
-                      <Card className="bg-inherit border-none">
-                        <CardContent className="flex p-1 gap-4">
-                          <div className="border rounded flex items-center gap-2 p-1 h-[40px] overflow-hidden">
-                            w:{" "}
-                            <Input
-                              value={props.isRenderingOption.width}
-                              disabled
-                              className="w-[80px] h-[40px] border-none"
-                              type="number"
-                              placeholder="width"
-                            />
-                          </div>
-                          <div className="border rounded flex items-center gap-2 p-1 h-[40px] overflow-hidden">
-                            h:{" "}
-                            <Input
-                              value={props.isRenderingOption.height}
-                              disabled
-                              className="w-[80px] h-[40px] border-none"
-                              type="number"
-                              placeholder="height"
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                      <div className="items-top flex space-x-2">
-                        <Checkbox
-                          checked={props.isRenderingOption.smoothImg}
-                          onCheckedChange={(checked: boolean) => {
-                            props.setIsRenderingOption({
-                              ...props.isRenderingOption,
-                              smoothImg: checked, // Utilisation de `checked` qui est un booléen
-                            });
-                          }}
-                          id="terms1"
-                        />
-                        <div className="grid gap-1.5 leading-none">
-                          <label
-                            htmlFor="terms1"
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            Smooth the image to make it less pixelated.
-                          </label>
-                          <p className="text-sm text-muted-foreground">
-                            If this option behaves unexpectedly, turn off the.
-                          </p>
+                      <div className="grid grid-cols-1 gap-2">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="jpg/jpeg" id="r2" />
+                          <Label htmlFor="r2">.jpg/.jpeg</Label>
                         </div>
+                        <p className="text-sm text-muted-foreground">
+                          This format is best for sharing and the web.
+                        </p>
                       </div>
-                      <div className="items-top flex space-x-2">
-                        <Checkbox
-                          checked={props.isRenderingOption.sharpenImg}
-                          onCheckedChange={(checked: boolean) => {
-                            props.setIsRenderingOption({
-                              ...props.isRenderingOption,
-                              sharpenImg: checked, // Utilisation de `checked` qui est un booléen
-                            });
-                          }}
-                          id="terms2"
-                        />
-                        <div className="grid gap-1.5 leading-none">
-                          <label
-                            htmlFor="terms2"
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            Increased the sharpness of the image.
-                          </label>
-                          <p className="text-sm text-muted-foreground">
-                            If this option behaves unexpectedly, turn off the.
-                          </p>
+                      <div className="grid grid-cols-1 gap-2">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="pdf" id="r3" disabled />
+                          <Label htmlFor="r3">.pdf</Label>
                         </div>
+                        <p className="text-sm text-muted-foreground">
+                          This format is great for sharing content with embedded
+                          links.
+                        </p>
                       </div>
-                      <Button variant="outline" disabled>
-                        Add a watermark
-                      </Button>
-                      <Separator className="my-4" />
-                      <RadioGroup
-                        className="grid grid-cols-3 gap-2"
-                        defaultValue="png"
+                    </RadioGroup>
+                    <Separator className="my-1" />
+                    <div className="w-full grid grid-cols-3 gap-2">
+                      <Button
+                        onClick={() => {
+                          toast.promise(
+                            props
+                              .handleSvgConverter()
+                              .then((layers) => {
+                                if (!layers) {
+                                  throw new Error("Layer conversion failed");
+                                }
+                                return props.handleRenderingToast(layers);
+                              })
+                              .then((result) => {
+                                if (!result) {
+                                  throw new Error("Rendering failed");
+                                }
+                                resizeImageBase64(
+                                  result as string,
+                                  300,
+                                  async function (resizedBlob: any) {
+                                    return props.setNewImageImport(
+                                      (prevState: any) => [
+                                        ...prevState,
+                                        {
+                                          id: generateRandomId(),
+                                          fileName: `${DrawingName}-${Date.now()}`,
+                                          img: result,
+                                          miniature: resizedBlob,
+                                        },
+                                      ]
+                                    );
+                                  }
+                                );
+                                return "Add to Files: image.";
+                              }),
+                            {
+                              loading: "Processing images and rendering...",
+                              success: "Add to Files: image.",
+                              error: "An error occurred during the process.",
+                            }
+                          );
+                        }}
+                        variant="outline"
                       >
-                        <div className="grid grid-cols-1 gap-2">
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="png" id="r1" />
-                            <Label htmlFor="r1">.png</Label>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            This format is best if you want to maintain high
-                            image quality.
-                          </p>
-                        </div>
-                        <div className="grid grid-cols-1 gap-2">
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="jpg/jpeg" id="r2" />
-                            <Label htmlFor="r2">.jpg/.jpeg</Label>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            This format is best for sharing and the web.
-                          </p>
-                        </div>
-                        <div className="grid grid-cols-1 gap-2">
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="pdf" id="r3" disabled />
-                            <Label htmlFor="r3">.pdf</Label>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            This format is great for sharing content with
-                            embedded links.
-                          </p>
-                        </div>
-                      </RadioGroup>
-                      <div className="w-full grid grid-cols-3 gap-2">
-                        <Button
-                          onClick={() => {
-                            props.captureElement();
-                          }}
-                          variant="outline"
-                          disabled={!props.resultImageUrl}
-                        >
-                          <LuImage className="mr-2 h-4 w-4" />
-                          Apply change ...
-                        </Button>
-                        <Button
-                          onClick={handleClick}
-                          variant="outline"
-                          disabled={!props.resultImageUrl}
-                        >
-                          <LuFolderPlus className="mr-2 h-4 w-4" />
-                          Add to file
-                        </Button>
-                        <Button
-                          variant={"activeBlue"}
-                          disabled={!props.resultImageUrl}
-                          onClick={() => handleDownload()}
-                        >
-                          <FaDownload className="mr-2 h-4 w-4" />
-                          Download
-                        </Button>
-                      </div>
+                        <LuFolderPlus className="mr-2 h-4 w-4" />
+                        Add to file
+                      </Button>
+                      <Button
+                        variant={"activeBlue"}
+                        onClick={() => {
+                          toast.promise(
+                            props
+                              .handleSvgConverter()
+                              .then((layers) => {
+                                if (!layers) {
+                                  throw new Error("Layer conversion failed");
+                                }
+                                return props.handleRenderingToast(layers);
+                              })
+                              .then((result) => {
+                                if (!result) {
+                                  throw new Error("Rendering failed");
+                                }
+                                downloadImage(
+                                  result,
+                                  props.isNewImage.fileName,
+                                  props.isRenderingOption.format
+                                );
+                                return "The download can begin.";
+                              }),
+                            {
+                              loading: "Processing images and rendering...",
+                              success: "The download can begin.",
+                              error: "An error occurred during the process.",
+                            }
+                          );
+                        }}
+                      >
+                        <FaDownload className="mr-2 h-4 w-4" />
+                        Download
+                      </Button>
                     </div>
                   </div>
                 </div>

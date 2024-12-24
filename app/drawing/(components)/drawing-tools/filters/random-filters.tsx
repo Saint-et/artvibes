@@ -110,7 +110,7 @@ export default function RandomFilters(props: Props) {
   return (
     <Card className="border-none rounded-none bg-transparent p-4">
       <CardHeader className="p-0 mb-2">
-        <CardTitle className="text-1xl flex justify-between p-0">
+        <CardTitle className="text-1xl flex justify-between p-0 text-black dark:text-white">
           Random :<LuDroplets className="h-4 w-4" />
         </CardTitle>
       </CardHeader>

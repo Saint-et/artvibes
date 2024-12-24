@@ -3,11 +3,18 @@
 // Converted TSX Component
 import { RemoveScroll } from "react-remove-scroll";
 import React, { useEffect, useRef, useState } from "react";
-import { useAppContext } from "./provider/useAppContext";
+import { useAppContext } from "@/app/provider/useAppContext";
+
+//interface ViewerImageProps {
+//  srcImg: string;
+//  setSrcImg: React.Dispatch<React.SetStateAction<string>>;
+//}
 
 // Use the interface in the functional component
 const ViewerImage: React.FC = () => {
-  const { srcImg, setSrcImg, systemDetectMobile } = useAppContext();
+  const { srcImg, setSrcImg } = useAppContext();
+
+  const [systemDetectMobile, setSystemDetectMobile] = useState<boolean>(false);
 
   const imageRef = useRef<HTMLImageElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -28,6 +35,7 @@ const ViewerImage: React.FC = () => {
   const [closeAnimation, setCloseAnimation] = useState<boolean>(false);
   const [filterImg, setFilterImg] = useState<boolean>(false);
   const [devTools, setDevTools] = useState<boolean>(false);
+  const [Commands, setCommands] = useState<boolean>(false);
 
   const minZoomT = 0.6;
   const maxZoomT = 3.6;
@@ -147,9 +155,6 @@ const ViewerImage: React.FC = () => {
     //e.preventDefault();
     const touch = e.touches[0];
     setIsDragging(true);
-    if (e.touches.length === 2) {
-      handleTouchZoom();
-    }
     setStartPosition({ x: touch.clientX, y: touch.clientY });
   };
 
@@ -213,17 +218,43 @@ const ViewerImage: React.FC = () => {
 
         setPosition({ x: newPosX, y: newPosY });
       } else {
+        if (e.touches.length === 2) {
+          return setTimeout(() => {
+            handleCloseViewer();
+          }, 200);
+        }
         const endY = e.changedTouches[0].clientY; // Récupère la position Y du toucher final
         const deltaY = endY - startPosition.y; // Calcule la différence de position Y
+
+        const endX = e.changedTouches[0].clientX; // Récupère la position Y du toucher final
+        const deltaX = endX - startPosition.x; // Calcule la différence de position Y
 
         // Vérifie si le mouvement est un swipe vers le haut et si la distance parcourue est suffisante
         if (deltaY < -100) {
           // Ajoutez ici le code à exécuter lorsque le swipe vers le haut est détecté
-          handleDoubleClick();
+          return setTimeout(() => {
+            handleDoubleClick();
+          }, 200);
         }
         if (deltaY > 100) {
           // Ajoutez ici le code à exécuter lorsque le swipe vers le haut est détecté
-          handleDoubleClick();
+          return setTimeout(() => {
+            handleDoubleClick();
+          }, 200);
+        }
+
+        // Vérifie si le mouvement est un swipe vers le haut et si la distance parcourue est suffisante
+        if (deltaX < -100) {
+          // Ajoutez ici le code à exécuter lorsque le swipe vers le haut est détecté
+          return setTimeout(() => {
+            setCommands(true);
+          }, 200);
+        }
+        if (deltaX > 100) {
+          // Ajoutez ici le code à exécuter lorsque le swipe vers le haut est détecté
+          return setTimeout(() => {
+            setFilterImg(!filterImg);
+          }, 200);
         }
       }
     }
@@ -231,6 +262,19 @@ const ViewerImage: React.FC = () => {
 
   const handletouchEnd = () => {
     setIsDragging(false);
+  };
+
+  const handleCloseViewer = () => {
+    setCloseAnimation(true);
+    setTimeout(() => {
+      setSrcImg("");
+      setDevTools(false);
+      setCommands(false);
+      setPosition({ x: 0, y: 0 });
+      setZoomLevel(1);
+      setIsDragging(false);
+      setCloseAnimation(false);
+    }, 280);
   };
 
   const handleDoubleClick = () => {
@@ -244,6 +288,7 @@ const ViewerImage: React.FC = () => {
     setTimeout(() => {
       setSrcImg("");
       setDevTools(false);
+      setCommands(false);
       setPosition({ x: 0, y: 0 });
       setZoomLevel(1);
       setIsDragging(false);
@@ -294,6 +339,21 @@ const ViewerImage: React.FC = () => {
       }
     }
   };
+
+  useEffect(() => {
+    const isMobileDevice = () => {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+    };
+
+    // Utilisation de la fonction
+    if (isMobileDevice()) {
+      setSystemDetectMobile(true);
+    } else {
+      setSystemDetectMobile(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!systemDetectMobile) {
@@ -350,11 +410,30 @@ const ViewerImage: React.FC = () => {
 
     const handleKeyDown = (event: KeyboardEvent) => {
       switch (event.key) {
-        case "d": // Action pour 'a'
-          setDevTools(!devTools);
+        case "z": // Action pour 'z'
+          setTimeout(() => {
+            handleTouchZoom();
+          }, 300);
+          break;
+        case "f": // Action pour 'f'
+          setTimeout(() => {
+            setFilterImg(!filterImg);
+          }, 300);
+          break;
+        case "d": // Action pour 'd'
+          setTimeout(() => {
+            setDevTools(!devTools);
+          }, 300);
+          break;
+        case "c": // Action pour 'c'
+          setTimeout(() => {
+            setCommands(!Commands);
+          }, 300);
           break;
         case "Escape": // Action pour 'Escape'
-          handleDoubleClick();
+          setTimeout(() => {
+            handleCloseViewer();
+          }, 300);
           break;
         // Ajouter d'autres touches si nécessaire
         default:
@@ -369,19 +448,18 @@ const ViewerImage: React.FC = () => {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [srcImg, devTools]);
+  }, [srcImg, devTools, filterImg, Commands, zoomLevel]);
 
   if (!srcImg) return null;
 
   return (
     <RemoveScroll
       removeScrollBar={true}
-      className="drawing-css-bg"
       style={{
         zIndex: 100000,
         width: "100%",
         height: "100vh",
-        //background: "#000000f2",
+        background: "#00000088",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -392,6 +470,7 @@ const ViewerImage: React.FC = () => {
     >
       {devTools && (
         <div
+          className="open-element-page-melted"
           style={{
             width: "max-content",
             borderRadius: 5,
@@ -483,7 +562,7 @@ const ViewerImage: React.FC = () => {
             }}
           >
             <div>
-              s-position: {startPosition.x.toFixed(1)} x,{" "}
+              m-position: {startPosition.x.toFixed(1)} x,{" "}
               {startPosition.y.toFixed(1)} y
             </div>
           </div>
@@ -569,9 +648,107 @@ const ViewerImage: React.FC = () => {
                 fontSize: 12,
               }}
             >
-              by steps
+              mobile zoom
             </button>
           </div>
+        </div>
+      )}
+      {Commands && (
+        <div
+          className="open-element-page-melted"
+          style={{
+            width: "98%",
+            maxWidth: "max-content",
+            borderRadius: 5,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "start",
+            justifyContent: "center",
+            position: "fixed",
+            zIndex: 50000,
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            background: "#000000",
+            border: "1px solid grey",
+            color: "white",
+            padding: 5,
+          }}
+          onClick={() => {
+            if (!systemDetectMobile) return;
+            setCommands(false);
+          }}
+        >
+          <h4
+            style={{
+              width: "100%",
+              textAlign: "center",
+              borderBottom: "1px solid grey",
+            }}
+          >
+            Commands pc
+          </h4>
+          <ul className="space-y-4">
+            <li>
+              <span style={{ color: "#3b82f6" }}>DoubleClick:</span> Reset zoom
+              / Close viewer-image
+            </li>
+            <li>
+              <span style={{ color: "#3b82f6" }}>Escape:</span> Close
+              viewer-image
+            </li>
+            <li>
+              <span style={{ color: "#3b82f6" }}>C:</span> See all commands
+            </li>
+            <li>
+              <span style={{ color: "#3b82f6" }}>F:</span> Apply color filter
+            </li>
+            <li>
+              <span style={{ color: "#3b82f6" }}>D:</span> Mode developer
+            </li>
+            <li>
+              <span style={{ color: "#3b82f6" }}>Z:</span> Zoom
+            </li>
+          </ul>
+          <h4
+            style={{
+              width: "100%",
+              textAlign: "center",
+              borderBottom: "1px solid grey",
+              borderTop: "1px solid grey",
+            }}
+          >
+            Commands mobile
+          </h4>
+          <ul className="space-y-4">
+            <li>
+              <span style={{ color: "#3b82f6" }}>maintain touch:</span> Reset
+              zoom / Close viewer-image
+            </li>
+            <li>
+              <span style={{ color: "#3b82f6" }}>
+                swipe Up/Down on zoom 1.0x:
+              </span>{" "}
+              Close viewer-image
+            </li>
+            <li>
+              <span style={{ color: "#3b82f6" }}>swipe left on zoom 1.0x:</span>{" "}
+              Apply color filter
+            </li>
+            <li>
+              <span style={{ color: "#3b82f6" }}>
+                swipe right on zoom 1.0x:
+              </span>{" "}
+              See all commands
+            </li>
+            <li>
+              <span style={{ color: "#3b82f6" }}>2 touch same time:</span> Close
+              viewer-image
+            </li>
+            <li>
+              <span style={{ color: "#3b82f6" }}>Double touch:</span> Zoom
+            </li>
+          </ul>
         </div>
       )}
       <div
@@ -630,4 +807,4 @@ const ViewerImage: React.FC = () => {
   );
 };
 
-export { ViewerImage };
+export default ViewerImage;

@@ -2,30 +2,27 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import UseAreaDrawCreative from "./useArea-drawing";
 import toast from "react-hot-toast";
-import { AiQuality, DrawArea, DrawForm, DrawingSetting, DrawSvg, DrawSvgFull, DrawText, FileDialogOpen, IsNewImage, IsNewOverlay, IsNewOverlaySave, MenuLayer, RenderingOption } from "@/utils/interface";
-import { DrawingName, SystemLogo } from "@/public/assets/data/data";
+import { AiQuality, DrawFiligrane, DrawForm, DrawingSetting, DrawSvg, DrawSvgFull, DrawText, FileDialogOpen, IsNewImage, IsNewOverlay, IsNewOverlaySave, LayerElement, MenuLayer, RenderingOption, ResizeInterface } from "@/utils/interface";
+import { ArrayExpand, DrawingName, SystemLogo } from "@/public/assets/data/data";
 import useSelectDrawing from "./usedrawing-select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { boolean, z } from "zod";
+import { z } from "zod";
 import useDrawingRendering from "./drawing-rendering/drawing-rendering";
-import useUtilsDrawing from "../utils/utilsDrawing";
+//import useUtilsDrawing from "../utils/utilsDrawing";
 import { useAppContext } from "@/app/provider/useAppContext";
 import { DrawingLoadDefault, NewImgDefault } from "@/public/assets/data/defaultValue-drawing";
 import GrabScrollComponent from "../drawing-navbar/(components)/grab-to-scroll";
 import useWaifu2xTfjs from "../utils/waifu2x-tfjs/waifu2x-tfjs";
-import { EditorState, convertFromRaw, RawDraftContentState, convertToRaw, RichUtils, Editor, SelectionState } from "draft-js";
+import { EditorState, convertFromRaw, RawDraftContentState, Editor } from "draft-js";
+import { CustomStyleMap } from "@/utils/type";
+import { extractBoxShadowColor, generateRandomId, loadImageToCanvas, resizeImageBase64, rgbToHex } from "@/utils/utils";
 
 const FormSchema = z.object({
     pin: z.string().min(6, {
         message: "Your one-time password must be 6 characters.",
     }),
 })
-
-type LoadedImage = {
-    img: HTMLImageElement;
-    el: IsNewOverlaySave;
-};
 
 export default function useDrawing() {
 
@@ -49,7 +46,7 @@ export default function useDrawing() {
         isDraggingGrabScroll
     } = GrabScrollComponent();
 
-    const { extractBoxShadowColor, rgbToHex, resizeImageBase64, hasTransparency } = useUtilsDrawing();
+    //const { extractBoxShadowColor, rgbToHex, resizeImageBase64, hasTransparency } = useUtilsDrawing();
 
     const {
         handleMouseDown,
@@ -112,7 +109,7 @@ export default function useDrawing() {
 
 
     const UseDrawingRendering = useDrawingRendering()
-    const UseUtilsDrawing = useUtilsDrawing()
+    //const UseUtilsDrawing = useUtilsDrawing()
 
     const setDrawingLoad = UseAppContext.setDrawingLoad;
     const isDrawingLoad = UseAppContext.isDrawingLoad || DrawingLoadDefault;
@@ -122,13 +119,18 @@ export default function useDrawing() {
         separatorBorder: 'none',
         transparence: false,
         maxZoom: 4,
+        maxZoomAuto: true,
         overflowCanvas: 'clip',
         overflowExpand: 'clip',
         deleteOutsideOverlay: 'no',
         storage: 'no',
-        background: 'yes',
+        background: 'default',
+        backgroundImg: '',
+        backgroundAnimated: true,
+        backgroundHeight: 50,
         language: 'French',
         optimization: 'resolution',
+        theme: 'light',
         paint: {
             hideElCanvas: false,
             showDrawSelected: false,
@@ -175,9 +177,12 @@ export default function useDrawing() {
     const [cropVisible, setCropVisible] = useState<boolean>(false);
     const [isFileDialogOpen, setFileDialogOpen] = useState<FileDialogOpen>(
         {
+            resizeImage: false,
+            preview: false,
             lastImport: false,
             editNewPage: false,
-            help: false
+            help: false,
+            backgroundAdvanced: false,
         }
     );
     const [isFreeAreaCrop, setFreeAreaCrop] = useState<boolean>(true);
@@ -204,6 +209,7 @@ export default function useDrawing() {
         reziseImg: true,
         sharpenImg: false,
         smoothImg: true,
+        format: 'png',
         width: 0,
         height: 0,
     });
@@ -217,6 +223,7 @@ export default function useDrawing() {
     const isNewImage = UseAppContext.isNewImage;
     const setNewImage = UseAppContext.setNewImage;
 
+    const [outsideClickActive, setOutsideClickActive] = useState<boolean>(true);
     const [isCanvasImage, setCanvasImage] = useState<string | ''>('');
     const [isImgOverlaySave, setImgOverlaySave] = useState<IsNewOverlaySave[]>([]);
     const [isImgOverlay, setImgOverlay] = useState<IsNewOverlay>({
@@ -275,6 +282,14 @@ export default function useDrawing() {
         opacity: 1,
     });
 
+    const [drawFiligrane, setDrawFiligrane] = useState<DrawFiligrane>({
+        fontSize: 40,
+        color: '#FFFFFF',
+        text: '',
+        img: '',
+        opacity: 0.5,
+    });
+
     const [drawForm, setDrawForm] = useState<DrawForm>({
         id: 0,
         color: "#000000",
@@ -284,9 +299,10 @@ export default function useDrawing() {
     const [drawText, setDrawText] = useState<DrawText>({
         id: 0,
         value: "",
-        color: "#ffffff",
+        colorDraftjs: '#000000',
         fontSize: 24,
-        underline: "none",
+        textShadow: '0px 0px 0px #000000',
+        textDecoration: "none",
         fontStyle: "normal",
         fontWeight: "normal",
         textAlign: "center",
@@ -299,32 +315,11 @@ export default function useDrawing() {
         tta: 1,
     });
 
-    const [contentRichText, setContentRichText] = useState([
-        [
-            {
-                text: "Bonjour ",
-                style: { color: "red", fontSize: "16px", fontWeight: "bold" },
-            },
-            {
-                text: "volkito",
-                style: { color: "green", fontSize: "16px", fontWeight: "bold" },
-            },
-        ]
-    ]);
-
-
-    const [contentRichTextSave, setContentRichTextSave] = useState([
-        [
-            {
-                text: "Bonjour ",
-                style: { color: "red", fontSize: "16px", fontWeight: "bold" },
-            },
-            {
-                text: "volkito",
-                style: { color: "green", fontSize: "16px", fontWeight: "bold" },
-            },
-        ]
-    ]);
+    const [isSystemResize, setSystemResize] = useState<ResizeInterface>({
+        link: false,
+        w: isImageSize.w,
+        h: isImageSize.h,
+    });
 
     const rawContent: RawDraftContentState = {
         blocks: [
@@ -333,13 +328,9 @@ export default function useDrawing() {
                 text: DrawingName,
                 type: "unstyled",
                 depth: 0,
-                inlineStyleRanges: [
-                    { offset: 0, length: 15, style: "CODE" },
-                ],
+                inlineStyleRanges: [],
                 entityRanges: [],
-                data: {
-
-                },
+                data: {},
             },
         ],
         entityMap: {},
@@ -349,6 +340,8 @@ export default function useDrawing() {
         EditorState.createWithContent(convertFromRaw(rawContent))
     );
 
+    const [customStyleMap, setCustomStyleMap] = useState<CustomStyleMap>({});
+    const [customStyleShadowMap, setCustomStyleShadowMap] = useState<CustomStyleMap>({});
 
 
     const handleChange = async (newValue: number[]) => {
@@ -381,7 +374,7 @@ export default function useDrawing() {
     const defaultPositionH = (isImageSize.h / 2) - (sizePositionOverlerlay / 4 + drawingExpandImg.expand / 4);
 
 
-    const handleButtonClickImport = async () => {
+    const handleButtonClickImport = () => {
         if (fileInputRef.current) {
             fileInputRef.current.click();
         }
@@ -402,7 +395,7 @@ export default function useDrawing() {
                     reader.onloadend = () => {
                         resizeImageBase64(reader.result as string, 300, function (resizedBlob: any) {
                             resolve({
-                                id: UseUtilsDrawing.generateRandomId(),
+                                id: generateRandomId(),
                                 fileName: `${DrawingName}-${Date.now()}`,
                                 img: reader.result as string,
                                 miniature: resizedBlob || ''
@@ -485,6 +478,44 @@ export default function useDrawing() {
             const files = event.dataTransfer.files || [];
 
             if (files) {
+
+
+                const addNewBackgroundSystem = () => {
+                    const updatedImages = Array.from(files).map(file => {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+
+                        return new Promise((resolve, reject) => {
+                            reader.onloadend = () => {
+                                resolve({
+                                    img: reader.result as string,  // Cast reader.result to string
+                                });
+                            };
+                            reader.onerror = reject;  // Handle errors
+                        });
+                    });
+
+                    Promise.all(updatedImages)
+                        .then(images => {
+                            const typedImages: IsNewOverlay[] = images as IsNewOverlay[];
+
+                            setDrawingSetting((prevState: DrawingSetting) => ({
+                                ...prevState,
+                                backgroundImg: typedImages[0].img,
+                            }))
+                            return resolve(true)
+                        })
+                        .catch(() => {
+                            return reject(new Error("An error occurred"));
+                            // Handle error state if necessary
+                        });
+                }
+
+
+                if (isFileDialogOpen.backgroundAdvanced && !isDrawingLoad.home && !isFileDialogOpen.lastImport) {
+                    return addNewBackgroundSystem()
+                }
+
 
                 const addNewPicture = () => {
                     const updatedImages = Array.from(files).map(file => {
@@ -598,6 +629,7 @@ export default function useDrawing() {
                             // Handle error state if necessary
                         });
                 }
+
                 if (isNewImage.img && !isDrawingLoad.home && !isFileDialogOpen.lastImport) {
                     return addNewPicture()
                 }
@@ -610,7 +642,7 @@ export default function useDrawing() {
                         reader.onloadend = () => {
                             resizeImageBase64(reader.result as string, 300, function (resizedBlob: any) {
                                 resolve({
-                                    id: UseUtilsDrawing.generateRandomId(),
+                                    id: generateRandomId(),
                                     fileName: `${DrawingName}-${Date.now()}`,
                                     img: reader.result as string,
                                     miniature: resizedBlob || ''
@@ -715,254 +747,6 @@ export default function useDrawing() {
 
 
 
-    const captureElementToast = async () => {
-        setResultImageUrl("");
-
-        return await new Promise(async (resolve, reject) => {
-
-            try {
-
-
-                const img = await new window.Image();
-                img.src = isNewImage.img;
-                img.onload = async () => {
-
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-                    if (!ctx) {
-                        return reject(new Error("An error occurred"));
-                    }
-
-
-                    if (!SystemLogo.src) {
-                        return reject(new Error("An error occurred"));
-                    }
-
-
-                    const image = { width: img.width, height: img.height };
-
-
-                    canvas.width = image.width + drawingExpandImg.expand;
-                    canvas.height = image.height + drawingExpandImg.expand;
-
-
-                    if (drawingExpandImg.bgType === 'bgActiveColor') {
-                        ctx.fillStyle = drawingExpandImg.bgColor;
-                        ctx.fillRect(0, 0, image.width + drawingExpandImg.expand, image.height + drawingExpandImg.expand);
-                    }
-
-
-
-                    //// Taille de l'élément
-                    const shadowX = 0;
-                    const shadowY = 0;
-                    const shadowWidth = image.width + drawingExpandImg.expand;
-                    const shadowHeight = image.height + drawingExpandImg.expand;
-                    const shadowSize = systemShadow.size;
-                    const shadowColorImg = UseUtilsDrawing.hexToRgba(systemShadow.color.colorImg, 1);
-                    const shadowColorExpand = UseUtilsDrawing.hexToRgba(systemShadow.color.colorExpand, 1);
-                    const shadowColorOutsideImg = UseUtilsDrawing.hexToRgba(systemShadow.color.colorOutsideImg, 1);
-
-                    const shadowColorTransparentImg = UseUtilsDrawing.hexToRgba(systemShadow.color.colorImg, 0);
-                    const shadowColorTransparentExpand = UseUtilsDrawing.hexToRgba(systemShadow.color.colorExpand, 0);
-                    //const shadowColorTransparentOutsideImg = UseUtilsDrawing.hexToRgba(systemShadow.color.colorOutsideImg, 0);
-
-
-
-
-                    if (drawingExpandImg.bgType === 'bgActiveImage') {
-
-                        const bgImage = new Image();
-                        bgImage.src = drawingExpandImg.bgExpand;
-
-
-                        const canvasWidthExpanded = image.width + drawingExpandImg.expand;
-                        const canvasHeightExpanded = image.height + drawingExpandImg.expand;
-                        // Dimensions de l'image de fond
-                        const imageWidth = bgImage.width;
-                        const imageHeight = bgImage.height;
-
-                        // Calculer les ratios pour ajuster l'image au canevas
-                        const canvasAspect = canvasWidthExpanded / canvasHeightExpanded;
-                        const imageAspect = imageWidth / imageHeight;
-
-                        let drawWidth, drawHeight, offsetX, offsetY;
-
-                        if (canvasAspect < imageAspect) {
-                            // La largeur du canevas est plus grande proportionnellement que la hauteur
-                            drawHeight = canvasHeightExpanded;
-                            drawWidth = drawHeight * imageAspect;
-                            offsetX = (canvasWidthExpanded - drawWidth) / 2;
-                            offsetY = 0;
-                        } else {
-                            // La hauteur du canevas est plus grande proportionnellement que la largeur
-                            drawWidth = canvasWidthExpanded;
-                            drawHeight = drawWidth / imageAspect;
-                            offsetX = 0;
-                            offsetY = (canvasHeightExpanded - drawHeight) / 2;
-                        }
-
-                        // Application des filtres
-                        ctx.filter = `
-                        brightness(${drawingExpandImg.expandFilter.brightness}%)
-                        contrast(${drawingExpandImg.expandFilter.contrast}%)
-                        saturate(${drawingExpandImg.expandFilter.saturation}%)
-                        sepia(${drawingExpandImg.expandFilter.sepia}%)
-                        hue-rotate(${drawingExpandImg.expandFilter.hue}deg)
-                        blur(${drawingExpandImg.expandFilter.blur}px)
-                        grayscale(${drawingExpandImg.expandFilter.grayscale}%)
-                        invert(${drawingExpandImg.expandFilter.invert}%)
-                    `;
-
-                        // Choix de l'image à dessiner
-                        const imageToDraw = bgImage || image;
-
-                        // Dessiner l'image sur le canevas
-                        ctx.drawImage(imageToDraw, offsetX, offsetY, drawWidth, drawHeight);
-                    }
-
-
-                    if (systemShadow.type.outsideImg) {
-                        ctx.save();
-                        ctx.filter = 'none';
-                        ctx.fillStyle = shadowColorOutsideImg;
-                        ctx.filter = `blur(${systemShadow.blur.OutsideImgBlur ? shadowSize.sizeOutsideImg / 2 : 0}px)`;
-                        ctx.fillRect((drawingExpandImg.expand - shadowSize.sizeOutsideImg * 2) / 2 + systemShadow.width.OutsideImgWidth, (drawingExpandImg.expand - shadowSize.sizeOutsideImg * 2) / 2 + systemShadow.height.OutsideImgHeight, image.width + (shadowSize.sizeOutsideImg * 2), image.height + (shadowSize.sizeOutsideImg * 2));
-                        ctx.restore();
-                    }
-
-
-                    // Appliquer des transformations
-                    ctx.filter = `
-                    brightness(${systemSetting.brightness}%)
-                    contrast(${systemSetting.contrast}%)
-                    saturate(${systemSetting.saturation}%)
-                    sepia(${systemSetting.sepia}%)
-                    hue-rotate(${systemSetting.hue}deg)
-                    blur(${systemSetting.blur}px)
-                    grayscale(${systemSetting.grayscale}%)
-                    invert(${systemSetting.invert}%)
-                  `;
-
-                    ctx.drawImage(img, drawingExpandImg.expand / 2, drawingExpandImg.expand / 2);
-
-                    // Réinitialiser le filtre pour ne pas affecter les images overlay
-                    ctx.filter = 'none';
-
-
-                    if (systemShadow.type.insetImg) {
-                        // Main image shadow
-                        UseDrawingRendering.drawInsetShadow(ctx, drawingExpandImg.expand / 2, drawingExpandImg.expand / 2, image.width, image.height, shadowSize.sizeImg, shadowColorImg, shadowColorTransparentImg);
-                    }
-
-
-                    const loadImage = (el: IsNewOverlaySave): Promise<LoadedImage> => {
-                        return new Promise((resolve) => {
-                            const img = new Image();
-                            img.src = el.img;
-                            img.onload = () => resolve({ img, el });
-                        });
-                    };
-
-                    const images = await Promise.all(
-                        isImgOverlaySave.map(el => loadImage(el))
-                    );
-                    if (!images) return;
-
-
-                    // Overlay images
-                    UseDrawingRendering.drawOverlayImg(ctx, drawingExpandImg.expand, images)
-
-
-                    if (systemShadow.type.insetExpand) {
-                        // Main image shadow
-                        UseDrawingRendering.drawInsetShadow(ctx, shadowX, shadowY, shadowWidth, shadowHeight, shadowSize.sizeExpand, shadowColorExpand, shadowColorTransparentExpand);
-                    }
-
-                    // Applique le filtre de netteté
-                    if (ctx && isRenderingOption.sharpenImg) {
-                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                        const sharpenedData = UseDrawingRendering.applySharpenFilter(imageData);
-                        ctx.putImageData(sharpenedData, 0, 0);
-                    }
-
-
-                    const filigraneImage = new Image();
-                    filigraneImage.src = SystemLogo.src || '';
-                    filigraneImage.onload = () => {
-                        ctx.save();
-                        // Désactiver les filtres précédemment appliqués
-                        ctx.filter = 'none';
-
-                        /*if (false) {
-                            // Calculer la nouvelle taille du filigrane pour qu'il représente 20 % de la taille de l'image principale
-                            const scaleFactor = 0.2; // 20%
-                            const watermarkWidth = image.width * scaleFactor;
-                            const watermarkHeight = filigraneImage.height * (watermarkWidth / filigraneImage.width);
-                            // Calculer la position pour afficher le filigrane en bas à droite
-                            const x = image.width - watermarkWidth + drawingExpandImg.expand;
-                            const y = image.height - watermarkHeight + drawingExpandImg.expand;
-                            // Dessiner le filigrane redimensionné sur le canvas principal
-                            ctx.drawImage(filigraneImage, x, y, watermarkWidth, watermarkHeight);
-                        };*/
-
-                        ctx.restore();
-
-                        // Obtenir l'image en base64 après que le filigrane soit ajouté
-                        const imgData = canvas.toDataURL('image/png');
-
-
-                        // Vérifier si l'image est significative et effectuer un redimensionnement si nécessaire
-                        if (UseDrawingRendering.isSignificantImage(canvas)) {
-
-
-                            if (isRenderingOption.reziseImg) {
-                                const image = new Image();
-                                image.src = imgData;
-                                image.onload = async () => {
-                                    const resizedImage = UseDrawingRendering.resizeImage(image, drawingExpandImg.expand, isRenderingOption);
-                                    setResultImageUrl(resizedImage || "");
-                                    resolve(true);
-                                };
-                            } else {
-                                setResultImageUrl(imgData || "");
-                                return resolve(true);
-                            }
-                        } else {
-                            return reject();
-                        }
-                        filigraneImage.onerror = () => {
-                            console.error('Failed to load the watermark image.');
-                            return reject();
-                        };
-                    }
-                }
-            } catch (error) {
-                reject()
-            }
-        })
-    };
-
-
-    function captureElement() {
-        // Utiliser toast.promise pour gérer la promesse
-        toast.promise(captureElementToast(), {
-            loading: "Rendering in progress...",
-            success: (result) => {
-                if (result) {
-                    return "Successfully completed rendering.";
-                } else {
-                    throw new Error("An error occurred");
-                }
-            },
-            error: "An error occurred",
-        });
-    }
-
-
-
-
     const handleResetImgOverlay = () => {
         setImgOverlay({
             id: 0,
@@ -998,17 +782,19 @@ export default function useDrawing() {
         if (editorRef.current) {
             editorRef.current?.blur();
         }
-        setDrawText({
+        setDrawText((prev: DrawText) => ({
+            ...prev,
             id: 0,
             value: "",
-            color: "#ffffff",
-            fontSize: 24,
-            underline: "none",
-            fontStyle: "normal",
-            fontWeight: "normal",
+            //colorDraftjs: '#000000',
+            //fontSize: 24,
+            //textShadow: '0px 0px 0px #000000',
+            //textDecoration: "none",
+            //fontStyle: "normal",
+            //fontWeight: "normal",
             textAlign: "center",
             opacity: 1.0,
-        });
+        }));
         setTextCanvasVisible(false)
         setEditorState(EditorState.createWithContent(convertFromRaw(rawContent)))
     }
@@ -1206,7 +992,7 @@ export default function useDrawing() {
             color = strokeRectRef.current.style.stroke
         }
         if (color) {
-            color = UseUtilsDrawing.rgbToHex(color)
+            color = rgbToHex(color)
         }
 
         const newElement = {
@@ -1268,7 +1054,7 @@ export default function useDrawing() {
             color = strokeRectRef.current.style.stroke
         }
         if (color) {
-            color = UseUtilsDrawing.rgbToHex(color)
+            color = rgbToHex(color)
         }
 
         let colorBg
@@ -1276,7 +1062,7 @@ export default function useDrawing() {
             colorBg = strokeRectBgRef.current.style.fill
         }
         if (colorBg) {
-            colorBg = UseUtilsDrawing.rgbToHex(colorBg)
+            colorBg = rgbToHex(colorBg)
         }
 
         const newElement = {
@@ -1370,6 +1156,10 @@ export default function useDrawing() {
          * Alert if clicked on outside of element
          */
         const handleClickOutside = (event: MouseEvent) => {
+            if (!outsideClickActive) {
+                return setOutsideClickActive(true)
+            }
+
             if (!isImgOverlay.img && !isFormCanvasVisible && !textCanvasVisible && !drawSvg.img && !drawSvgFull.svg) return;
 
             if (
@@ -1423,7 +1213,8 @@ export default function useDrawing() {
         textCanvasVisible,
         drawSvg,
         drawSvgFull,
-        handleSetBasicOverlay
+        handleSetBasicOverlay,
+        outsideClickActive
     ]);
 
 
@@ -1460,7 +1251,7 @@ export default function useDrawing() {
         }));
 
         // Charger une image et dessiner sur un canvas temporaire
-        UseUtilsDrawing.loadImageToCanvas(image, (sourceCanvas) => {
+        loadImageToCanvas(image, (sourceCanvas) => {
             const targetCanvas = canvasDrawRef.current; // Référence du canvas cible
             if (!targetCanvas) return;
 
@@ -1579,6 +1370,41 @@ export default function useDrawing() {
         }
     }
 
+    const handleRenderingToast = async (isLayers: LayerElement[]) => {
+        //const loadImage = (el: IsNewOverlaySave): Promise<LoadedImage> => {
+        //    return new Promise((resolve) => {
+        //        const img = new Image();
+        //        img.src = el.img;
+        //        img.onload = () => resolve({ img, el });
+        //    });
+        //};
+        //const allOverlay = await Promise.all(
+        //    isLayers.map(el => loadImage(el))
+        //);
+        // console.log(isLayers);
+
+
+        return await new Promise<string>(async (resolve, reject) => {
+            UseDrawingRendering.RenderingPicture(
+                isNewImage.img,
+                isRenderingOption,
+                isLayers,
+                drawingExpandImg,
+                systemShadow,
+                isBlanket,
+                systemSetting,
+                drawFiligrane,
+                (img) => {
+                    if (!img) {
+                        return reject();
+                    }
+                    resolve(img);
+                }
+            );
+        });
+    };
+
+
     useEffect(() => {
         if (isMenuOpen !== 4) {
             setIsDrawingNowCanvas((prevState) => ({ ...prevState, active: false, isMouseDown: false, id: null }))
@@ -1624,7 +1450,6 @@ export default function useDrawing() {
         isDraggingDrop,
         setIsDraggingDrop,
         resultImageUrl,
-        captureElement,
         handleSetBasicOverlay,
         cropOnWheel,
         setDisabledScroll,
@@ -1759,14 +1584,17 @@ export default function useDrawing() {
         strokeRectRef,
         strokeRectBgRef,
         handleAiQuality,
-        hasTransparency,
 
         defaultSize,
         defaultPositionW,
         defaultPositionH,
-        contentRichText, setContentRichText,
-        contentRichTextSave, setContentRichTextSave,
         editorState, setEditorState,
+        customStyleMap, setCustomStyleMap,
+        outsideClickActive, setOutsideClickActive,
+        customStyleShadowMap, setCustomStyleShadowMap,
+        isSystemResize, setSystemResize,
+        drawFiligrane, setDrawFiligrane,
+        handleRenderingToast
 
     }
 }
